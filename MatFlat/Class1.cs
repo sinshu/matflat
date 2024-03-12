@@ -52,7 +52,7 @@ namespace MatFlat
 
                 if (p != j)
                 {
-                    for (var k = 0; k < m; k++)
+                    for (var k = 0; k < n; k++)
                     {
                         var indexk = k * lda;
                         var indexkp = indexk + p;
