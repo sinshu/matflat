@@ -40,7 +40,11 @@ namespace MatFlatTest
 
             var actualA = a.ToArray();
             var actualPiv = new int[m];
-            MatrixDecomposition.LuDouble(m, n, actualA, lda, actualPiv);
+            fixed (double* pa = actualA)
+            fixed (int* ppiv = actualPiv)
+            {
+                MatrixDecomposition.LuDouble(m, n, pa, lda, ppiv);
+            }
 
             Assert.That(actualA, Is.EqualTo(expectedA).Within(1.0E-12));
         }
