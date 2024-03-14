@@ -64,7 +64,7 @@ namespace MatFlat
                 }
 
                 // Compute multipliers.
-                if (j < m & a[indexjj] != 0.0)
+                if (j < m && a[indexjj] != 0.0)
                 {
                     for (var i = j + 1; i < m; i++)
                     {
