@@ -105,7 +105,7 @@ namespace MatFlat
             return sum;
         }
 
-        private static unsafe void DivInplace(int n, double* x, double y)
+        private static unsafe void DivInplace<T>(int n, T* x, T y) where T : unmanaged, INumberBase<T>
         {
             switch (n & 1)
             {
