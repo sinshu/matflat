@@ -31,8 +31,7 @@ namespace MatFlat
                         for (var i = 0; i < m; i++)
                         {
                             // Most of the time is spent in the following dot product.
-                            var kmax = Math.Min(i, j);
-                            var s = Dot(kmax, a + i, lda, luColj);
+                            var s = Dot(Math.Min(i, j), a + i, lda, luColj);
                             colj[i] = luColj[i] -= s;
                         }
 
@@ -48,14 +47,7 @@ namespace MatFlat
 
                         if (p != j)
                         {
-                            for (var k = 0; k < n; k++)
-                            {
-                                var indexk = k * lda;
-                                var indexkp = indexk + p;
-                                var indexkj = indexk + j;
-                                (a[indexkp], a[indexkj]) = (a[indexkj], a[indexkp]);
-                            }
-
+                            Swap(n, a + p, a + j, lda);
                             piv[j] = p;
                         }
 
@@ -103,6 +95,17 @@ namespace MatFlat
             }
 
             return sum;
+        }
+
+        private static unsafe void Swap<T>(int n, T* x, T* y, int inc) where T : unmanaged, INumberBase<T>
+        {
+            while (n > 0)
+            {
+                (*x, *y) = (*y, *x);
+                x += inc;
+                y += inc;
+                n--;
+            }
         }
 
         private static unsafe void DivInplace<T>(int n, T* x, T y) where T : unmanaged, INumberBase<T>
