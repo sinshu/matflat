@@ -18,8 +18,9 @@ namespace MatFlat
             {
                 fixed (double* luColj = buffer)
                 {
-                    // Outer loop.
                     var colj = a;
+
+                    // Outer loop.
                     for (var j = 0; j < n; j++)
                     {
                         // Make a copy of the j-th column to localize references.
@@ -58,12 +59,10 @@ namespace MatFlat
                         }
 
                         // Compute multipliers.
-                        if (j < m && colj[j] != 0.0)
+                        var diag = colj[j];
+                        if (j < m && diag != 0.0)
                         {
-                            for (var i = j + 1; i < m; i++)
-                            {
-                                colj[i] /= colj[j];
-                            }
+                            DivInplace(m - j - 1, colj + j + 1, diag);
                         }
 
                         colj += lda;
@@ -79,32 +78,43 @@ namespace MatFlat
         private static unsafe double Dot(int n, double* x, int incx, double* y, int incy)
         {
             var rem = n;
-            var sum1 = 0.0;
-            var sum2 = 0.0;
-            var ix1 = 0;
-            var iy1 = 0;
-            var ix2 = incx;
-            var iy2 = incy;
-            var incx2 = 2 * incx;
-            var incy2 = 2 * incy;
+            var sum = 0.0;
+            var ix = 0;
+            var iy = 0;
 
             while (rem >= 2)
             {
-                sum1 += x[ix1] * y[iy1];
-                sum2 += x[ix2] * y[iy2];
-                ix1 += incx2;
-                iy1 += incy2;
-                ix2 += incx2;
-                iy2 += incy2;
+                sum += x[ix] * y[iy] + x[ix + incx] * y[iy + incy];
+                ix += 2 * incx;
+                iy += 2 * incy;
                 rem -= 2;
             }
 
             if (rem == 1)
             {
-                sum1 += x[ix1] * y[iy1];
+                sum += x[ix] * y[iy];
             }
 
-            return sum1 + sum2;
+            return sum;
+        }
+
+        private static unsafe void DivInplace(int n, double* x, double y)
+        {
+            var rem = n;
+            var i = 0;
+
+            while (rem >= 2)
+            {
+                x[i] /= y;
+                x[i + 1] /= y;
+                i += 2;
+                rem -= 2;
+            }
+
+            if (rem == 1)
+            {
+                x[i] /= y;
+            }
         }
     }
 }
