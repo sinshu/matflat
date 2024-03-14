@@ -47,7 +47,7 @@ namespace MatFlat
 
                         if (p != j)
                         {
-                            Swap(n, a + p, a + j, lda);
+                            SwapRows(n, a + p, a + j, lda);
                             piv[j] = p;
                         }
 
@@ -97,7 +97,7 @@ namespace MatFlat
             return sum;
         }
 
-        private static unsafe void Swap<T>(int n, T* x, T* y, int inc) where T : unmanaged, INumberBase<T>
+        private static unsafe void SwapRows<T>(int n, T* x, T* y, int inc) where T : unmanaged, INumberBase<T>
         {
             while (n > 0)
             {
