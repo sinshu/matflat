@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Buffers;
+using System.Numerics;
 
 namespace MatFlat
 {
@@ -31,7 +32,7 @@ namespace MatFlat
                         {
                             // Most of the time is spent in the following dot product.
                             var kmax = Math.Min(i, j);
-                            var s = Dot(kmax, a + i, lda, luColj, 1);
+                            var s = Dot(kmax, a + i, lda, luColj);
                             colj[i] = luColj[i] -= s;
                         }
 
@@ -75,24 +76,30 @@ namespace MatFlat
             }
         }
 
-        private static unsafe double Dot(int n, double* x, int incx, double* y, int incy)
+        private static unsafe T Dot<T>(int n, T* x, int incx, T* y) where T : unmanaged, INumberBase<T>
         {
-            var rem = n;
-            var sum = 0.0;
-            var ix = 0;
-            var iy = 0;
-
-            while (rem >= 2)
+            T sum;
+            switch (n & 1)
             {
-                sum += x[ix] * y[iy] + x[ix + incx] * y[iy + incy];
-                ix += 2 * incx;
-                iy += 2 * incy;
-                rem -= 2;
+                case 0:
+                    sum = T.Zero;
+                    break;
+                case 1:
+                    sum = x[0] * y[0];
+                    x += incx;
+                    y++;
+                    n--;
+                    break;
+                default:
+                    throw new Exception();
             }
 
-            if (rem == 1)
+            while (n > 0)
             {
-                sum += x[ix] * y[iy];
+                sum += x[0] * y[0] + x[incx] * y[1];
+                x += 2 * incx;
+                y += 2;
+                n -= 2;
             }
 
             return sum;
@@ -100,20 +107,25 @@ namespace MatFlat
 
         private static unsafe void DivInplace(int n, double* x, double y)
         {
-            var rem = n;
-            var i = 0;
-
-            while (rem >= 2)
+            switch (n & 1)
             {
-                x[i] /= y;
-                x[i + 1] /= y;
-                i += 2;
-                rem -= 2;
+                case 0:
+                    break;
+                case 1:
+                    x[0] /= y;
+                    x++;
+                    n--;
+                    break;
+                default:
+                    throw new Exception();
             }
 
-            if (rem == 1)
+            while (n > 0)
             {
-                x[i] /= y;
+                x[0] /= y;
+                x[1] /= y;
+                x += 2;
+                n -= 2;
             }
         }
     }
