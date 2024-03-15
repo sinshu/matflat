@@ -27,7 +27,7 @@ namespace MatFlatTest
         [TestCase(11, 23, 17)]
         [TestCase(23, 11, 23)]
         [TestCase(23, 11, 31)]
-        public unsafe void LuSingle(int m, int n, int lda)
+        public unsafe void LuSingle_General(int m, int n, int lda)
         {
             var a = Matrix.RandomSingle(42, m, n, lda);
 
@@ -45,6 +45,54 @@ namespace MatFlatTest
             fixed (int* ppiv = actualPiv)
             {
                 MatrixDecomposition.LuSingle(m, n, pa, lda, ppiv);
+            }
+
+            Assert.That(actualA, Is.EqualTo(expectedA).Within(1.0E-6));
+        }
+
+        [Test]
+        public unsafe void LuSingle_Zero()
+        {
+            var a = new float[9];
+
+            var expectedA = a.ToArray();
+            var expectedPiv = new int[3];
+            fixed (float* pa = expectedA)
+            fixed (int* ppiv = expectedPiv)
+            {
+                Lapack.Sgetrf(MatrixLayout.ColMajor, 3, 3, pa, 3, ppiv);
+            }
+
+            var actualA = a.ToArray();
+            var actualPiv = new int[3];
+            fixed (float* pa = actualA)
+            fixed (int* ppiv = actualPiv)
+            {
+                MatrixDecomposition.LuSingle(3, 3, pa, 3, ppiv);
+            }
+
+            Assert.That(actualA, Is.EqualTo(expectedA).Within(1.0E-6));
+        }
+
+        [Test]
+        public unsafe void LuSingle_Singular()
+        {
+            var a = Enumerable.Range(0, 9).Select(i => (float)(i + 1)).ToArray();
+
+            var expectedA = a.ToArray();
+            var expectedPiv = new int[3];
+            fixed (float* pa = expectedA)
+            fixed (int* ppiv = expectedPiv)
+            {
+                Lapack.Sgetrf(MatrixLayout.ColMajor, 3, 3, pa, 3, ppiv);
+            }
+
+            var actualA = a.ToArray();
+            var actualPiv = new int[3];
+            fixed (float* pa = actualA)
+            fixed (int* ppiv = actualPiv)
+            {
+                MatrixDecomposition.LuSingle(3, 3, pa, 3, ppiv);
             }
 
             Assert.That(actualA, Is.EqualTo(expectedA).Within(1.0E-6));
@@ -68,7 +116,7 @@ namespace MatFlatTest
         [TestCase(11, 23, 17)]
         [TestCase(23, 11, 23)]
         [TestCase(23, 11, 31)]
-        public unsafe void LuDouble(int m, int n, int lda)
+        public unsafe void LuDouble_General(int m, int n, int lda)
         {
             var a = Matrix.RandomDouble(42, m, n, lda);
 
@@ -86,6 +134,54 @@ namespace MatFlatTest
             fixed (int* ppiv = actualPiv)
             {
                 MatrixDecomposition.LuDouble(m, n, pa, lda, ppiv);
+            }
+
+            Assert.That(actualA, Is.EqualTo(expectedA).Within(1.0E-12));
+        }
+
+        [Test]
+        public unsafe void LuDouble_Zero()
+        {
+            var a = new double[9];
+
+            var expectedA = a.ToArray();
+            var expectedPiv = new int[3];
+            fixed (double* pa = expectedA)
+            fixed (int* ppiv = expectedPiv)
+            {
+                Lapack.Dgetrf(MatrixLayout.ColMajor, 3, 3, pa, 3, ppiv);
+            }
+
+            var actualA = a.ToArray();
+            var actualPiv = new int[3];
+            fixed (double* pa = actualA)
+            fixed (int* ppiv = actualPiv)
+            {
+                MatrixDecomposition.LuDouble(3, 3, pa, 3, ppiv);
+            }
+
+            Assert.That(actualA, Is.EqualTo(expectedA).Within(1.0E-12));
+        }
+
+        [Test]
+        public unsafe void LuDouble_Singular()
+        {
+            var a = Enumerable.Range(0, 9).Select(i => (double)(i + 1)).ToArray();
+
+            var expectedA = a.ToArray();
+            var expectedPiv = new int[3];
+            fixed (double* pa = expectedA)
+            fixed (int* ppiv = expectedPiv)
+            {
+                Lapack.Dgetrf(MatrixLayout.ColMajor, 3, 3, pa, 3, ppiv);
+            }
+
+            var actualA = a.ToArray();
+            var actualPiv = new int[3];
+            fixed (double* pa = actualA)
+            fixed (int* ppiv = actualPiv)
+            {
+                MatrixDecomposition.LuDouble(3, 3, pa, 3, ppiv);
             }
 
             Assert.That(actualA, Is.EqualTo(expectedA).Within(1.0E-12));
@@ -109,7 +205,7 @@ namespace MatFlatTest
         [TestCase(11, 23, 17)]
         [TestCase(23, 11, 23)]
         [TestCase(23, 11, 31)]
-        public unsafe void LuComplex(int m, int n, int lda)
+        public unsafe void LuComplex_General(int m, int n, int lda)
         {
             var a = Matrix.RandomComplex(42, m, n, lda);
 
@@ -127,6 +223,56 @@ namespace MatFlatTest
             fixed (int* ppiv = actualPiv)
             {
                 MatrixDecomposition.LuComplex(m, n, pa, lda, ppiv);
+            }
+
+            Assert.That(actualA.Select(x => x.Real), Is.EqualTo(expectedA.Select(x => x.Real)).Within(1.0E-12));
+            Assert.That(actualA.Select(x => x.Imaginary), Is.EqualTo(expectedA.Select(x => x.Imaginary)).Within(1.0E-12));
+        }
+
+        [Test]
+        public unsafe void LuComplex_Zero()
+        {
+            var a = new Complex[9];
+
+            var expectedA = a.ToArray();
+            var expectedPiv = new int[3];
+            fixed (Complex* pa = expectedA)
+            fixed (int* ppiv = expectedPiv)
+            {
+                Lapack.Zgetrf(MatrixLayout.ColMajor, 3, 3, pa, 3, ppiv);
+            }
+
+            var actualA = a.ToArray();
+            var actualPiv = new int[3];
+            fixed (Complex* pa = actualA)
+            fixed (int* ppiv = actualPiv)
+            {
+                MatrixDecomposition.LuComplex(3, 3, pa, 3, ppiv);
+            }
+
+            Assert.That(actualA.Select(x => x.Real), Is.EqualTo(expectedA.Select(x => x.Real)).Within(1.0E-12));
+            Assert.That(actualA.Select(x => x.Imaginary), Is.EqualTo(expectedA.Select(x => x.Imaginary)).Within(1.0E-12));
+        }
+
+        [Test]
+        public unsafe void LuComplex_Singular()
+        {
+            var a = Enumerable.Range(0, 9).Select(i => (Complex)(i + 1)).ToArray();
+
+            var expectedA = a.ToArray();
+            var expectedPiv = new int[3];
+            fixed (Complex* pa = expectedA)
+            fixed (int* ppiv = expectedPiv)
+            {
+                Lapack.Zgetrf(MatrixLayout.ColMajor, 3, 3, pa, 3, ppiv);
+            }
+
+            var actualA = a.ToArray();
+            var actualPiv = new int[3];
+            fixed (Complex* pa = actualA)
+            fixed (int* ppiv = actualPiv)
+            {
+                MatrixDecomposition.LuComplex(3, 3, pa, 3, ppiv);
             }
 
             Assert.That(actualA.Select(x => x.Real), Is.EqualTo(expectedA.Select(x => x.Real)).Within(1.0E-12));
