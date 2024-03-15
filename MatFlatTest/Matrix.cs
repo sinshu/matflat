@@ -27,10 +27,16 @@ namespace MatFlatTest
             return values.ToArray();
         }
 
-        public static double At(int m, int n, double[] a, int lda, int row, int col)
+        public static double Get(int m, int n, double[] a, int lda, int row, int col)
         {
             var index = col * lda + row;
             return a[index];
+        }
+
+        public static double Set(int m, int n, double[] a, int lda, int row, int col, double value)
+        {
+            var index = col * lda + row;
+            return a[index] = value;
         }
 
         public static void Print(int m, int n, double[] a, int lda)
@@ -40,7 +46,7 @@ namespace MatFlatTest
                 for (var col = 0; col < n; col++)
                 {
                     Console.Write("\t");
-                    Console.Write(At(m, n, a, lda, row, col).ToString("G6"));
+                    Console.Write(Get(m, n, a, lda, row, col).ToString("G6"));
                 }
                 Console.WriteLine();
             }

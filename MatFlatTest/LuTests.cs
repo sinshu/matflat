@@ -7,7 +7,7 @@ using MatFlat;
 
 namespace MatFlatTest
 {
-    public class Tests
+    public class LuTests
     {
         [TestCase(1, 1, 1)]
         [TestCase(1, 1, 3)]
