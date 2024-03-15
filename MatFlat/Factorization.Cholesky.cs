@@ -30,6 +30,11 @@ namespace MatFlat
 
                 a[j + j * lda] = (Double)Math.Sqrt((double)s);
             }
+
+            for (int j = 1; j < n; j++)
+            {
+                new Span<double>(a + j * lda, j).Clear();
+            }
         }
     }
 }
