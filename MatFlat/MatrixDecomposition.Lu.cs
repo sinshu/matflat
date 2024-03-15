@@ -58,7 +58,8 @@ namespace MatFlat
                     for (var j = 0; j < n; j++)
                     {
                         // Make a copy of the j-th column to localize references.
-                        new Span<float>(colj, m).CopyTo(new Span<float>(luColj, m));
+                        var copySize = sizeof(float) * m;
+                        Buffer.MemoryCopy(colj, luColj, copySize, copySize);
 
                         // Apply previous transformations.
                         for (var i = 0; i < m; i++)
@@ -153,7 +154,8 @@ namespace MatFlat
                     for (var j = 0; j < n; j++)
                     {
                         // Make a copy of the j-th column to localize references.
-                        new Span<double>(colj, m).CopyTo(new Span<double>(luColj, m));
+                        var copySize = sizeof(double) * m;
+                        Buffer.MemoryCopy(colj, luColj, copySize, copySize);
 
                         // Apply previous transformations.
                         for (var i = 0; i < m; i++)
@@ -248,7 +250,8 @@ namespace MatFlat
                     for (var j = 0; j < n; j++)
                     {
                         // Make a copy of the j-th column to localize references.
-                        new Span<Complex>(colj, m).CopyTo(new Span<Complex>(luColj, m));
+                        var copySize = sizeof(Complex) * m;
+                        Buffer.MemoryCopy(colj, luColj, copySize, copySize);
 
                         // Apply previous transformations.
                         for (var i = 0; i < m; i++)
