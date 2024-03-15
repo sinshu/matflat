@@ -1,14 +1,29 @@
 ﻿using System;
 using System.Linq;
+using System.Numerics;
 
 namespace MatFlatTest
 {
     public static class Matrix
     {
+        public static float[] RandomSingle(int seed, int m, int n, int lda)
+        {
+            var random = new Random(seed);
+            var values = Enumerable.Range(0, n * lda).Select(i => random.NextSingle());
+            return values.ToArray();
+        }
+
         public static double[] RandomDouble(int seed, int m, int n, int lda)
         {
             var random = new Random(seed);
             var values = Enumerable.Range(0, n * lda).Select(i => random.NextDouble());
+            return values.ToArray();
+        }
+
+        public static Complex[] RandomComplex(int seed, int m, int n, int lda)
+        {
+            var random = new Random(seed);
+            var values = Enumerable.Range(0, n * lda).Select(i => new Complex(random.NextDouble(), random.NextDouble()));
             return values.ToArray();
         }
 
