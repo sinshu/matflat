@@ -44,7 +44,7 @@ namespace MatFlatTest
             fixed (float* pa = actualA)
             fixed (int* ppiv = actualPiv)
             {
-                MatrixDecomposition.LuSingle(m, n, pa, lda, ppiv);
+                Factorization.LuSingle(m, n, pa, lda, ppiv);
             }
 
             Assert.That(actualA, Is.EqualTo(expectedA).Within(1.0E-6));
@@ -68,7 +68,7 @@ namespace MatFlatTest
             fixed (float* pa = actualA)
             fixed (int* ppiv = actualPiv)
             {
-                MatrixDecomposition.LuSingle(3, 3, pa, 3, ppiv);
+                Factorization.LuSingle(3, 3, pa, 3, ppiv);
             }
 
             Assert.That(actualA, Is.EqualTo(expectedA).Within(1.0E-6));
@@ -92,7 +92,7 @@ namespace MatFlatTest
             fixed (float* pa = actualA)
             fixed (int* ppiv = actualPiv)
             {
-                MatrixDecomposition.LuSingle(3, 3, pa, 3, ppiv);
+                Factorization.LuSingle(3, 3, pa, 3, ppiv);
             }
 
             Assert.That(actualA, Is.EqualTo(expectedA).Within(1.0E-6));
@@ -133,7 +133,7 @@ namespace MatFlatTest
             fixed (double* pa = actualA)
             fixed (int* ppiv = actualPiv)
             {
-                MatrixDecomposition.LuDouble(m, n, pa, lda, ppiv);
+                Factorization.LuDouble(m, n, pa, lda, ppiv);
             }
 
             Assert.That(actualA, Is.EqualTo(expectedA).Within(1.0E-12));
@@ -157,7 +157,7 @@ namespace MatFlatTest
             fixed (double* pa = actualA)
             fixed (int* ppiv = actualPiv)
             {
-                MatrixDecomposition.LuDouble(3, 3, pa, 3, ppiv);
+                Factorization.LuDouble(3, 3, pa, 3, ppiv);
             }
 
             Assert.That(actualA, Is.EqualTo(expectedA).Within(1.0E-12));
@@ -181,7 +181,7 @@ namespace MatFlatTest
             fixed (double* pa = actualA)
             fixed (int* ppiv = actualPiv)
             {
-                MatrixDecomposition.LuDouble(3, 3, pa, 3, ppiv);
+                Factorization.LuDouble(3, 3, pa, 3, ppiv);
             }
 
             Assert.That(actualA, Is.EqualTo(expectedA).Within(1.0E-12));
@@ -222,7 +222,7 @@ namespace MatFlatTest
             fixed (Complex* pa = actualA)
             fixed (int* ppiv = actualPiv)
             {
-                MatrixDecomposition.LuComplex(m, n, pa, lda, ppiv);
+                Factorization.LuComplex(m, n, pa, lda, ppiv);
             }
 
             Assert.That(actualA.Select(x => x.Real), Is.EqualTo(expectedA.Select(x => x.Real)).Within(1.0E-12));
@@ -247,7 +247,7 @@ namespace MatFlatTest
             fixed (Complex* pa = actualA)
             fixed (int* ppiv = actualPiv)
             {
-                MatrixDecomposition.LuComplex(3, 3, pa, 3, ppiv);
+                Factorization.LuComplex(3, 3, pa, 3, ppiv);
             }
 
             Assert.That(actualA.Select(x => x.Real), Is.EqualTo(expectedA.Select(x => x.Real)).Within(1.0E-12));
@@ -272,7 +272,7 @@ namespace MatFlatTest
             fixed (Complex* pa = actualA)
             fixed (int* ppiv = actualPiv)
             {
-                MatrixDecomposition.LuComplex(3, 3, pa, 3, ppiv);
+                Factorization.LuComplex(3, 3, pa, 3, ppiv);
             }
 
             Assert.That(actualA.Select(x => x.Real), Is.EqualTo(expectedA.Select(x => x.Real)).Within(1.0E-12));

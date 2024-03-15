@@ -5,9 +5,9 @@ using System.Numerics;
 namespace MatFlat
 {
     /// <summary>
-    /// Provides matrix decomposition methods.
+    /// Provides matrix factorization methods.
     /// </summary>
-    public static partial class MatrixDecomposition
+    public static partial class Factorization
     {
     }
 }

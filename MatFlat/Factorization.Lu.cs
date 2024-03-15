@@ -4,7 +4,7 @@ using System.Numerics;
 
 namespace MatFlat
 {
-    public static partial class MatrixDecomposition
+    public static partial class Factorization
     {
         /// <summary>
         /// Computes an LU factorization of a general M-by-N matrix A.
