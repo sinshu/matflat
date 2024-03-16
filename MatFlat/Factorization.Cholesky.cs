@@ -12,14 +12,14 @@ namespace MatFlat
 
             for (var j = 0; j < n; j++)
             {
-                var s = 0.0F;
+                var s = 0.0;
 
                 var colk = a;
 
                 for (var k = 0; k < j; k++)
                 {
                     var t = (colj[k] - CholDot(k, a + j, a + k, lda)) / colk[k];
-                    colk[j] = t;
+                    colk[j] = (float)t;
                     s += t * t;
 
                     colk += lda;
@@ -29,7 +29,7 @@ namespace MatFlat
 
                 if (s > 0)
                 {
-                    colj[j] = MathF.Sqrt(s);
+                    colj[j] = (float)Math.Sqrt(s);
                 }
                 else
                 {
@@ -143,13 +143,43 @@ namespace MatFlat
             }
         }
 
-        private static unsafe T CholDot<T>(int n, T* x, T* y, int inc) where T : unmanaged, INumberBase<T>
+        private static unsafe double CholDot(int n, float* x, float* y, int inc)
         {
-            T sum;
+            double sum;
             switch (n & 1)
             {
                 case 0:
-                    sum = T.Zero;
+                    sum = 0;
+                    break;
+                case 1:
+                    sum = (double)x[0] * (double)y[0];
+                    x += inc;
+                    y += inc;
+                    n--;
+                    break;
+                default:
+                    throw new Exception();
+            }
+
+            var inc2 = 2 * inc;
+            while (n > 0)
+            {
+                sum += (double)x[0] * (double)y[0] + (double)x[inc] * (double)y[inc];
+                x += inc2;
+                y += inc2;
+                n -= 2;
+            }
+
+            return sum;
+        }
+
+        private static unsafe double CholDot(int n, double* x, double* y, int inc)
+        {
+            double sum;
+            switch (n & 1)
+            {
+                case 0:
+                    sum = 0;
                     break;
                 case 1:
                     sum = x[0] * y[0];

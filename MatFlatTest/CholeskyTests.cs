@@ -36,7 +36,7 @@ namespace MatFlatTest
                 Factorization.CholeskySingle(n, pa, lda);
             }
 
-            Assert.That(actualA, Is.EqualTo(expectedA).Within(1.0E-3));
+            Assert.That(actualA, Is.EqualTo(expectedA).Within(1.0E-4));
         }
 
         [TestCase(1, 1)]
