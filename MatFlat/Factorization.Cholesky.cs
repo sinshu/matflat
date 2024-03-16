@@ -9,11 +9,13 @@ namespace MatFlat
         public static unsafe void CholeskyDouble(int n, double* a, int lda)
         {
             var colj = a;
+
             for (var j = 0; j < n; j++)
             {
                 var s = 0.0;
 
                 var colk = a;
+
                 for (var k = 0; k < j; k++)
                 {
                     var t = colj[k] - Dot(k, a + j, a + k, lda);
@@ -39,9 +41,11 @@ namespace MatFlat
                 colj += lda;
             }
 
+            colj = a + lda;
             for (var j = 1; j < n; j++)
             {
-                new Span<double>(a + j * lda, j).Clear();
+                new Span<double>(colj, j).Clear();
+                colj += lda;
             }
         }
 
