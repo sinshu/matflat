@@ -245,7 +245,7 @@ namespace MatFlat
                     n--;
                     break;
                 default:
-                    throw new Exception();
+                    throw new LinearAlgebraException("An unexpected error occurred.");
             }
 
             var inc2 = 2 * inc;
@@ -275,7 +275,7 @@ namespace MatFlat
                     n--;
                     break;
                 default:
-                    throw new Exception();
+                    throw new LinearAlgebraException("An unexpected error occurred.");
             }
 
             var inc2 = 2 * inc;
@@ -305,7 +305,7 @@ namespace MatFlat
                     n--;
                     break;
                 default:
-                    throw new Exception();
+                    throw new LinearAlgebraException("An unexpected error occurred.");
             }
 
             var inc2 = 2 * inc;
