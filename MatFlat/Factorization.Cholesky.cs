@@ -6,6 +6,49 @@ namespace MatFlat
 {
     public static partial class Factorization
     {
+        public static unsafe void CholeskySingle(int n, float* a, int lda)
+        {
+            var colj = a;
+
+            for (var j = 0; j < n; j++)
+            {
+                var s = 0.0F;
+
+                var colk = a;
+
+                for (var k = 0; k < j; k++)
+                {
+                    var t = (colj[k] - CholDot(k, a + j, a + k, lda)) / colk[k];
+                    colk[j] = t;
+                    s += t * t;
+
+                    colk += lda;
+                }
+
+                s = colj[j] - s;
+
+                if (s > 0)
+                {
+                    colj[j] = MathF.Sqrt(s);
+                }
+                else
+                {
+                    throw new Exception("OMG");
+                }
+
+                colj += lda;
+            }
+
+            colj = a + lda;
+
+            for (var j = 1; j < n; j++)
+            {
+                new Span<float>(colj, j).Clear();
+
+                colj += lda;
+            }
+        }
+
         public static unsafe void CholeskyDouble(int n, double* a, int lda)
         {
             var colj = a;

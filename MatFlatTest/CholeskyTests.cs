@@ -19,6 +19,85 @@ namespace MatFlatTest
         [TestCase(11, 17)]
         [TestCase(23, 23)]
         [TestCase(23, 31)]
+        public unsafe void CholeskySingle_General(int n, int lda)
+        {
+            var a = GetDecomposableSingle(42, n, lda);
+
+            var expectedA = a.ToArray();
+            fixed (float* pa = expectedA)
+            {
+                Lapack.Spotrf(MatrixLayout.ColMajor, 'U', n, pa, lda);
+                OpenBlasResultToL(n, expectedA, lda);
+            }
+
+            var actualA = a.ToArray();
+            fixed (float* pa = actualA)
+            {
+                Factorization.CholeskySingle(n, pa, lda);
+            }
+
+            Assert.That(actualA, Is.EqualTo(expectedA).Within(1.0E-3));
+        }
+
+        [TestCase(1, 1)]
+        [TestCase(1, 3)]
+        [TestCase(2, 2)]
+        [TestCase(2, 3)]
+        [TestCase(3, 3)]
+        [TestCase(3, 5)]
+        [TestCase(11, 11)]
+        [TestCase(11, 17)]
+        [TestCase(23, 23)]
+        [TestCase(23, 31)]
+        public unsafe void CholeskySingle_MaybeSingular(int n, int lda)
+        {
+            var a = GetMaybeSingularSingle(42, n, lda);
+
+            bool decomposable;
+            var expectedA = a.ToArray();
+            fixed (float* pa = expectedA)
+            {
+                var result = Lapack.Spotrf(MatrixLayout.ColMajor, 'U', n, pa, lda);
+                OpenBlasResultToL(n, expectedA, lda);
+                decomposable = result == 0;
+            }
+
+            var actualA = a.ToArray();
+            fixed (float* pa = actualA)
+            {
+                try
+                {
+                    Factorization.CholeskySingle(n, pa, lda);
+                    if (!decomposable)
+                    {
+                        Assert.Fail();
+                    }
+                }
+                catch
+                {
+                    if (decomposable)
+                    {
+                        Assert.Fail();
+                    }
+                }
+            }
+
+            if (decomposable)
+            {
+                Assert.That(actualA, Is.EqualTo(expectedA).Within(1.0E-6));
+            }
+        }
+
+        [TestCase(1, 1)]
+        [TestCase(1, 3)]
+        [TestCase(2, 2)]
+        [TestCase(2, 3)]
+        [TestCase(3, 3)]
+        [TestCase(3, 5)]
+        [TestCase(11, 11)]
+        [TestCase(11, 17)]
+        [TestCase(23, 23)]
+        [TestCase(23, 31)]
         public unsafe void CholeskyDouble_General(int n, int lda)
         {
             var a = GetDecomposableDouble(42, n, lda);
@@ -169,6 +248,45 @@ namespace MatFlatTest
             }
         }
 
+        private static unsafe float[] GetDecomposableSingle(int seed, int n, int lda)
+        {
+            var a = Matrix.RandomSingle(seed, n, n, lda);
+
+            var symmetric = new float[n * n];
+            fixed (float* pa = a)
+            fixed (float* ps = symmetric)
+            {
+                Blas.Sgemm(
+                    Order.ColMajor,
+                    Transpose.NoTrans,
+                    Transpose.Trans,
+                    n, n, n,
+                    1.0F,
+                    pa, lda,
+                    pa, lda,
+                    0.0F,
+                    ps, n);
+            }
+
+            for (var row = 0; row < n; row++)
+            {
+                for (var col = 0; col < n; col++)
+                {
+                    if (col >= row)
+                    {
+                        var value = symmetric[n * col + row];
+                        a[lda * col + row] = value;
+                    }
+                    else
+                    {
+                        a[lda * col + row] = float.NaN;
+                    }
+                }
+            }
+
+            return a;
+        }
+
         private static unsafe double[] GetDecomposableDouble(int seed, int n, int lda)
         {
             var a = Matrix.RandomDouble(seed, n, n, lda);
@@ -249,6 +367,24 @@ namespace MatFlatTest
             return a;
         }
 
+        private static unsafe float[] GetMaybeSingularSingle(int seed, int n, int lda)
+        {
+            var a = Matrix.RandomSingle(seed, n, n, lda);
+
+            for (var row = 0; row < n; row++)
+            {
+                for (var col = 0; col < n; col++)
+                {
+                    if (col < row)
+                    {
+                        a[lda * col + row] = float.NaN;
+                    }
+                }
+            }
+
+            return a;
+        }
+
         private static unsafe double[] GetMaybeSingularDouble(int seed, int n, int lda)
         {
             var a = Matrix.RandomDouble(seed, n, n, lda);
@@ -285,7 +421,7 @@ namespace MatFlatTest
             return a;
         }
 
-        private static void OpenBlasResultToL(int n, double[] a, int lda)
+        private static void OpenBlasResultToL<T>(int n, T[] a, int lda) where T : unmanaged, INumberBase<T>
         {
             for (var row = 0; row < n; row++)
             {
@@ -305,7 +441,7 @@ namespace MatFlatTest
                 for (var col = row + 1; col < n; col++)
                 {
                     var index = lda * col + row;
-                    a[index] = 0;
+                    a[index] = T.Zero;
                 }
             }
         }
