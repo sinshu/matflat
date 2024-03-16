@@ -65,7 +65,7 @@ namespace MatFlat
                         for (var i = 0; i < m; i++)
                         {
                             // Most of the time is spent in the following dot product.
-                            var s = Dot(Math.Min(i, j), a + i, lda, luColj);
+                            var s = LuDot(Math.Min(i, j), a + i, lda, luColj);
                             colj[i] = luColj[i] -= s;
                         }
 
@@ -81,7 +81,7 @@ namespace MatFlat
 
                         if (p != j)
                         {
-                            SwapRows(n, a + p, a + j, lda);
+                            LuSwapRows(n, a + p, a + j, lda);
                             piv[j] = p;
                         }
 
@@ -89,7 +89,7 @@ namespace MatFlat
                         var diag = colj[j];
                         if (j < m && diag != 0.0F)
                         {
-                            DivInplace(m - j - 1, colj + j + 1, diag);
+                            LuDivInplace(m - j - 1, colj + j + 1, diag);
                         }
 
                         colj += lda;
@@ -161,7 +161,7 @@ namespace MatFlat
                         for (var i = 0; i < m; i++)
                         {
                             // Most of the time is spent in the following dot product.
-                            var s = Dot(Math.Min(i, j), a + i, lda, luColj);
+                            var s = LuDot(Math.Min(i, j), a + i, lda, luColj);
                             colj[i] = luColj[i] -= s;
                         }
 
@@ -177,7 +177,7 @@ namespace MatFlat
 
                         if (p != j)
                         {
-                            SwapRows(n, a + p, a + j, lda);
+                            LuSwapRows(n, a + p, a + j, lda);
                             piv[j] = p;
                         }
 
@@ -185,7 +185,7 @@ namespace MatFlat
                         var diag = colj[j];
                         if (j < m && diag != 0.0)
                         {
-                            DivInplace(m - j - 1, colj + j + 1, diag);
+                            LuDivInplace(m - j - 1, colj + j + 1, diag);
                         }
 
                         colj += lda;
@@ -257,7 +257,7 @@ namespace MatFlat
                         for (var i = 0; i < m; i++)
                         {
                             // Most of the time is spent in the following dot product.
-                            var s = Dot(Math.Min(i, j), a + i, lda, luColj);
+                            var s = LuDot(Math.Min(i, j), a + i, lda, luColj);
                             colj[i] = luColj[i] -= s;
                         }
 
@@ -265,7 +265,7 @@ namespace MatFlat
                         var p = j;
                         for (var i = j + 1; i < m; i++)
                         {
-                            if (FastMagnitude(luColj[i]) > FastMagnitude(luColj[p]))
+                            if (LuFastMagnitude(luColj[i]) > LuFastMagnitude(luColj[p]))
                             {
                                 p = i;
                             }
@@ -273,7 +273,7 @@ namespace MatFlat
 
                         if (p != j)
                         {
-                            SwapRows(n, a + p, a + j, lda);
+                            LuSwapRows(n, a + p, a + j, lda);
                             piv[j] = p;
                         }
 
@@ -281,7 +281,7 @@ namespace MatFlat
                         var diag = colj[j];
                         if (j < m && diag != Complex.Zero)
                         {
-                            DivInplace(m - j - 1, colj + j + 1, diag);
+                            LuDivInplace(m - j - 1, colj + j + 1, diag);
                         }
 
                         colj += lda;
@@ -294,7 +294,7 @@ namespace MatFlat
             }
         }
 
-        private static unsafe T Dot<T>(int n, T* x, int incx, T* y) where T : unmanaged, INumberBase<T>
+        private static unsafe T LuDot<T>(int n, T* x, int incx, T* y) where T : unmanaged, INumberBase<T>
         {
             T sum;
             switch (n & 1)
@@ -323,7 +323,7 @@ namespace MatFlat
             return sum;
         }
 
-        private static unsafe void SwapRows<T>(int n, T* x, T* y, int inc) where T : unmanaged, INumberBase<T>
+        private static unsafe void LuSwapRows<T>(int n, T* x, T* y, int inc) where T : unmanaged, INumberBase<T>
         {
             while (n > 0)
             {
@@ -334,7 +334,7 @@ namespace MatFlat
             }
         }
 
-        private static unsafe void DivInplace<T>(int n, T* x, T y) where T : unmanaged, INumberBase<T>
+        private static unsafe void LuDivInplace<T>(int n, T* x, T y) where T : unmanaged, INumberBase<T>
         {
             switch (n & 1)
             {
@@ -358,7 +358,7 @@ namespace MatFlat
             }
         }
 
-        private static double FastMagnitude(Complex x)
+        private static double LuFastMagnitude(Complex x)
         {
             return Math.Abs(x.Real) + Math.Abs(x.Imaginary);
         }

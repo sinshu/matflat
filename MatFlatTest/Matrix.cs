@@ -27,26 +27,26 @@ namespace MatFlatTest
             return values.ToArray();
         }
 
-        public static double Get(int m, int n, double[] a, int lda, int row, int col)
+        public static T Get<T>(int m, int n, T[] a, int lda, int row, int col)
         {
             var index = col * lda + row;
             return a[index];
         }
 
-        public static double Set(int m, int n, double[] a, int lda, int row, int col, double value)
+        public static T Set<T>(int m, int n, T[] a, int lda, int row, int col, T value)
         {
             var index = col * lda + row;
             return a[index] = value;
         }
 
-        public static void Print(int m, int n, double[] a, int lda)
+        public static void Print<T>(int m, int n, T[] a, int lda) where T : IFormattable
         {
             for (var row = 0; row < m; row++)
             {
                 for (var col = 0; col < n; col++)
                 {
                     Console.Write("\t");
-                    Console.Write(Get(m, n, a, lda, row, col).ToString("G6"));
+                    Console.Write(Get(m, n, a, lda, row, col).ToString("G6", null));
                 }
                 Console.WriteLine();
             }
