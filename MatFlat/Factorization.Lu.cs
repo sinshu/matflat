@@ -309,7 +309,7 @@ namespace MatFlat
                     n--;
                     break;
                 default:
-                    throw new Exception();
+                    throw new LinearAlgebraException("An unexpected error occurred.");
             }
 
             while (n > 0)
@@ -346,7 +346,7 @@ namespace MatFlat
                     n--;
                     break;
                 default:
-                    throw new Exception();
+                    throw new LinearAlgebraException("An unexpected error occurred.");
             }
 
             while (n > 0)
