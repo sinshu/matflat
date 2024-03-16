@@ -13,7 +13,7 @@ namespace Benchmark
         private double[] a;
         private global::MathNet.Numerics.Providers.LinearAlgebra.ManagedLinearAlgebraProvider mathNetProvider;
 
-        [Params(5, 10, 20, 50)]
+        [Params(5, 10, 20, 50, 100, 200)]
         public int Order;
 
         [GlobalSetup]
@@ -43,7 +43,7 @@ namespace Benchmark
             }
         }
 
-        [Benchmark]
+        //[Benchmark]
         public void OpenBlas()
         {
             values.CopyTo(a, 0);

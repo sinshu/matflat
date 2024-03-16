@@ -15,7 +15,7 @@ namespace Benchmark
         private int[] matFlatPiv;
         private int[] openBlasPiv;
 
-        [Params(5, 10, 20, 50)]
+        [Params(5, 10, 20, 50, 100, 200)]
         public int Order;
 
         [GlobalSetup]
@@ -50,7 +50,7 @@ namespace Benchmark
             }
         }
 
-        [Benchmark]
+        //[Benchmark]
         public void OpenBlas()
         {
             values.CopyTo(a, 0);

@@ -18,9 +18,7 @@ namespace MatFlat
 
                 for (var k = 0; k < j; k++)
                 {
-                    var t = colj[k] - Dot(k, a + j, a + k, lda);
-                    t = t / colk[k];
-
+                    var t = (colj[k] - Dot(k, a + j, a + k, lda)) / colk[k];
                     colk[j] = t;
                     s += t * t;
 
