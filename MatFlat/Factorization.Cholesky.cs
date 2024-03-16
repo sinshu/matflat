@@ -6,6 +6,32 @@ namespace MatFlat
 {
     public static partial class Factorization
     {
+        /// <summary>
+        /// Computes the Cholesky factorization of a Hermitian matrix.
+        /// </summary>
+        /// <param name="n">
+        /// The order of the matrix A.
+        /// </param>
+        /// <param name="a">
+        /// <para>
+        /// On entry, the Hermitian matrix A.
+        /// </para>
+        /// <para>
+        /// The leading N-by-N upper triangular part of A contains
+        /// the upper triangular part of the matrix A, and
+        /// the strictly lower triangular part of A is not referenced.
+        /// </para>
+        /// <para>
+        /// On exit, the factor L from the Cholesky factorization
+        /// <code>
+        /// A = L * L^H.
+        /// </code>
+        /// </para>
+        /// </param>
+        /// <param name="lda">
+        /// The leading dimension of the array A.
+        /// </param>
+        /// <exception cref="Exception"></exception>
         public static unsafe void CholeskySingle(int n, float* a, int lda)
         {
             var colj = a;
@@ -33,7 +59,7 @@ namespace MatFlat
                 }
                 else
                 {
-                    throw new Exception("OMG");
+                    throw new LinearAlgebraException("Cholesky decomposition failed. The matrix must be positive definite.");
                 }
 
                 colj += lda;
@@ -76,7 +102,7 @@ namespace MatFlat
                 }
                 else
                 {
-                    throw new Exception("OMG");
+                    throw new LinearAlgebraException("Cholesky decomposition failed. The matrix must be positive definite.");
                 }
 
                 colj += lda;
@@ -119,7 +145,7 @@ namespace MatFlat
                 }
                 else
                 {
-                    throw new Exception("OMG");
+                    throw new LinearAlgebraException("Cholesky decomposition failed. The matrix must be positive definite.");
                 }
 
                 colj += lda;

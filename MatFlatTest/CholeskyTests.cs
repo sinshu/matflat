@@ -73,7 +73,7 @@ namespace MatFlatTest
                         Assert.Fail();
                     }
                 }
-                catch
+                catch (LinearAlgebraException)
                 {
                     if (decomposable)
                     {
@@ -152,7 +152,7 @@ namespace MatFlatTest
                         Assert.Fail();
                     }
                 }
-                catch
+                catch (LinearAlgebraException)
                 {
                     if (decomposable)
                     {
@@ -232,7 +232,7 @@ namespace MatFlatTest
                         Assert.Fail();
                     }
                 }
-                catch
+                catch (LinearAlgebraException)
                 {
                     if (decomposable)
                     {
