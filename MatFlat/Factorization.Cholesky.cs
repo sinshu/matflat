@@ -183,7 +183,7 @@ namespace MatFlat
                 for (var k = 0; k < j; k++)
                 {
                     var t = (colj[k] - CholDot(k, a + j, a + k, lda)) / colk[k];
-                    colk[j] = t;
+                    colk[j] = new Complex(t.Real, -t.Imaginary);
                     s += t.Real * t.Real + t.Imaginary * t.Imaginary;
 
                     colk += lda;
@@ -203,19 +203,11 @@ namespace MatFlat
                 colj += lda;
             }
 
-            colj = a;
+            colj = a + lda;
 
-            for (var j = 0; j < n; j++)
+            for (var j = 1; j < n; j++)
             {
                 new Span<Complex>(colj, j).Clear();
-
-                var x = (double*)(colj + j) + 1;
-                var end = x + 2 * (n - j);
-                while (x < end)
-                {
-                    *x = -*x;
-                    x += 2;
-                }
 
                 colj += lda;
             }
@@ -315,9 +307,9 @@ namespace MatFlat
         private static Complex CholMul(Complex x, Complex y)
         {
             var a = x.Real;
-            var b = x.Imaginary;
+            var b = -x.Imaginary;
             var c = y.Real;
-            var d = -y.Imaginary;
+            var d = y.Imaginary;
             return new Complex(a * c - b * d, a * d + b * c);
         }
     }
