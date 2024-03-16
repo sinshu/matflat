@@ -10,13 +10,13 @@ namespace MatFlat
         {
             var colj = a;
 
-            for (int j = 0; j < n; j++)
+            for (var j = 0; j < n; j++)
             {
-                Double s = 0;
-                for (int k = 0; k < j; k++)
+                var s = 0.0;
+                for (var k = 0; k < j; k++)
                 {
-                    Double t = a[k + j * lda];
-                    for (int i = 0; i < k; i++)
+                    var t = a[k + j * lda];
+                    for (var i = 0; i < k; i++)
                     {
                         t -= a[j + i * lda] * a[k + i * lda];
                     }
@@ -30,7 +30,7 @@ namespace MatFlat
 
                 if (s > 0)
                 {
-                    a[j + j * lda] = (Double)Math.Sqrt((double)s);
+                    a[j + j * lda] = Math.Sqrt(s);
                 }
                 else
                 {
@@ -38,7 +38,7 @@ namespace MatFlat
                 }
             }
 
-            for (int j = 1; j < n; j++)
+            for (var j = 1; j < n; j++)
             {
                 new Span<double>(a + j * lda, j).Clear();
             }
