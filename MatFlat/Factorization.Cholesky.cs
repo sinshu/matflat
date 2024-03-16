@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 
 namespace MatFlat
 {
@@ -62,7 +63,7 @@ namespace MatFlat
                 {
                     var t = (colj[k] - CholDot(k, a + j, a + k, lda)) / colk[k];
                     colk[j] = t;
-                    s += t.Magnitude * t.Magnitude;
+                    s += t.Real * t.Real + t.Imaginary * t.Imaginary;
 
                     colk += lda;
                 }
@@ -159,12 +160,18 @@ namespace MatFlat
             return sum;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static Complex CholMul(Complex x, Complex y)
         {
-            // yの共役複素数を取得
-            Complex conjugateY = new Complex(y.Real, -y.Imaginary);
-            // xとyの共役複素数の積を計算
-            return x * conjugateY;
+            var a = x.Real;
+            var b = x.Imaginary;
+            var c = y.Real;
+            var d = -y.Imaginary;
+
+            var re = a * c - b * d;
+            var im = a * d + b * c;
+
+            return new Complex(re, im);
         }
     }
 }
