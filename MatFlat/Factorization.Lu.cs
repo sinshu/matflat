@@ -21,8 +21,8 @@ namespace MatFlat
         /// </para>
         /// <para>
         /// On exit, the factors L and U from the factorization
-        /// <code>A = P * L * U</code>
-        /// the unit diagonal elements of L are not stored.
+        /// <c>A = P * L * U</c>.
+        /// The unit diagonal elements of L are not stored.
         /// </para>
         /// </param>
         /// <param name="lda">
@@ -117,8 +117,8 @@ namespace MatFlat
         /// </para>
         /// <para>
         /// On exit, the factors L and U from the factorization
-        /// <code>A = P * L * U</code>
-        /// the unit diagonal elements of L are not stored.
+        /// <c>A = P * L * U</c>.
+        /// The unit diagonal elements of L are not stored.
         /// </para>
         /// </param>
         /// <param name="lda">
@@ -213,8 +213,8 @@ namespace MatFlat
         /// </para>
         /// <para>
         /// On exit, the factors L and U from the factorization
-        /// <code>A = P * L * U</code>
-        /// the unit diagonal elements of L are not stored.
+        /// <c>A = P * L * U</c>.
+        /// The unit diagonal elements of L are not stored.
         /// </para>
         /// </param>
         /// <param name="lda">

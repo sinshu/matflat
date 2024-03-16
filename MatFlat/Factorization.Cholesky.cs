@@ -22,10 +22,7 @@ namespace MatFlat
         /// the strictly lower triangular part of A is not referenced.
         /// </para>
         /// <para>
-        /// On exit, the factor L from the Cholesky factorization
-        /// <code>
-        /// A = L * L^H.
-        /// </code>
+        /// On exit, the factor L from the Cholesky factorization <c>A = L * L^H</c>.
         /// </para>
         /// </param>
         /// <param name="lda">
@@ -94,10 +91,7 @@ namespace MatFlat
         /// the strictly lower triangular part of A is not referenced.
         /// </para>
         /// <para>
-        /// On exit, the factor L from the Cholesky factorization
-        /// <code>
-        /// A = L * L^H.
-        /// </code>
+        /// On exit, the factor L from the Cholesky factorization <c>A = L * L^H</c>.
         /// </para>
         /// </param>
         /// <param name="lda">
@@ -166,10 +160,7 @@ namespace MatFlat
         /// the strictly lower triangular part of A is not referenced.
         /// </para>
         /// <para>
-        /// On exit, the factor L from the Cholesky factorization
-        /// <code>
-        /// A = L * L^H.
-        /// </code>
+        /// On exit, the factor L from the Cholesky factorization <c>A = L * L^H</c>.
         /// </para>
         /// </param>
         /// <param name="lda">
