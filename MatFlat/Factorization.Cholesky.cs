@@ -327,11 +327,7 @@ namespace MatFlat
             var b = x.Imaginary;
             var c = y.Real;
             var d = -y.Imaginary;
-
-            var re = a * c - b * d;
-            var im = a * d + b * c;
-
-            return new Complex(re, im);
+            return new Complex(a * c - b * d, a * d + b * c);
         }
     }
 }
