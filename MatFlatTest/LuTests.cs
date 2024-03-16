@@ -25,6 +25,8 @@ namespace MatFlatTest
         [TestCase(4, 3, 5)]
         [TestCase(11, 23, 11)]
         [TestCase(11, 23, 17)]
+        [TestCase(16, 8, 16)]
+        [TestCase(16, 8, 32)]
         [TestCase(23, 11, 23)]
         [TestCase(23, 11, 31)]
         public unsafe void LuSingle_General(int m, int n, int lda)
@@ -114,6 +116,8 @@ namespace MatFlatTest
         [TestCase(4, 3, 5)]
         [TestCase(11, 23, 11)]
         [TestCase(11, 23, 17)]
+        [TestCase(16, 8, 16)]
+        [TestCase(16, 8, 32)]
         [TestCase(23, 11, 23)]
         [TestCase(23, 11, 31)]
         public unsafe void LuDouble_General(int m, int n, int lda)
@@ -203,6 +207,8 @@ namespace MatFlatTest
         [TestCase(4, 3, 5)]
         [TestCase(11, 23, 11)]
         [TestCase(11, 23, 17)]
+        [TestCase(16, 8, 16)]
+        [TestCase(16, 8, 32)]
         [TestCase(23, 11, 23)]
         [TestCase(23, 11, 31)]
         public unsafe void LuComplex_General(int m, int n, int lda)

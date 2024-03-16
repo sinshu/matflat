@@ -17,6 +17,8 @@ namespace MatFlatTest
         [TestCase(3, 5)]
         [TestCase(11, 11)]
         [TestCase(11, 17)]
+        [TestCase(16, 16)]
+        [TestCase(16, 32)]
         [TestCase(23, 23)]
         [TestCase(23, 31)]
         public unsafe void CholeskySingle_General(int n, int lda)
@@ -47,6 +49,8 @@ namespace MatFlatTest
         [TestCase(3, 5)]
         [TestCase(11, 11)]
         [TestCase(11, 17)]
+        [TestCase(16, 16)]
+        [TestCase(16, 32)]
         [TestCase(23, 23)]
         [TestCase(23, 31)]
         public unsafe void CholeskySingle_MaybeSingular(int n, int lda)
@@ -96,6 +100,8 @@ namespace MatFlatTest
         [TestCase(3, 5)]
         [TestCase(11, 11)]
         [TestCase(11, 17)]
+        [TestCase(16, 16)]
+        [TestCase(16, 32)]
         [TestCase(23, 23)]
         [TestCase(23, 31)]
         public unsafe void CholeskyDouble_General(int n, int lda)
@@ -126,6 +132,8 @@ namespace MatFlatTest
         [TestCase(3, 5)]
         [TestCase(11, 11)]
         [TestCase(11, 17)]
+        [TestCase(16, 16)]
+        [TestCase(16, 32)]
         [TestCase(23, 23)]
         [TestCase(23, 31)]
         public unsafe void CholeskyDouble_MaybeSingular(int n, int lda)
@@ -175,6 +183,8 @@ namespace MatFlatTest
         [TestCase(3, 5)]
         [TestCase(11, 11)]
         [TestCase(11, 17)]
+        [TestCase(8, 16)]
+        [TestCase(8, 32)]
         [TestCase(23, 23)]
         [TestCase(23, 31)]
         public unsafe void CholeskyComplex_General(int n, int lda)
@@ -206,6 +216,8 @@ namespace MatFlatTest
         [TestCase(3, 5)]
         [TestCase(11, 11)]
         [TestCase(11, 17)]
+        [TestCase(16, 16)]
+        [TestCase(16, 32)]
         [TestCase(23, 23)]
         [TestCase(23, 31)]
         public unsafe void CholeskyComplex_MaybeSingular(int n, int lda)
