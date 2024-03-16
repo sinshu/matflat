@@ -28,7 +28,14 @@ namespace MatFlat
 
                 s = a[j + j * lda] - s;
 
-                a[j + j * lda] = (Double)Math.Sqrt((double)s);
+                if (s > 0)
+                {
+                    a[j + j * lda] = (Double)Math.Sqrt((double)s);
+                }
+                else
+                {
+                    throw new Exception("OMG");
+                }
             }
 
             for (int j = 1; j < n; j++)

@@ -4,6 +4,7 @@ using System.Numerics;
 using NUnit.Framework;
 using OpenBlasSharp;
 using MatFlat;
+using Newtonsoft.Json.Linq;
 
 namespace MatFlatTest
 {
@@ -21,7 +22,7 @@ namespace MatFlatTest
         [TestCase(23, 31)]
         public unsafe void CholeskyDouble_General(int n, int lda)
         {
-            var a = GetTestMatrix(42, n, lda);
+            var a = GetDecomposableDouble(42, n, lda);
 
             var expectedA = a.ToArray();
             fixed (double* pa = expectedA)
@@ -36,27 +37,112 @@ namespace MatFlatTest
                 Factorization.CholeskyDouble(n, pa, lda);
             }
 
-            Assert.That(actualA, Is.EqualTo(expectedA).Within(1.0E-6));
+            Assert.That(actualA, Is.EqualTo(expectedA).Within(1.0E-12));
         }
 
-        private static double[] GetTestMatrix(int seed, int n, int lda)
+        [TestCase(1, 1)]
+        [TestCase(1, 3)]
+        [TestCase(2, 2)]
+        [TestCase(2, 3)]
+        [TestCase(3, 3)]
+        [TestCase(3, 5)]
+        [TestCase(11, 11)]
+        [TestCase(11, 17)]
+        [TestCase(23, 23)]
+        [TestCase(23, 31)]
+        public unsafe void CholeskyDouble_MaybeSingular(int n, int lda)
         {
-            var a = Matrix.RandomDouble(seed, n, n, lda);
-            for (var row = 0; row < n; row++)
+            var a = GetMaybeSingularDouble(42, n, lda);
+
+            bool decomposable;
+            var expectedA = a.ToArray();
+            fixed (double* pa = expectedA)
             {
-                for (var col = 0; col <= row; col++)
+                var result = Lapack.Dpotrf(MatrixLayout.ColMajor, 'U', n, pa, lda);
+                OpenBlasResultToL(n, expectedA, lda);
+                decomposable = result == 0;
+            }
+
+            var actualA = a.ToArray();
+            fixed (double* pa = actualA)
+            {
+                try
                 {
-                    var index = lda * col + row;
-                    if (row == col)
+                    Factorization.CholeskyDouble(n, pa, lda);
+                    if (!decomposable)
                     {
-                        a[index] += n;
+                        Assert.Fail();
                     }
-                    else if (col < row)
+                }
+                catch
+                {
+                    if (decomposable)
                     {
-                        a[index] = double.NaN;
+                        Assert.Fail();
                     }
                 }
             }
+
+            if (decomposable)
+            {
+                Assert.That(actualA, Is.EqualTo(expectedA).Within(1.0E-12));
+            }
+        }
+
+        private static unsafe double[] GetDecomposableDouble(int seed, int n, int lda)
+        {
+            var a = Matrix.RandomDouble(seed, n, n, lda);
+
+            var symmetric = new double[n * n];
+            fixed (double* pa = a)
+            fixed (double* ps = symmetric)
+            {
+                Blas.Dgemm(
+                    Order.ColMajor,
+                    Transpose.NoTrans,
+                    Transpose.Trans,
+                    n, n, n,
+                    1.0,
+                    pa, lda,
+                    pa, lda,
+                    0.0,
+                    ps, n);
+            }
+
+            for (var row = 0; row < n; row++)
+            {
+                for (var col = 0; col < n; col++)
+                {
+                    if (col >= row)
+                    {
+                        var value = symmetric[n * col + row];
+                        a[lda * col + row] = value;
+                    }
+                    else
+                    {
+                        a[lda * col + row] = double.NaN;
+                    }
+                }
+            }
+
+            return a;
+        }
+
+        private static unsafe double[] GetMaybeSingularDouble(int seed, int n, int lda)
+        {
+            var a = Matrix.RandomDouble(seed, n, n, lda);
+
+            for (var row = 0; row < n; row++)
+            {
+                for (var col = 0; col < n; col++)
+                {
+                    if (col < row)
+                    {
+                        a[lda * col + row] = double.NaN;
+                    }
+                }
+            }
+
             return a;
         }
 
