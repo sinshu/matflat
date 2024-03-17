@@ -8,50 +8,44 @@ namespace MatFlat
     {
         public static unsafe void QrDouble(int m, int n, double* a, int lda, double* rdiag)
         {
-            for (int k = 0; k < n; k++)
+            var colk = a;
+
+            for (var k = 0; k < n; k++)
             {
                 // Compute 2-norm of k-th column without under/overflow.
-                double nrm = 0;
-                for (int i = k; i < m; i++)
+                var norm = 0.0;
+                for (var i = k; i < m; i++)
                 {
-                    nrm = Hypotenuse(nrm, a[i + lda * k]);
+                    norm = Hypotenuse(norm, colk[i]);
                 }
 
-                if (nrm != 0.0)
+                if (norm != 0.0)
                 {
                     // Form k-th Householder vector.
-                    if (a[k + lda * k] < 0)
+                    if (colk[k] < 0)
                     {
-                        nrm = -nrm;
+                        norm = -norm;
                     }
 
-                    for (int i = k; i < m; i++)
+                    for (var i = k; i < m; i++)
                     {
-                        a[i + lda * k] /= nrm;
+                        colk[i] /= norm;
                     }
 
-                    a[k + lda * k] += 1.0;
+                    colk[k] += 1.0;
 
                     // Apply transformation to remaining columns.
-                    for (int j = k + 1; j < n; j++)
+                    for (var j = k + 1; j < n; j++)
                     {
-                        double s = 0.0;
-
-                        for (int i = k; i < m; i++)
-                        {
-                            s += a[i + lda * k] * a[i + lda * j];
-                        }
-
-                        s = -s / a[k + lda * k];
-
-                        for (int i = k; i < m; i++)
-                        {
-                            a[i + lda * j] += s * a[i + lda * k];
-                        }
+                        var colj = a + lda * j;
+                        var s = -QrDot(m - k, colk + k, colj + k) / colk[k];
+                        QrMulAdd(m - k, colk + k, s, colj + k);
                     }
                 }
 
-                rdiag[k] = -nrm;
+                rdiag[k] = -norm;
+
+                colk += lda;
             }
         }
 
@@ -109,21 +103,59 @@ namespace MatFlat
             }
         }
 
-        private static double Hypotenuse(double a, double b)
+        private static unsafe T QrDot<T>(int n, T* x, T* y) where T : unmanaged, INumberBase<T>
         {
-            if (Math.Abs(a) > Math.Abs(b))
+            T sum;
+            switch (n & 1)
             {
-                double r = b / a;
-                return Math.Abs(a) * Math.Sqrt(1 + r * r);
+                case 0:
+                    sum = T.Zero;
+                    break;
+                case 1:
+                    sum = x[0] * y[0];
+                    x++;
+                    y++;
+                    n--;
+                    break;
+                default:
+                    throw new LinearAlgebraException("An unexpected error occurred.");
             }
 
-            if (b != 0)
+            while (n > 0)
             {
-                double r = a / b;
-                return Math.Abs(b) * Math.Sqrt(1 + r * r);
+                sum += x[0] * y[0] + x[1] * y[1];
+                x += 2;
+                y += 2;
+                n -= 2;
             }
 
-            return 0.0;
+            return sum;
+        }
+
+        private static unsafe void QrMulAdd<T>(int n, T* x, T y, T* dst) where T : unmanaged, INumberBase<T>
+        {
+            switch (n & 1)
+            {
+                case 0:
+                    break;
+                case 1:
+                    dst[0] += x[0] * y;
+                    x++;
+                    dst++;
+                    n--;
+                    break;
+                default:
+                    throw new LinearAlgebraException("An unexpected error occurred.");
+            }
+
+            while (n > 0)
+            {
+                dst[0] += x[0] * y;
+                dst[1] += x[1] * y;
+                x += 2;
+                dst += 2;
+                n -= 2;
+            }
         }
     }
 }
