@@ -41,6 +41,31 @@ namespace MatFlat
         /// </param>
         public static unsafe void LuSingle(int m, int n, float* a, int lda, int* piv)
         {
+            if (m <= 0)
+            {
+                throw new ArgumentException("The number of rows must be greater than or equal to one.", nameof(m));
+            }
+
+            if (n <= 0)
+            {
+                throw new ArgumentException("The number of columns must be greater than or equal to one.", nameof(n));
+            }
+
+            if (a == null)
+            {
+                throw new ArgumentNullException(nameof(a));
+            }
+
+            if (lda < m)
+            {
+                throw new ArgumentException("The leading dimension must be greater than or equal to the number of rows.", nameof(lda));
+            }
+
+            if (piv == null)
+            {
+                throw new ArgumentNullException(nameof(piv));
+            }
+
             // Initialize the pivot matrix to the identity permutation.
             for (var i = 0; i < m; i++)
             {
@@ -137,6 +162,31 @@ namespace MatFlat
         /// </param>
         public static unsafe void LuDouble(int m, int n, double* a, int lda, int* piv)
         {
+            if (m <= 0)
+            {
+                throw new ArgumentException("The number of rows must be greater than or equal to one.", nameof(m));
+            }
+
+            if (n <= 0)
+            {
+                throw new ArgumentException("The number of columns must be greater than or equal to one.", nameof(n));
+            }
+
+            if (a == null)
+            {
+                throw new ArgumentNullException(nameof(a));
+            }
+
+            if (lda < m)
+            {
+                throw new ArgumentException("The leading dimension must be greater than or equal to the number of rows.", nameof(lda));
+            }
+
+            if (piv == null)
+            {
+                throw new ArgumentNullException(nameof(piv));
+            }
+
             // Initialize the pivot matrix to the identity permutation.
             for (var i = 0; i < m; i++)
             {
@@ -233,6 +283,31 @@ namespace MatFlat
         /// </param>
         public static unsafe void LuComplex(int m, int n, Complex* a, int lda, int* piv)
         {
+            if (m <= 0)
+            {
+                throw new ArgumentException("The number of rows must be greater than or equal to one.", nameof(m));
+            }
+
+            if (n <= 0)
+            {
+                throw new ArgumentException("The number of columns must be greater than or equal to one.", nameof(n));
+            }
+
+            if (a == null)
+            {
+                throw new ArgumentNullException(nameof(a));
+            }
+
+            if (lda < m)
+            {
+                throw new ArgumentException("The leading dimension must be greater than or equal to the number of rows.", nameof(lda));
+            }
+
+            if (piv == null)
+            {
+                throw new ArgumentNullException(nameof(piv));
+            }
+
             // Initialize the pivot matrix to the identity permutation.
             for (var i = 0; i < m; i++)
             {

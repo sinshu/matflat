@@ -33,6 +33,21 @@ namespace MatFlat
         /// </exception>
         public static unsafe void CholeskySingle(int n, float* a, int lda)
         {
+            if (n <= 0)
+            {
+                throw new ArgumentException("The order of the matrix must be greater than or equal to one.", nameof(n));
+            }
+
+            if (a == null)
+            {
+                throw new ArgumentNullException(nameof(a));
+            }
+
+            if (lda < n)
+            {
+                throw new ArgumentException("The leading dimension must be greater than or equal to the order of the matrix.", nameof(lda));
+            }
+
             var colj = a;
 
             for (var j = 0; j < n; j++)
@@ -101,6 +116,21 @@ namespace MatFlat
         /// </exception>
         public static unsafe void CholeskyDouble(int n, double* a, int lda)
         {
+            if (n <= 0)
+            {
+                throw new ArgumentException("The order of the matrix must be greater than or equal to one.", nameof(n));
+            }
+
+            if (a == null)
+            {
+                throw new ArgumentNullException(nameof(a));
+            }
+
+            if (lda < n)
+            {
+                throw new ArgumentException("The leading dimension must be greater than or equal to the order of the matrix.", nameof(lda));
+            }
+
             var colj = a;
 
             for (var j = 0; j < n; j++)
@@ -169,6 +199,21 @@ namespace MatFlat
         /// </exception>
         public static unsafe void CholeskyComplex(int n, Complex* a, int lda)
         {
+            if (n <= 0)
+            {
+                throw new ArgumentException("The order of the matrix must be greater than or equal to one.", nameof(n));
+            }
+
+            if (a == null)
+            {
+                throw new ArgumentNullException(nameof(a));
+            }
+
+            if (lda < n)
+            {
+                throw new ArgumentException("The leading dimension must be greater than or equal to the order of the matrix.", nameof(lda));
+            }
+
             var colj = a;
 
             for (var j = 0; j < n; j++)
