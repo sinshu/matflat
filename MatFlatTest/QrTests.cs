@@ -121,5 +121,71 @@ namespace MatFlatTest
                 }
             }
         }
+
+        [TestCase(2, 2, 2, 2, 2)]
+        [TestCase(3, 3, 3, 3, 3)]
+        public unsafe void QrComplex(int m, int n, int lda, int ldq, int ldr)
+        {
+            var original = Matrix.RandomComplex(42, m, n, lda);
+
+            var openBlas = original.ToArray();
+            var tau = new Complex[n];
+
+            var a = original.ToArray();
+            var rdiag = new double[n];
+            var q = Matrix.RandomComplex(0, m, n, ldq);
+            var qCopy = q.ToArray();
+            var r = Matrix.RandomComplex(0, n, n, ldr);
+            var rCopy = r.ToArray();
+            var reconstructed = new Complex[m * n];
+            var identity = new Complex[n * n];
+            fixed (Complex* pa = a)
+            fixed (double* prdiag = rdiag)
+            fixed (Complex* pq = q)
+            fixed (Complex* pr = r)
+            fixed (Complex* preconstructed = reconstructed)
+            fixed (Complex* pidentity = identity)
+            fixed (Complex* pob = openBlas)
+            fixed (Complex* ptau = tau)
+            {
+                var one = Complex.One;
+                var zero = Complex.Zero;
+                Factorization.QrComplex(m, n, pa, lda, prdiag);
+                Factorization.QrOrthogonalFactorComplex(m, n, pa, lda, pq, ldq);
+                Factorization.QrUpperTriangularFactorComplex(m, n, pa, lda, pr, ldr, prdiag);
+                Blas.Zgemm(
+                    Order.ColMajor,
+                    Transpose.NoTrans, Transpose.NoTrans,
+                    m, n, n,
+                    &one,
+                    pq, ldq,
+                    pr, ldr,
+                    &zero,
+                    preconstructed, m);
+                Blas.Zgemm(
+                    Order.ColMajor,
+                    Transpose.Trans, Transpose.NoTrans,
+                    n, n, m,
+                    &one,
+                    pq, ldq,
+                    pq, ldq,
+                    &zero,
+                    pidentity, n);
+
+                Lapack.Zgeqrf(MatrixLayout.ColMajor, m, n, pob, lda, ptau);
+            }
+
+            Matrix.Print(m, n, original, lda);
+            Console.WriteLine();
+
+            Matrix.Print(m, n, openBlas, lda);
+            Console.WriteLine();
+
+            Matrix.Print(m, n, a, lda);
+            Console.WriteLine();
+
+            //Matrix.Print(m, n, reconstructed, m);
+            //Console.WriteLine();
+        }
     }
 }
