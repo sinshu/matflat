@@ -28,5 +28,22 @@ namespace MatFlat
 
             return 0.0;
         }
+
+        public static double Hypotenuse(Complex a, Complex b)
+        {
+            if (a.Magnitude > b.Magnitude)
+            {
+                var r = b.Magnitude / a.Magnitude;
+                return a.Magnitude * Math.Sqrt(1 + (r * r));
+            }
+
+            if (b != 0.0)
+            {
+                var r = a.Magnitude / b.Magnitude;
+                return b.Magnitude * Math.Sqrt(1 + (r * r));
+            }
+
+            return 0.0;
+        }
     }
 }

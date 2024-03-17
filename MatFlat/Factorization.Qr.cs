@@ -49,57 +49,46 @@ namespace MatFlat
             }
         }
 
-        public static unsafe void QrOrthogonalFactorDouble(int m, int n, double* qr, int ldqr, double* x, int ldx)
+        public static unsafe void QrOrthogonalFactorDouble(int m, int n, double* a, int lda, double* q, int ldq)
         {
-            for (int k = n - 1; k >= 0; k--)
+            for (var k = n - 1; k >= 0; k--)
             {
-                for (int i = 0; i < m; i++)
-                {
-                    x[i + ldx * k] = 0.0;
-                }
+                var qColk = q + ldq * k;
+                var aColk = a + lda * k;
 
-                x[k + ldx * k] = 1.0;
-                for (int j = k; j < n; j++)
+                new Span<double>(qColk, m).Clear();
+
+                qColk[k] = 1.0;
+
+                for (var j = k; j < n; j++)
                 {
-                    if (qr[k + ldqr * k] != 0)
+                    var qColj = q + ldq * j;
+                    if (aColk[k] != 0)
                     {
-                        double s = 0.0;
-
-                        for (int i = k; i < m; i++)
-                        {
-                            s += qr[i + ldqr * k] * x[i + ldx * j];
-                        }
-
-                        s = -s / qr[k + ldqr * k];
-
-                        for (int i = k; i < m; i++)
-                        {
-                            x[i + ldx * j] += s * qr[i + ldqr * k];
-                        }
+                        var s = -QrDot(m - k, aColk + k, qColj + k) / aColk[k];
+                        QrMulAdd(m - k, aColk + k, s, qColj + k);
                     }
                 }
             }
         }
 
-        public static unsafe void QrUpperTriangularFactorDouble(int m, int n, double* qr, int ldqr, double* x, int ldx, double* rdiag)
+        public static unsafe void QrUpperTriangularFactorDouble(int m, int n, double* a, int lda, double* r, int ldr, double* rdiag)
         {
-            for (int i = 0; i < n; i++)
+            var aColi = a;
+            var rColi = r;
+
+            for (var i = 0; i < n; i++)
             {
-                for (int j = 0; j < n; j++)
-                {
-                    if (i < j)
-                    {
-                        x[i + ldx * j] = qr[i + ldqr * j];
-                    }
-                    else if (i == j)
-                    {
-                        x[i + ldx * j] = rdiag[i];
-                    }
-                    else
-                    {
-                        x[i + ldx * j] = 0.0;
-                    }
-                }
+                var copyLength = sizeof(double) * i;
+                Buffer.MemoryCopy(aColi, rColi, copyLength, copyLength);
+
+                rColi[i] = rdiag[i];
+
+                var clearLength = sizeof(double) * (n - i - 1);
+                new Span<double>(rColi + i + 1, n - i - 1).Clear();
+
+                aColi += lda;
+                rColi += ldr;
             }
         }
 
