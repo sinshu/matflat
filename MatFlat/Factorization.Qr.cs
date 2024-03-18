@@ -64,13 +64,9 @@ namespace MatFlat
 
                 if (norm != 0.0)
                 {
-
-                    var dir = norm * colk[k] / colk[k].Magnitude;
-                    dir = norm;
-
                     for (var i = k; i < m; i++)
                     {
-                        colk[i] /= dir;
+                        colk[i] /= norm;
                     }
 
                     colk[k] += 1.0;
