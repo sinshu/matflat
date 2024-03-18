@@ -127,6 +127,7 @@ namespace MatFlatTest
         public unsafe void QrComplex(int m, int n, int lda, int ldq, int ldr)
         {
             var original = Matrix.RandomComplex(42, m, n, lda);
+            //var original = Matrix.RandomDouble(42, m, n, lda).Select(x => (Complex)x).ToArray();
 
             var openBlas = original.ToArray();
             var tau = new Complex[n];
@@ -183,6 +184,11 @@ namespace MatFlatTest
 
             Matrix.Print(m, n, a, lda);
             Console.WriteLine();
+
+            foreach (var diag in rdiag)
+            {
+                Console.WriteLine(diag);
+            }
 
             //Matrix.Print(m, n, reconstructed, m);
             //Console.WriteLine();

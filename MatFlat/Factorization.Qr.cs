@@ -64,9 +64,13 @@ namespace MatFlat
 
                 if (norm != 0.0)
                 {
+
+                    var dir = norm * colk[k] / colk[k].Magnitude;
+                    dir = norm;
+
                     for (var i = k; i < m; i++)
                     {
-                        colk[i] /= norm;
+                        colk[i] /= dir;
                     }
 
                     colk[k] += 1.0;
@@ -243,9 +247,9 @@ namespace MatFlat
         {
             for (var i = 0; i < n; i++)
             {
-                var cx = new Complex(x[i].Real, -x[i].Imaginary);
+                var cx = new Complex(x[i].Real, x[i].Imaginary);
                 var cy = new Complex(y.Real, y.Imaginary);
-                dst[i] = cx * cy;
+                dst[i] += cx * cy;
             }
         }
     }
