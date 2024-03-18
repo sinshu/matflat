@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Buffers;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 
 namespace MatFlat
 {
@@ -12,25 +13,11 @@ namespace MatFlat
 
             for (var k = 0; k < n; k++)
             {
-                // Compute 2-norm of k-th column without under/overflow.
-                var norm = 0.0;
-                for (var i = k; i < m; i++)
-                {
-                    norm = Hypotenuse(norm, colk[i]);
-                }
+                var norm = QrNorm(m - k, colk + k);
 
                 if (norm != 0.0)
                 {
-                    // Form k-th Householder vector.
-                    if (colk[k] < 0)
-                    {
-                        norm = -norm;
-                    }
-
-                    for (var i = k; i < m; i++)
-                    {
-                        colk[i] /= norm;
-                    }
+                    QrDivInplace(m - k, colk + k, norm);
 
                     colk[k] += 1.0;
 
@@ -55,19 +42,11 @@ namespace MatFlat
 
             for (var k = 0; k < n; k++)
             {
-                // Compute 2-norm of k-th column without under/overflow.
-                var norm = 0.0;
-                for (var i = k; i < m; i++)
-                {
-                    norm = Hypotenuse(norm, colk[i]);
-                }
+                var norm = QrNorm(m - k, colk + k);
 
                 if (norm != 0.0)
                 {
-                    for (var i = k; i < m; i++)
-                    {
-                        colk[i] /= norm;
-                    }
+                    QrDivInplace(m - k, colk + k, norm);
 
                     colk[k] += 1.0;
 
@@ -111,15 +90,6 @@ namespace MatFlat
 
         public static unsafe void QrOrthogonalFactorComplex(int m, int n, Complex* a, int lda, Complex* q, int ldq)
         {
-            for (var k = 0; k < n; k++)
-            {
-                var aColk = a + lda * k;
-                for (var j = 0; j < m; j++)
-                {
-                    //aColk[j] = new Complex(aColk[j].Real, -aColk[j].Imaginary);
-                }
-            }
-
             for (var k = n - 1; k >= 0; k--)
             {
                 var qColk = q + ldq * k;
@@ -137,15 +107,6 @@ namespace MatFlat
                         var s = -QrDot2(m - k, aColk + k, qColj + k) / aColk[k];
                         QrMulAdd2(m - k, aColk + k, s, qColj + k);
                     }
-                }
-            }
-
-            for (var k = 0; k < n; k++)
-            {
-                var qColk = q + ldq * k;
-                for (var j = 0; j < m; j++)
-                {
-                    //qColk[j] = new Complex(qColk[j].Real, -qColk[j].Imaginary);
                 }
             }
         }
@@ -187,6 +148,108 @@ namespace MatFlat
 
                 aColi += lda;
                 rColi += ldr;
+            }
+        }
+
+        private static unsafe double QrNorm(int n, double* x)
+        {
+            double sum;
+            switch (n & 1)
+            {
+                case 0:
+                    sum = 0.0;
+                    break;
+                case 1:
+                    sum = x[0] * x[0];
+                    x++;
+                    n--;
+                    break;
+                default:
+                    throw new LinearAlgebraException("An unexpected error occurred.");
+            }
+
+            while (n > 0)
+            {
+                sum += x[0] * x[0] + x[1] * x[1];
+                x += 2;
+                n -= 2;
+            }
+
+            return Math.Sqrt(sum);
+        }
+
+        private static unsafe double QrNorm(int n, Complex* x)
+        {
+            double sum;
+            switch (n & 1)
+            {
+                case 0:
+                    sum = 0.0;
+                    break;
+                case 1:
+                    sum = x[0].Real * x[0].Real + x[0].Imaginary * x[0].Imaginary;
+                    x++;
+                    n--;
+                    break;
+                default:
+                    throw new LinearAlgebraException("An unexpected error occurred.");
+            }
+
+            while (n > 0)
+            {
+                sum += x[0].Real * x[0].Real + x[0].Imaginary * x[0].Imaginary + x[1].Real * x[1].Real + x[1].Imaginary * x[1].Imaginary;
+                x += 2;
+                n -= 2;
+            }
+
+            return Math.Sqrt(sum);
+        }
+
+        private static unsafe void QrDivInplace<T>(int n, T* x, T y) where T : unmanaged, INumberBase<T>
+        {
+            switch (n & 1)
+            {
+                case 0:
+                    break;
+                case 1:
+                    x[0] /= y;
+                    x++;
+                    n--;
+                    break;
+                default:
+                    throw new LinearAlgebraException("An unexpected error occurred.");
+            }
+
+            while (n > 0)
+            {
+                x[0] /= y;
+                x[1] /= y;
+                x += 2;
+                n -= 2;
+            }
+        }
+
+        private static unsafe void QrDivInplace(int n, Complex* x, double y)
+        {
+            switch (n & 1)
+            {
+                case 0:
+                    break;
+                case 1:
+                    x[0] /= y;
+                    x++;
+                    n--;
+                    break;
+                default:
+                    throw new LinearAlgebraException("An unexpected error occurred.");
+            }
+
+            while (n > 0)
+            {
+                x[0] /= y;
+                x[1] /= y;
+                x += 2;
+                n -= 2;
             }
         }
 
@@ -247,46 +310,96 @@ namespace MatFlat
 
         private static unsafe Complex QrDot(int n, Complex* x, Complex* y)
         {
-            var sum = Complex.Zero;
-            for (var i = 0; i < n; i++)
+            Complex sum;
+            switch (n & 1)
             {
-                var cx = new Complex(x[i].Real, -x[i].Imaginary);
-                var cy = new Complex(y[i].Real, y[i].Imaginary);
-                sum += cx * cy;
+                case 0:
+                    sum = Complex.Zero;
+                    break;
+                case 1:
+                    sum = QrComplexMul(x[0], y[0]);
+                    x++;
+                    y++;
+                    n--;
+                    break;
+                default:
+                    throw new LinearAlgebraException("An unexpected error occurred.");
             }
+
+            while (n > 0)
+            {
+                sum += QrComplexMul(x[0], y[0]) + QrComplexMul(x[1], y[1]);
+                x += 2;
+                y += 2;
+                n -= 2;
+            }
+
             return sum;
         }
 
         private static unsafe Complex QrDot2(int n, Complex* x, Complex* y)
         {
-            var sum = Complex.Zero;
-            for (var i = 0; i < n; i++)
+            Complex sum;
+            switch (n & 1)
             {
-                var cx = new Complex(x[i].Real, x[i].Imaginary);
-                var cy = new Complex(y[i].Real, -y[i].Imaginary);
-                sum += cx * cy;
+                case 0:
+                    sum = Complex.Zero;
+                    break;
+                case 1:
+                    sum = QrComplexMul(y[0], x[0]);
+                    x++;
+                    y++;
+                    n--;
+                    break;
+                default:
+                    throw new LinearAlgebraException("An unexpected error occurred.");
             }
-            return sum;
-        }
 
-        private static unsafe void QrMulAdd(int n, Complex* x, Complex y, Complex* dst)
-        {
-            for (var i = 0; i < n; i++)
+            while (n > 0)
             {
-                var cx = new Complex(x[i].Real, x[i].Imaginary);
-                var cy = new Complex(y.Real, y.Imaginary);
-                dst[i] += cx * cy;
+                sum += QrComplexMul(y[0], x[0]) + QrComplexMul(y[1], x[1]);
+                x += 2;
+                y += 2;
+                n -= 2;
             }
+
+            return sum;
         }
 
         private static unsafe void QrMulAdd2(int n, Complex* x, Complex y, Complex* dst)
         {
-            for (var i = 0; i < n; i++)
+            switch (n & 1)
             {
-                var cx = new Complex(x[i].Real, x[i].Imaginary);
-                var cy = new Complex(y.Real, -y.Imaginary);
-                dst[i] += cx * cy;
+                case 0:
+                    break;
+                case 1:
+                    dst[0] += QrComplexMul(y, x[0]);
+                    x++;
+                    dst++;
+                    n--;
+                    break;
+                default:
+                    throw new LinearAlgebraException("An unexpected error occurred.");
             }
+
+            while (n > 0)
+            {
+                dst[0] += QrComplexMul(y, x[0]);
+                dst[1] += QrComplexMul(y, x[1]);
+                x += 2;
+                dst += 2;
+                n -= 2;
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static Complex QrComplexMul(Complex x, Complex y)
+        {
+            var a = x.Real;
+            var b = -x.Imaginary;
+            var c = y.Real;
+            var d = y.Imaginary;
+            return new Complex(a * c - b * d, a * d + b * c);
         }
     }
 }
