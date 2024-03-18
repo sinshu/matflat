@@ -7,8 +7,62 @@ namespace MatFlat
 {
     public static partial class Factorization
     {
+        /// <summary>
+        /// Computes a QR factorization of a general M-by-N matrix A.
+        /// </summary>
+        /// <param name="m">
+        /// The number of rows of the matrix A.
+        /// </param>
+        /// <param name="n">
+        /// The number of columns of the matrix A.
+        /// </param>
+        /// <param name="a">
+        /// <para>
+        /// On entry, the M-by-N matrix to be factored.
+        /// </para>
+        /// <para>
+        /// On exit, the result of the QR decomposition are stored.
+        /// The format of the decomposition result is identical to that of Mapack.
+        /// </para>
+        /// </param>
+        /// <param name="lda">
+        /// The leading dimension of the array A.
+        /// </param>
+        /// <param name="rdiag">
+        /// On exit, the diagonal elements of R are stored.
+        /// </param>
         public static unsafe void QrDouble(int m, int n, double* a, int lda, double* rdiag)
         {
+            if (m <= 0)
+            {
+                throw new ArgumentException("The number of rows must be greater than or equal to one.", nameof(m));
+            }
+
+            if (n <= 0)
+            {
+                throw new ArgumentException("The number of columns must be greater than or equal to one.", nameof(n));
+            }
+
+            if (a == null)
+            {
+                throw new ArgumentNullException(nameof(a));
+            }
+
+            if (lda < m)
+            {
+                throw new ArgumentException("The leading dimension must be greater than or equal to the number of rows.", nameof(lda));
+            }
+
+            if (rdiag == null)
+            {
+                throw new ArgumentNullException(nameof(rdiag));
+            }
+
+            if (n > m)
+            {
+                throw new ArgumentException("The number of rows must be greater than or equal to the number of columns.");
+            }
+
             var colk = a;
 
             for (var k = 0; k < n; k++)
@@ -36,8 +90,62 @@ namespace MatFlat
             }
         }
 
+        /// <summary>
+        /// Computes a QR factorization of a general M-by-N matrix A.
+        /// </summary>
+        /// <param name="m">
+        /// The number of rows of the matrix A.
+        /// </param>
+        /// <param name="n">
+        /// The number of columns of the matrix A.
+        /// </param>
+        /// <param name="a">
+        /// <para>
+        /// On entry, the M-by-N matrix to be factored.
+        /// </para>
+        /// <para>
+        /// On exit, the result of the QR decomposition are stored.
+        /// The format of the decomposition result is identical to that of Mapack.
+        /// </para>
+        /// </param>
+        /// <param name="lda">
+        /// The leading dimension of the array A.
+        /// </param>
+        /// <param name="rdiag">
+        /// On exit, the diagonal elements of R are stored.
+        /// </param>
         public static unsafe void QrComplex(int m, int n, Complex* a, int lda, double* rdiag)
         {
+            if (m <= 0)
+            {
+                throw new ArgumentException("The number of rows must be greater than or equal to one.", nameof(m));
+            }
+
+            if (n <= 0)
+            {
+                throw new ArgumentException("The number of columns must be greater than or equal to one.", nameof(n));
+            }
+
+            if (a == null)
+            {
+                throw new ArgumentNullException(nameof(a));
+            }
+
+            if (lda < m)
+            {
+                throw new ArgumentException("The leading dimension must be greater than or equal to the number of rows.", nameof(lda));
+            }
+
+            if (rdiag == null)
+            {
+                throw new ArgumentNullException(nameof(rdiag));
+            }
+
+            if (n > m)
+            {
+                throw new ArgumentException("The number of rows must be greater than or equal to the number of columns.");
+            }
+
             var colk = a;
 
             for (var k = 0; k < n; k++)
@@ -65,6 +173,27 @@ namespace MatFlat
             }
         }
 
+        /// <summary>
+        /// Gets the orthogonal factor Q from the QR decomposition result.
+        /// </summary>
+        /// <param name="m">
+        /// The number of rows of the source matrix.
+        /// </param>
+        /// <param name="n">
+        /// The number of columns of the source matrix.
+        /// </param>
+        /// <param name="a">
+        /// The result of the QR decomposition obtained from <see cref="QrDouble(int, int, double*, int, double*)"/>.
+        /// </param>
+        /// <param name="lda">
+        /// The leading dimension of the source array.
+        /// </param>
+        /// <param name="q">
+        /// On exit, the orthogonal factor Q is stored.
+        /// </param>
+        /// <param name="ldq">
+        /// The leading dimension of the array Q.
+        /// </param>
         public static unsafe void QrOrthogonalFactorDouble(int m, int n, double* a, int lda, double* q, int ldq)
         {
             for (var k = n - 1; k >= 0; k--)
@@ -88,6 +217,27 @@ namespace MatFlat
             }
         }
 
+        /// <summary>
+        /// Gets the orthogonal factor Q from the QR decomposition result.
+        /// </summary>
+        /// <param name="m">
+        /// The number of rows of the source matrix.
+        /// </param>
+        /// <param name="n">
+        /// The number of columns of the source matrix.
+        /// </param>
+        /// <param name="a">
+        /// The result of the QR decomposition obtained from <see cref="QrComplex(int, int, Complex*, int, double*)"/>.
+        /// </param>
+        /// <param name="lda">
+        /// The leading dimension of the source array.
+        /// </param>
+        /// <param name="q">
+        /// On exit, the orthogonal factor Q is stored.
+        /// </param>
+        /// <param name="ldq">
+        /// The leading dimension of the array Q.
+        /// </param>
         public static unsafe void QrOrthogonalFactorComplex(int m, int n, Complex* a, int lda, Complex* q, int ldq)
         {
             for (var k = n - 1; k >= 0; k--)
@@ -111,6 +261,30 @@ namespace MatFlat
             }
         }
 
+        /// <summary>
+        /// Gets the upper triangular factor R from the QR decomposition result.
+        /// </summary>
+        /// <param name="m">
+        /// The number of rows of the source matrix.
+        /// </param>
+        /// <param name="n">
+        /// The number of columns of the source matrix.
+        /// </param>
+        /// <param name="a">
+        /// The result of the QR decomposition obtained from <see cref="QrDouble(int, int, double*, int, double*)"/>.
+        /// </param>
+        /// <param name="lda">
+        /// The leading dimension of the source array.
+        /// </param>
+        /// <param name="r">
+        /// On exit, the upper triangular factor R is stored.
+        /// </param>
+        /// <param name="ldr">
+        /// The leading dimension of the array R.
+        /// </param>
+        /// <param name="rdiag">
+        /// The diagonal elements of R obtained from <see cref="QrDouble(int, int, double*, int, double*)"/>.
+        /// </param>
         public static unsafe void QrUpperTriangularFactorDouble(int m, int n, double* a, int lda, double* r, int ldr, double* rdiag)
         {
             var aColi = a;
@@ -131,6 +305,31 @@ namespace MatFlat
             }
         }
 
+
+        /// <summary>
+        /// Gets the upper triangular factor R from the QR decomposition result.
+        /// </summary>
+        /// <param name="m">
+        /// The number of rows of the source matrix.
+        /// </param>
+        /// <param name="n">
+        /// The number of columns of the source matrix.
+        /// </param>
+        /// <param name="a">
+        /// The result of the QR decomposition obtained from <see cref="QrComplex(int, int, Complex*, int, double*)"/>.
+        /// </param>
+        /// <param name="lda">
+        /// The leading dimension of the source array.
+        /// </param>
+        /// <param name="r">
+        /// On exit, the upper triangular factor R is stored.
+        /// </param>
+        /// <param name="ldr">
+        /// The leading dimension of the array R.
+        /// </param>
+        /// <param name="rdiag">
+        /// The diagonal elements of R obtained from <see cref="QrComplex(int, int, Complex*, int, double*)"/>.
+        /// </param>
         public static unsafe void QrUpperTriangularFactorComplex(int m, int n, Complex* a, int lda, Complex* r, int ldr, double* rdiag)
         {
             var aColi = a;
