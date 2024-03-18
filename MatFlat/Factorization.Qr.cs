@@ -111,6 +111,15 @@ namespace MatFlat
 
         public static unsafe void QrOrthogonalFactorComplex(int m, int n, Complex* a, int lda, Complex* q, int ldq)
         {
+            for (var k = 0; k < n; k++)
+            {
+                var aColk = a + lda * k;
+                for (var j = 0; j < m; j++)
+                {
+                    //aColk[j] = new Complex(aColk[j].Real, -aColk[j].Imaginary);
+                }
+            }
+
             for (var k = n - 1; k >= 0; k--)
             {
                 var qColk = q + ldq * k;
@@ -128,6 +137,15 @@ namespace MatFlat
                         var s = -QrDot2(m - k, aColk + k, qColj + k) / aColk[k];
                         QrMulAdd2(m - k, aColk + k, s, qColj + k);
                     }
+                }
+            }
+
+            for (var k = 0; k < n; k++)
+            {
+                var qColk = q + ldq * k;
+                for (var j = 0; j < m; j++)
+                {
+                    //qColk[j] = new Complex(qColk[j].Real, -qColk[j].Imaginary);
                 }
             }
         }
@@ -245,7 +263,7 @@ namespace MatFlat
             for (var i = 0; i < n; i++)
             {
                 var cx = new Complex(x[i].Real, x[i].Imaginary);
-                var cy = new Complex(y[i].Real, y[i].Imaginary);
+                var cy = new Complex(y[i].Real, -y[i].Imaginary);
                 sum += cx * cy;
             }
             return sum;
