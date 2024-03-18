@@ -29,7 +29,7 @@ namespace MatFlat
         /// The leading dimension of the array A.
         /// </param>
         /// <exception cref="LinearAlgebraException">
-        /// The matrix is positive definite.
+        /// The matrix is not positive definite.
         /// </exception>
         public static unsafe void CholeskySingle(int n, float* a, int lda)
         {
@@ -112,7 +112,7 @@ namespace MatFlat
         /// The leading dimension of the array A.
         /// </param>
         /// <exception cref="LinearAlgebraException">
-        /// The matrix is positive definite.
+        /// The matrix is not positive definite.
         /// </exception>
         public static unsafe void CholeskyDouble(int n, double* a, int lda)
         {
@@ -195,7 +195,7 @@ namespace MatFlat
         /// The leading dimension of the array A.
         /// </param>
         /// <exception cref="LinearAlgebraException">
-        /// The matrix is positive definite.
+        /// The matrix is not positive definite.
         /// </exception>
         public static unsafe void CholeskyComplex(int n, Complex* a, int lda)
         {
