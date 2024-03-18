@@ -11,6 +11,7 @@ namespace Benchmark
         private double[] values;
         private double[] a;
         private double[] q;
+        private double[] r;
         private global::MathNet.Numerics.Providers.LinearAlgebra.ManagedLinearAlgebraProvider mathNetProvider;
         private double[] mathNetTau;
         private double[] matFlatRdiag;
@@ -26,6 +27,7 @@ namespace Benchmark
             values = Enumerable.Range(0, Order * Order).Select(i => random.NextDouble()).ToArray();
             a = new double[values.Length];
             q = new double[values.Length];
+            r = new double[values.Length];
             mathNetProvider = global::MathNet.Numerics.Providers.LinearAlgebra.ManagedLinearAlgebraProvider.Instance;
             mathNetTau = new double[Order];
             matFlatRdiag = new double[Order];
@@ -47,8 +49,12 @@ namespace Benchmark
 
             fixed (double* pa = a)
             fixed (double* prdiag = matFlatRdiag)
+            fixed (double* pq = q)
+            fixed (double* pr = r)
             {
                 global::MatFlat.Factorization.QrDouble(Order, Order, pa, Order, prdiag);
+                global::MatFlat.Factorization.QrOrthogonalFactorDouble(Order, Order, pa, Order, pq, Order);
+                global::MatFlat.Factorization.QrUpperTriangularFactorDouble(Order, Order, pa, Order, pr, Order, prdiag);
             }
         }
 
@@ -61,6 +67,7 @@ namespace Benchmark
             fixed (double* ptau = openBlasTau)
             {
                 global::OpenBlasSharp.Lapack.Dgeqrf(global::OpenBlasSharp.MatrixLayout.ColMajor, Order, Order, pa, Order, ptau);
+                global::OpenBlasSharp.Lapack.Dorgqr(global::OpenBlasSharp.MatrixLayout.ColMajor, Order, Order, Order, pa, Order, ptau);
             }
         }
     }
