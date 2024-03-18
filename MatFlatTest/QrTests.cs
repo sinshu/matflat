@@ -165,7 +165,7 @@ namespace MatFlatTest
                     preconstructed, m);
                 Blas.Zgemm(
                     Order.ColMajor,
-                    Transpose.Trans, Transpose.NoTrans,
+                    Transpose.ConjTrans, Transpose.NoTrans,
                     n, n, m,
                     &one,
                     pq, ldq,
@@ -175,9 +175,6 @@ namespace MatFlatTest
 
                 Lapack.Zgeqrf(MatrixLayout.ColMajor, m, n, pob, lda, ptau);
             }
-
-            Matrix.Print(m, n, original, lda);
-            Console.WriteLine();
 
             Matrix.Print(m, n, openBlas, lda);
             Console.WriteLine();
@@ -190,8 +187,14 @@ namespace MatFlatTest
                 Console.WriteLine(diag);
             }
 
-            //Matrix.Print(m, n, reconstructed, m);
-            //Console.WriteLine();
+            Matrix.Print(n, n, identity, n);
+            Console.WriteLine();
+
+            Matrix.Print(m, n, reconstructed, m);
+            Console.WriteLine();
+
+            Matrix.Print(m, n, original, m);
+            Console.WriteLine();
         }
     }
 }

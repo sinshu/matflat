@@ -129,8 +129,8 @@ namespace MatFlat
                     var qColj = q + ldq * j;
                     if (aColk[k] != 0)
                     {
-                        var s = -QrDot(m - k, aColk + k, qColj + k) / aColk[k];
-                        QrMulAdd(m - k, aColk + k, s, qColj + k);
+                        var s = -QrDot2(m - k, aColk + k, qColj + k) / aColk[k];
+                        QrMulAdd2(m - k, aColk + k, s, qColj + k);
                     }
                 }
             }
@@ -243,12 +243,34 @@ namespace MatFlat
             return sum;
         }
 
+        private static unsafe Complex QrDot2(int n, Complex* x, Complex* y)
+        {
+            var sum = Complex.Zero;
+            for (var i = 0; i < n; i++)
+            {
+                var cx = new Complex(x[i].Real, x[i].Imaginary);
+                var cy = new Complex(y[i].Real, y[i].Imaginary);
+                sum += cx * cy;
+            }
+            return sum;
+        }
+
         private static unsafe void QrMulAdd(int n, Complex* x, Complex y, Complex* dst)
         {
             for (var i = 0; i < n; i++)
             {
                 var cx = new Complex(x[i].Real, x[i].Imaginary);
                 var cy = new Complex(y.Real, y.Imaginary);
+                dst[i] += cx * cy;
+            }
+        }
+
+        private static unsafe void QrMulAdd2(int n, Complex* x, Complex y, Complex* dst)
+        {
+            for (var i = 0; i < n; i++)
+            {
+                var cx = new Complex(x[i].Real, x[i].Imaginary);
+                var cy = new Complex(y.Real, -y.Imaginary);
                 dst[i] += cx * cy;
             }
         }
