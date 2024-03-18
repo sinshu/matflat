@@ -19,7 +19,7 @@ namespace MatFlat
         /// <para>
         /// The leading N-by-N upper triangular part of A contains
         /// the upper triangular part of the matrix A, and
-        /// the strictly lower triangular part of A is not referenced.
+        /// the lower triangular part of A is not referenced.
         /// </para>
         /// <para>
         /// On exit, the factor L from the Cholesky factorization <c>A = L * L^H</c>.
@@ -102,7 +102,7 @@ namespace MatFlat
         /// <para>
         /// The leading N-by-N upper triangular part of A contains
         /// the upper triangular part of the matrix A, and
-        /// the strictly lower triangular part of A is not referenced.
+        /// the lower triangular part of A is not referenced.
         /// </para>
         /// <para>
         /// On exit, the factor L from the Cholesky factorization <c>A = L * L^H</c>.
@@ -185,7 +185,7 @@ namespace MatFlat
         /// <para>
         /// The leading N-by-N upper triangular part of A contains
         /// the upper triangular part of the matrix A, and
-        /// the strictly lower triangular part of A is not referenced.
+        /// the lower triangular part of A is not referenced.
         /// </para>
         /// <para>
         /// On exit, the factor L from the Cholesky factorization <c>A = L * L^H</c>.
