@@ -279,6 +279,41 @@ namespace MatFlat
         /// </param>
         public static unsafe void QrOrthogonalFactorSingle(int m, int n, float* a, int lda, float* q, int ldq)
         {
+            if (m <= 0)
+            {
+                throw new ArgumentException("The number of rows must be greater than or equal to one.", nameof(m));
+            }
+
+            if (n <= 0)
+            {
+                throw new ArgumentException("The number of columns must be greater than or equal to one.", nameof(n));
+            }
+
+            if (a == null)
+            {
+                throw new ArgumentNullException(nameof(a));
+            }
+
+            if (lda < m)
+            {
+                throw new ArgumentException("The leading dimension must be greater than or equal to the number of rows.", nameof(lda));
+            }
+
+            if (q == null)
+            {
+                throw new ArgumentNullException(nameof(q));
+            }
+
+            if (ldq < m)
+            {
+                throw new ArgumentException("The leading dimension must be greater than or equal to the number of rows.", nameof(ldq));
+            }
+
+            if (n > m)
+            {
+                throw new ArgumentException("The number of rows must be greater than or equal to the number of columns.");
+            }
+
             for (var k = n - 1; k >= 0; k--)
             {
                 var qColk = q + ldq * k;
@@ -323,6 +358,41 @@ namespace MatFlat
         /// </param>
         public static unsafe void QrOrthogonalFactorDouble(int m, int n, double* a, int lda, double* q, int ldq)
         {
+            if (m <= 0)
+            {
+                throw new ArgumentException("The number of rows must be greater than or equal to one.", nameof(m));
+            }
+
+            if (n <= 0)
+            {
+                throw new ArgumentException("The number of columns must be greater than or equal to one.", nameof(n));
+            }
+
+            if (a == null)
+            {
+                throw new ArgumentNullException(nameof(a));
+            }
+
+            if (lda < m)
+            {
+                throw new ArgumentException("The leading dimension must be greater than or equal to the number of rows.", nameof(lda));
+            }
+
+            if (q == null)
+            {
+                throw new ArgumentNullException(nameof(q));
+            }
+
+            if (ldq < m)
+            {
+                throw new ArgumentException("The leading dimension must be greater than or equal to the number of rows.", nameof(ldq));
+            }
+
+            if (n > m)
+            {
+                throw new ArgumentException("The number of rows must be greater than or equal to the number of columns.");
+            }
+
             for (var k = n - 1; k >= 0; k--)
             {
                 var qColk = q + ldq * k;
@@ -367,6 +437,41 @@ namespace MatFlat
         /// </param>
         public static unsafe void QrOrthogonalFactorComplex(int m, int n, Complex* a, int lda, Complex* q, int ldq)
         {
+            if (m <= 0)
+            {
+                throw new ArgumentException("The number of rows must be greater than or equal to one.", nameof(m));
+            }
+
+            if (n <= 0)
+            {
+                throw new ArgumentException("The number of columns must be greater than or equal to one.", nameof(n));
+            }
+
+            if (a == null)
+            {
+                throw new ArgumentNullException(nameof(a));
+            }
+
+            if (lda < m)
+            {
+                throw new ArgumentException("The leading dimension must be greater than or equal to the number of rows.", nameof(lda));
+            }
+
+            if (q == null)
+            {
+                throw new ArgumentNullException(nameof(q));
+            }
+
+            if (ldq < m)
+            {
+                throw new ArgumentException("The leading dimension must be greater than or equal to the number of rows.", nameof(ldq));
+            }
+
+            if (n > m)
+            {
+                throw new ArgumentException("The number of rows must be greater than or equal to the number of columns.");
+            }
+
             for (var k = n - 1; k >= 0; k--)
             {
                 var qColk = q + ldq * k;
@@ -414,6 +519,41 @@ namespace MatFlat
         /// </param>
         public static unsafe void QrUpperTriangularFactorSingle(int m, int n, float* a, int lda, float* r, int ldr, float* rdiag)
         {
+            if (m <= 0)
+            {
+                throw new ArgumentException("The number of rows must be greater than or equal to one.", nameof(m));
+            }
+
+            if (n <= 0)
+            {
+                throw new ArgumentException("The number of columns must be greater than or equal to one.", nameof(n));
+            }
+
+            if (a == null)
+            {
+                throw new ArgumentNullException(nameof(a));
+            }
+
+            if (lda < m)
+            {
+                throw new ArgumentException("The leading dimension must be greater than or equal to the number of rows.", nameof(lda));
+            }
+
+            if (r == null)
+            {
+                throw new ArgumentNullException(nameof(r));
+            }
+
+            if (ldr < n)
+            {
+                throw new ArgumentException("The leading dimension must be greater than or equal to the number of rows.", nameof(ldr));
+            }
+
+            if (n > m)
+            {
+                throw new ArgumentException("The number of rows must be greater than or equal to the number of columns.");
+            }
+
             var aColi = a;
             var rColi = r;
 
@@ -458,6 +598,41 @@ namespace MatFlat
         /// </param>
         public static unsafe void QrUpperTriangularFactorDouble(int m, int n, double* a, int lda, double* r, int ldr, double* rdiag)
         {
+            if (m <= 0)
+            {
+                throw new ArgumentException("The number of rows must be greater than or equal to one.", nameof(m));
+            }
+
+            if (n <= 0)
+            {
+                throw new ArgumentException("The number of columns must be greater than or equal to one.", nameof(n));
+            }
+
+            if (a == null)
+            {
+                throw new ArgumentNullException(nameof(a));
+            }
+
+            if (lda < m)
+            {
+                throw new ArgumentException("The leading dimension must be greater than or equal to the number of rows.", nameof(lda));
+            }
+
+            if (r == null)
+            {
+                throw new ArgumentNullException(nameof(r));
+            }
+
+            if (ldr < n)
+            {
+                throw new ArgumentException("The leading dimension must be greater than or equal to the number of rows.", nameof(ldr));
+            }
+
+            if (n > m)
+            {
+                throw new ArgumentException("The number of rows must be greater than or equal to the number of columns.");
+            }
+
             var aColi = a;
             var rColi = r;
 
@@ -503,6 +678,41 @@ namespace MatFlat
         /// </param>
         public static unsafe void QrUpperTriangularFactorComplex(int m, int n, Complex* a, int lda, Complex* r, int ldr, double* rdiag)
         {
+            if (m <= 0)
+            {
+                throw new ArgumentException("The number of rows must be greater than or equal to one.", nameof(m));
+            }
+
+            if (n <= 0)
+            {
+                throw new ArgumentException("The number of columns must be greater than or equal to one.", nameof(n));
+            }
+
+            if (a == null)
+            {
+                throw new ArgumentNullException(nameof(a));
+            }
+
+            if (lda < m)
+            {
+                throw new ArgumentException("The leading dimension must be greater than or equal to the number of rows.", nameof(lda));
+            }
+
+            if (r == null)
+            {
+                throw new ArgumentNullException(nameof(r));
+            }
+
+            if (ldr < n)
+            {
+                throw new ArgumentException("The leading dimension must be greater than or equal to the number of rows.", nameof(ldr));
+            }
+
+            if (n > m)
+            {
+                throw new ArgumentException("The number of rows must be greater than or equal to the number of columns.");
+            }
+
             var aColi = a;
             var rColi = r;
 
