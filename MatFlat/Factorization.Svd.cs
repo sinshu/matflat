@@ -43,7 +43,7 @@ namespace MatFlat
                 new Span<Complex>(vt + ccc * ldvt, columnsA).Clear();
             }
 
-            int i2, j2, l;
+            int i2, j2;
 
             Complex t2;
 
@@ -295,12 +295,11 @@ namespace MatFlat
                 // case = 2: if mS[l] is negligible and l < m
                 // case = 3: if e[l-1] is negligible, l < m, and mS[l, ..., mS[m] are not negligible (qr step).
                 // case = 4: if e[m-1] is negligible (convergence).
-                double ztest;
-                double test;
+                int l;
                 for (l = p - 2; l >= 0; l--)
                 {
-                    test = stmp[l].Magnitude + stmp[l + 1].Magnitude;
-                    ztest = test + e[l].Magnitude;
+                    var test = stmp[l].Magnitude + stmp[l + 1].Magnitude;
+                    var ztest = test + e[l].Magnitude;
                     if (ztest.AlmostEqualRelative(test, 15))
                     {
                         e[l] = 0.0;
@@ -318,7 +317,7 @@ namespace MatFlat
                     int ls;
                     for (ls = p - 1; ls > l; ls--)
                     {
-                        test = 0.0;
+                        var test = 0.0;
                         if (ls != p - 1)
                         {
                             test = test + e[ls].Magnitude;
@@ -329,7 +328,7 @@ namespace MatFlat
                             test = test + e[ls - 1].Magnitude;
                         }
 
-                        ztest = test + stmp[ls].Magnitude;
+                        var ztest = test + stmp[ls].Magnitude;
                         if (ztest.AlmostEqualRelative(test, 15))
                         {
                             stmp[ls] = 0.0;
@@ -352,7 +351,7 @@ namespace MatFlat
                     }
                 }
 
-                l = l + 1;
+                l++;
 
                 // Perform the task indicated by case.
                 int k;
