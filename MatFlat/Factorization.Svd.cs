@@ -2,6 +2,7 @@
 using System.Buffers;
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using System.Security.Cryptography;
 
 namespace MatFlat
 {
@@ -65,9 +66,9 @@ namespace MatFlat
                     // place the l-th diagonal in vector s[l].
                     stmp[k] = SvdNorm(rowsA - k, aColk + k);
 
-                    if (stmp[k] != 0.0)
+                    if (stmp[k] != Complex.Zero)
                     {
-                        if (aColk[k] != 0.0)
+                        if (aColk[k] != Complex.Zero)
                         {
                             stmp[k] = ChangeArgument(stmp[k], aColk[k]);
                         }
@@ -86,7 +87,7 @@ namespace MatFlat
 
                     if (k < nct)
                     {
-                        if (stmp[k] != 0.0)
+                        if (stmp[k] != Complex.Zero)
                         {
                             // Apply the transformation.
                             var t = -SvdDot(rowsA - k, aColk + k, aColj + k) / aColk[k];
@@ -115,9 +116,9 @@ namespace MatFlat
 
                 // Compute the l-th row transformation and place the l-th super-diagonal in e(l).
                 e[k] = SvdNorm(columnsA - kp1, e + kp1);
-                if (e[k] != 0.0)
+                if (e[k] != Complex.Zero)
                 {
-                    if (e[kp1] != 0.0)
+                    if (e[kp1] != Complex.Zero)
                     {
                         e[k] = ChangeArgument(e[k], e[kp1]);
                     }
@@ -125,11 +126,11 @@ namespace MatFlat
                     // Scale vector "e" from "lp1" by 1.0 / e[l]
                     SvdDivInplace(columnsA - kp1, e + kp1, e[k]);
 
-                    e[kp1] += 1.0;
+                    e[kp1] += Complex.One;
                 }
                 e[k] = new Complex(-e[k].Real, e[k].Imaginary);
 
-                if (kp1 < rowsA && e[k] != 0.0)
+                if (kp1 < rowsA && e[k] != Complex.Zero)
                 {
                     // Apply the transformation.
                     new Span<Complex>(work + kp1, rowsA - kp1).Clear();
@@ -157,78 +158,59 @@ namespace MatFlat
             }
 
             // Set up the final bidiagonal matrix or order m.
-            var m = Math.Min(columnsA, rowsA + 1);
+            var p = Math.Min(columnsA, rowsA + 1);
             var nctp1 = nct + 1;
             var nrtp1 = nrt + 1;
             if (nct < columnsA)
             {
-                stmp[nctp1 - 1] = a[((nctp1 - 1) * lda) + (nctp1 - 1)];
+                stmp[nct] = a[(nct * lda) + nct];
             }
 
-            if (rowsA < m)
+            if (rowsA < p)
             {
-                stmp[m - 1] = 0.0;
+                stmp[p - 1] = Complex.Zero;
             }
 
-            if (nrtp1 < m)
+            if (nrtp1 < p)
             {
-                e[nrtp1 - 1] = a[((m - 1) * lda) + (nrtp1 - 1)];
+                e[nrt] = a[((p - 1) * lda) + nrt];
             }
 
-            e[m - 1] = 0.0;
+            e[p - 1] = Complex.Zero;
 
             // If required, generate "u".
             if (computeVectors)
             {
-                for (j2 = nctp1 - 1; j2 < ncu; j2++)
+                for (var j = nct; j < ncu; j++)
                 {
-                    for (i2 = 0; i2 < rowsA; i2++)
-                    {
-                        u[(j2 * ldu) + i2] = 0.0;
-                    }
-
-                    u[(j2 * ldu) + j2] = 1.0;
+                    var uColj = u + ldu * j;
+                    new Span<Complex>(uColj, rowsA).Clear();
+                    uColj[j] = Complex.One;
                 }
 
                 for (l = nct - 1; l >= 0; l--)
                 {
-                    if (stmp[l] != 0.0)
+                    var uColl = u + ldu * l;
+
+                    if (stmp[l] != Complex.Zero)
                     {
                         for (j2 = l + 1; j2 < ncu; j2++)
                         {
-                            t2 = 0.0;
-                            for (i2 = l; i2 < rowsA; i2++)
-                            {
-                                t2 += u[(l * ldu) + i2].Conjugate() * u[(j2 * ldu) + i2];
-                            }
-
-                            t2 = -t2 / u[(l * ldu) + l];
-                            for (var ii = l; ii < rowsA; ii++)
-                            {
-                                u[(j2 * ldu) + ii] += t2 * u[(l * ldu) + ii];
-                            }
+                            var uColj = u + ldu * j2;
+                            t2 = -SvdDot(rowsA - l, uColl + l, uColj + l) / uColl[l];
+                            SvdMulAdd(rowsA - l, uColl + l, t2, uColj + l);
                         }
 
                         // A part of column "l" of matrix A from row "l" to end multiply by -1.0
-                        for (i2 = l; i2 < rowsA; i2++)
-                        {
-                            u[(l * ldu) + i2] = u[(l * ldu) + i2] * -1.0;
-                        }
+                        SvdFlipSign(rowsA - l, uColl + l);
 
-                        u[(l * ldu) + l] = 1.0 + u[(l * ldu) + l];
-                        for (i2 = 0; i2 < l; i2++)
-                        {
-                            u[(l * ldu) + i2] = 0.0;
-                        }
+                        uColl[l] += Complex.One;
+                        new Span<Complex>(uColl, l).Clear();
                     }
                     else
                     {
-                        for (i2 = 0; i2 < rowsA; i2++)
-                        {
-                            u[(l * ldu) + i2] = 0.0;
-                        }
-
-                        u[(l * ldu) + l] = 1.0;
+                        new Span<Complex>(uColl, rowsA).Clear();
+                        uColl[l] = Complex.One;
                     }
                 }
             }
@@ -270,7 +252,7 @@ namespace MatFlat
             }
 
             // Transform "s" and "e" so that they are double
-            for (i2 = 0; i2 < m; i2++)
+            for (i2 = 0; i2 < p; i2++)
             {
                 Complex r;
                 if (stmp[i2] != 0.0)
@@ -278,7 +260,7 @@ namespace MatFlat
                     t2 = stmp[i2].Magnitude;
                     r = stmp[i2] / t2;
                     stmp[i2] = t2;
-                    if (i2 < m - 1)
+                    if (i2 < p - 1)
                     {
                         e[i2] = e[i2] / r;
                     }
@@ -294,7 +276,7 @@ namespace MatFlat
                 }
 
                 // Exit
-                if (i2 == m - 1)
+                if (i2 == p - 1)
                 {
                     break;
                 }
@@ -321,10 +303,10 @@ namespace MatFlat
             }
 
             // Main iteration loop for the singular values.
-            var mn = m;
+            var mn = p;
             var iter = 0;
 
-            while (m > 0)
+            while (p > 0)
             {
                 // Quit if all the singular values have been found.
                 // If too many iterations have been performed throw exception.
@@ -341,7 +323,7 @@ namespace MatFlat
                 // case = 4: if e[m-1] is negligible (convergence).
                 double ztest;
                 double test;
-                for (l = m - 2; l >= 0; l--)
+                for (l = p - 2; l >= 0; l--)
                 {
                     test = stmp[l].Magnitude + stmp[l + 1].Magnitude;
                     ztest = test + e[l].Magnitude;
@@ -353,17 +335,17 @@ namespace MatFlat
                 }
 
                 int kase;
-                if (l == m - 2)
+                if (l == p - 2)
                 {
                     kase = 4;
                 }
                 else
                 {
                     int ls;
-                    for (ls = m - 1; ls > l; ls--)
+                    for (ls = p - 1; ls > l; ls--)
                     {
                         test = 0.0;
-                        if (ls != m - 1)
+                        if (ls != p - 1)
                         {
                             test = test + e[ls].Magnitude;
                         }
@@ -385,7 +367,7 @@ namespace MatFlat
                     {
                         kase = 3;
                     }
-                    else if (ls == m - 1)
+                    else if (ls == p - 1)
                     {
                         kase = 1;
                     }
@@ -407,12 +389,12 @@ namespace MatFlat
                 {
                     // Deflate negligible s[m].
                     case 1:
-                        f = e[m - 2].Real;
-                        e[m - 2] = 0.0;
+                        f = e[p - 2].Real;
+                        e[p - 2] = 0.0;
                         double t1;
-                        for (var kk = l; kk < m - 1; kk++)
+                        for (var kk = l; kk < p - 1; kk++)
                         {
-                            k = m - 2 - kk + l;
+                            k = p - 2 - kk + l;
                             t1 = stmp[k].Real;
                             Drotg(ref t1, ref f, out cs, out sn);
                             stmp[k] = t1;
@@ -427,8 +409,8 @@ namespace MatFlat
                                 // Rotate
                                 for (i2 = 0; i2 < columnsA; i2++)
                                 {
-                                    var z = (cs * vt[(k * ldvt) + i2]) + (sn * vt[((m - 1) * ldvt) + i2]);
-                                    vt[((m - 1) * ldvt) + i2] = (cs * vt[((m - 1) * ldvt) + i2]) - (sn * vt[(k * ldvt) + i2]);
+                                    var z = (cs * vt[(k * ldvt) + i2]) + (sn * vt[((p - 1) * ldvt) + i2]);
+                                    vt[((p - 1) * ldvt) + i2] = (cs * vt[((p - 1) * ldvt) + i2]) - (sn * vt[(k * ldvt) + i2]);
                                     vt[(k * ldvt) + i2] = z;
                                 }
                             }
@@ -440,7 +422,7 @@ namespace MatFlat
                     case 2:
                         f = e[l - 1].Real;
                         e[l - 1] = 0.0;
-                        for (k = l; k < m; k++)
+                        for (k = l; k < p; k++)
                         {
                             t1 = stmp[k].Real;
                             Drotg(ref t1, ref f, out cs, out sn);
@@ -465,14 +447,14 @@ namespace MatFlat
                     case 3:
                         // calculate the shift.
                         var scale = 0.0;
-                        scale = Math.Max(scale, stmp[m - 1].Magnitude);
-                        scale = Math.Max(scale, stmp[m - 2].Magnitude);
-                        scale = Math.Max(scale, e[m - 2].Magnitude);
+                        scale = Math.Max(scale, stmp[p - 1].Magnitude);
+                        scale = Math.Max(scale, stmp[p - 2].Magnitude);
+                        scale = Math.Max(scale, e[p - 2].Magnitude);
                         scale = Math.Max(scale, stmp[l].Magnitude);
                         scale = Math.Max(scale, e[l].Magnitude);
-                        var sm = stmp[m - 1].Real / scale;
-                        var smm1 = stmp[m - 2].Real / scale;
-                        var emm1 = e[m - 2].Real / scale;
+                        var sm = stmp[p - 1].Real / scale;
+                        var smm1 = stmp[p - 2].Real / scale;
+                        var emm1 = e[p - 2].Real / scale;
                         var sl = stmp[l].Real / scale;
                         var el = e[l].Real / scale;
                         var b = (((smm1 + sm) * (smm1 - sm)) + (emm1 * emm1)) / 2.0;
@@ -493,7 +475,7 @@ namespace MatFlat
                         var g = sl * el;
 
                         // Chase zeros
-                        for (k = l; k < m - 1; k++)
+                        for (k = l; k < p - 1; k++)
                         {
                             Drotg(ref f, ref g, out cs, out sn);
                             if (k != l)
@@ -532,7 +514,7 @@ namespace MatFlat
                             }
                         }
 
-                        e[m - 2] = f;
+                        e[p - 2] = f;
                         iter = iter + 1;
                         break;
 
@@ -584,7 +566,7 @@ namespace MatFlat
                             l = l + 1;
                         }
                         iter = 0;
-                        m = m - 1;
+                        p = p - 1;
                         break;
                 }
             }
@@ -747,19 +729,27 @@ namespace MatFlat
             }
         }
 
-        private static unsafe void SvdMulAdd<T>(T* x, T y, Span<T> dst) where T : unmanaged, INumberBase<T>
+        private static unsafe void SvdFlipSign<T>(int n, T* x) where T : unmanaged, INumberBase<T>
         {
-            fixed (T* pdst = dst)
+            switch (n & 1)
             {
-                SvdMulAdd(dst.Length, x, y, pdst);
+                case 0:
+                    break;
+                case 1:
+                    x[0] = -x[0];
+                    x++;
+                    n--;
+                    break;
+                default:
+                    throw new LinearAlgebraException("An unexpected error occurred.");
             }
-        }
 
-        private static unsafe void SvdMulAdd<T>(Span<T> x, T y, T* dst) where T : unmanaged, INumberBase<T>
-        {
-            fixed (T* px = x)
+            while (n > 0)
             {
-                SvdMulAdd(x.Length, px, y, dst);
+                x[0] = -x[0];
+                x[1] = -x[1];
+                x += 2;
+                n -= 2;
             }
         }
 
