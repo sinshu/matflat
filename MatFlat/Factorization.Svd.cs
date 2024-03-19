@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Buffers;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 
 namespace MatFlat
 {
@@ -25,7 +26,7 @@ namespace MatFlat
             const int maxiter = 1000;
 
             var e = new Complex[columnsA];
-            var stemp = new Complex[Math.Min(rowsA + 1, columnsA)];
+            var stmp = new Complex[Math.Min(rowsA + 1, columnsA)];
 
             for (var ccc = 0; ccc < columnsA; ccc++)
             {
@@ -42,76 +43,62 @@ namespace MatFlat
             // in "s" and the super-diagonal elements in "e".
             var nct = Math.Min(rowsA - 1, columnsA);
             var nrt = Math.Max(0, Math.Min(columnsA - 2, rowsA));
-            var lu = Math.Max(nct, nrt);
-
-            for (l = 0; l < lu; l++)
+            var kmax = Math.Max(nct, nrt);
+            for (var k = 0; k < kmax; k++)
             {
-                lp1 = l + 1;
-                if (l < nct)
+                var aColk = a + lda * k;
+
+                lp1 = k + 1;
+                if (k < nct)
                 {
                     // Compute the transformation for the l-th column and
                     // place the l-th diagonal in vector s[l].
-                    var sum = 0.0;
-                    for (i = l; i < rowsA; i++)
-                    {
-                        sum += a[(l * lda) + i].Magnitude * a[(l * lda) + i].Magnitude;
-                    }
+                    stmp[k] = SvdNorm(rowsA - k, aColk + k);
 
-                    stemp[l] = Math.Sqrt(sum);
-                    if (stemp[l] != 0.0)
+                    if (stmp[k] != 0.0)
                     {
-                        if (a[(l * lda) + l] != 0.0)
+                        if (aColk[k] != 0.0)
                         {
-                            stemp[l] = stemp[l].Magnitude * (a[(l * lda) + l] / a[(l * lda) + l].Magnitude);
+                            stmp[k] = ChangeArgument(stmp[k], aColk[k]);
                         }
 
                         // A part of column "l" of Matrix A from row "l" to end multiply by 1.0 / s[l]
-                        for (i = l; i < rowsA; i++)
-                        {
-                            a[(l * lda) + i] = a[(l * lda) + i] * (1.0 / stemp[l]);
-                        }
-                        a[(l * lda) + l] = 1.0 + a[(l * lda) + l];
+                        SvdDivInplace(rowsA - k, aColk + k, stmp[k]);
+                        aColk[k] += 1.0;
                     }
 
-                    stemp[l] = -stemp[l];
+                    stmp[k] = -stmp[k];
                 }
 
                 for (j = lp1; j < columnsA; j++)
                 {
-                    if (l < nct)
+                    var aColj = a + lda * j;
+
+                    if (k < nct)
                     {
-                        if (stemp[l] != 0.0)
+                        if (stmp[k] != 0.0)
                         {
                             // Apply the transformation.
-                            t = 0.0;
-                            for (i = l; i < rowsA; i++)
-                            {
-                                t += a[(l * lda) + i].Conjugate() * a[(j * lda) + i];
-                            }
-                            t = -t / a[(l * lda) + l];
-
-                            for (var ii = l; ii < rowsA; ii++)
-                            {
-                                a[(j * lda) + ii] += t * a[(l * lda) + ii];
-                            }
+                            t = -SvdDot(rowsA - k, aColk + k, aColj + k) / aColk[k];
+                            SvdMulAdd(rowsA - k, aColk + k, t, aColj + k);
                         }
                     }
 
                     // Place the l-th row of matrix into "e" for the
                     // subsequent calculation of the row transformation.
-                    e[j] = a[(j * lda) + l].Conjugate();
+                    e[j] = aColj[k].Conjugate();
                 }
 
-                if (computeVectors && l < nct)
+                if (computeVectors && k < nct)
                 {
                     // Place the transformation in "u" for subsequent back multiplication.
-                    for (i = l; i < rowsA; i++)
+                    for (i = k; i < rowsA; i++)
                     {
-                        u[(l * ldu) + i] = a[(l * lda) + i];
+                        u[(k * ldu) + i] = a[(k * lda) + i];
                     }
                 }
 
-                if (l >= nrt)
+                if (k >= nrt)
                 {
                     continue;
                 }
@@ -123,25 +110,25 @@ namespace MatFlat
                     enorm += e[i].Magnitude * e[i].Magnitude;
                 }
 
-                e[l] = Math.Sqrt(enorm);
-                if (e[l] != 0.0)
+                e[k] = Math.Sqrt(enorm);
+                if (e[k] != 0.0)
                 {
                     if (e[lp1] != 0.0)
                     {
-                        e[l] = e[l].Magnitude * (e[lp1] / e[lp1].Magnitude);
+                        e[k] = e[k].Magnitude * (e[lp1] / e[lp1].Magnitude);
                     }
 
                     // Scale vector "e" from "lp1" by 1.0 / e[l]
                     for (i = lp1; i < e.Length; i++)
                     {
-                        e[i] = e[i] * (1.0 / e[l]);
+                        e[i] = e[i] * (1.0 / e[k]);
                     }
 
                     e[lp1] = 1.0 + e[lp1];
                 }
-                e[l] = -e[l].Conjugate();
+                e[k] = -e[k].Conjugate();
 
-                if (lp1 < rowsA && e[l] != 0.0)
+                if (lp1 < rowsA && e[k] != 0.0)
                 {
                     // Apply the transformation.
                     for (i = lp1; i < rowsA; i++)
@@ -175,7 +162,7 @@ namespace MatFlat
                 // Place the transformation in v for subsequent back multiplication.
                 for (i = lp1; i < columnsA; i++)
                 {
-                    vt[(l * ldvt) + i] = e[i];
+                    vt[(k * ldvt) + i] = e[i];
                 }
             }
 
@@ -185,12 +172,12 @@ namespace MatFlat
             var nrtp1 = nrt + 1;
             if (nct < columnsA)
             {
-                stemp[nctp1 - 1] = a[((nctp1 - 1) * lda) + (nctp1 - 1)];
+                stmp[nctp1 - 1] = a[((nctp1 - 1) * lda) + (nctp1 - 1)];
             }
 
             if (rowsA < m)
             {
-                stemp[m - 1] = 0.0;
+                stmp[m - 1] = 0.0;
             }
 
             if (nrtp1 < m)
@@ -215,7 +202,7 @@ namespace MatFlat
 
                 for (l = nct - 1; l >= 0; l--)
                 {
-                    if (stemp[l] != 0.0)
+                    if (stmp[l] != 0.0)
                     {
                         for (j = l + 1; j < ncu; j++)
                         {
@@ -296,11 +283,11 @@ namespace MatFlat
             for (i = 0; i < m; i++)
             {
                 Complex r;
-                if (stemp[i] != 0.0)
+                if (stmp[i] != 0.0)
                 {
-                    t = stemp[i].Magnitude;
-                    r = stemp[i] / t;
-                    stemp[i] = t;
+                    t = stmp[i].Magnitude;
+                    r = stmp[i] / t;
+                    stmp[i] = t;
                     if (i < m - 1)
                     {
                         e[i] = e[i] / r;
@@ -330,7 +317,7 @@ namespace MatFlat
                 t = e[i].Magnitude;
                 r = t / e[i];
                 e[i] = t;
-                stemp[i + 1] = stemp[i + 1] * r;
+                stmp[i + 1] = stmp[i + 1] * r;
                 if (!computeVectors)
                 {
                     continue;
@@ -366,7 +353,7 @@ namespace MatFlat
                 double test;
                 for (l = m - 2; l >= 0; l--)
                 {
-                    test = stemp[l].Magnitude + stemp[l + 1].Magnitude;
+                    test = stmp[l].Magnitude + stmp[l + 1].Magnitude;
                     ztest = test + e[l].Magnitude;
                     if (ztest.AlmostEqualRelative(test, 15))
                     {
@@ -396,10 +383,10 @@ namespace MatFlat
                             test = test + e[ls - 1].Magnitude;
                         }
 
-                        ztest = test + stemp[ls].Magnitude;
+                        ztest = test + stmp[ls].Magnitude;
                         if (ztest.AlmostEqualRelative(test, 15))
                         {
-                            stemp[ls] = 0.0;
+                            stmp[ls] = 0.0;
                             break;
                         }
                     }
@@ -436,9 +423,9 @@ namespace MatFlat
                         for (var kk = l; kk < m - 1; kk++)
                         {
                             k = m - 2 - kk + l;
-                            t1 = stemp[k].Real;
+                            t1 = stmp[k].Real;
                             Drotg(ref t1, ref f, out cs, out sn);
-                            stemp[k] = t1;
+                            stmp[k] = t1;
                             if (k != l)
                             {
                                 f = -sn * e[k - 1].Real;
@@ -465,9 +452,9 @@ namespace MatFlat
                         e[l - 1] = 0.0;
                         for (k = l; k < m; k++)
                         {
-                            t1 = stemp[k].Real;
+                            t1 = stmp[k].Real;
                             Drotg(ref t1, ref f, out cs, out sn);
-                            stemp[k] = t1;
+                            stmp[k] = t1;
                             f = -sn * e[k].Real;
                             e[k] = cs * e[k];
                             if (computeVectors)
@@ -488,15 +475,15 @@ namespace MatFlat
                     case 3:
                         // calculate the shift.
                         var scale = 0.0;
-                        scale = Math.Max(scale, stemp[m - 1].Magnitude);
-                        scale = Math.Max(scale, stemp[m - 2].Magnitude);
+                        scale = Math.Max(scale, stmp[m - 1].Magnitude);
+                        scale = Math.Max(scale, stmp[m - 2].Magnitude);
                         scale = Math.Max(scale, e[m - 2].Magnitude);
-                        scale = Math.Max(scale, stemp[l].Magnitude);
+                        scale = Math.Max(scale, stmp[l].Magnitude);
                         scale = Math.Max(scale, e[l].Magnitude);
-                        var sm = stemp[m - 1].Real / scale;
-                        var smm1 = stemp[m - 2].Real / scale;
+                        var sm = stmp[m - 1].Real / scale;
+                        var smm1 = stmp[m - 2].Real / scale;
                         var emm1 = e[m - 2].Real / scale;
-                        var sl = stemp[l].Real / scale;
+                        var sl = stmp[l].Real / scale;
                         var el = e[l].Real / scale;
                         var b = (((smm1 + sm) * (smm1 - sm)) + (emm1 * emm1)) / 2.0;
                         var c = (sm * emm1) * (sm * emm1);
@@ -524,10 +511,10 @@ namespace MatFlat
                                 e[k - 1] = f;
                             }
 
-                            f = (cs * stemp[k].Real) + (sn * e[k].Real);
-                            e[k] = (cs * e[k]) - (sn * stemp[k]);
-                            g = sn * stemp[k + 1].Real;
-                            stemp[k + 1] = cs * stemp[k + 1];
+                            f = (cs * stmp[k].Real) + (sn * e[k].Real);
+                            e[k] = (cs * e[k]) - (sn * stmp[k]);
+                            g = sn * stmp[k + 1].Real;
+                            stmp[k + 1] = cs * stmp[k + 1];
                             if (computeVectors)
                             {
                                 for (i = 0; i < columnsA; i++)
@@ -539,9 +526,9 @@ namespace MatFlat
                             }
 
                             Drotg(ref f, ref g, out cs, out sn);
-                            stemp[k] = f;
-                            f = (cs * e[k].Real) + (sn * stemp[k + 1].Real);
-                            stemp[k + 1] = -(sn * e[k]) + (cs * stemp[k + 1]);
+                            stmp[k] = f;
+                            f = (cs * e[k].Real) + (sn * stmp[k + 1].Real);
+                            stmp[k + 1] = -(sn * e[k]) + (cs * stmp[k + 1]);
                             g = sn * e[k + 1].Real;
                             e[k + 1] = cs * e[k + 1];
                             if (computeVectors && k < rowsA)
@@ -563,9 +550,9 @@ namespace MatFlat
                     case 4:
 
                         // Make the singular value  positive
-                        if (stemp[l].Real < 0.0)
+                        if (stmp[l].Real < 0.0)
                         {
-                            stemp[l] = -stemp[l];
+                            stmp[l] = -stmp[l];
                             if (computeVectors)
                             {
                                 // A part of column "l" of matrix VT from row 0 to end multiply by -1
@@ -579,14 +566,14 @@ namespace MatFlat
                         // Order the singular value.
                         while (l != mn - 1)
                         {
-                            if (stemp[l].Real >= stemp[l + 1].Real)
+                            if (stmp[l].Real >= stmp[l + 1].Real)
                             {
                                 break;
                             }
 
-                            t = stemp[l];
-                            stemp[l] = stemp[l + 1];
-                            stemp[l + 1] = t;
+                            t = stmp[l];
+                            stmp[l] = stmp[l + 1];
+                            stmp[l + 1] = t;
                             if (computeVectors && l < columnsA)
                             {
                                 // Swap columns l, l + 1
@@ -638,7 +625,120 @@ namespace MatFlat
             // a singular vector of length rows+1 when rows < columns. The last element is not used and needs to be removed.
             // We should port lapack's svd routine to remove this problem.
             //Array.Copy(stemp, 0, s, 0, Math.Min(rowsA, columnsA));
-            stemp.AsSpan(0, Math.Min(rowsA, columnsA)).CopyTo(new Span<Complex>(s, Math.Min(rowsA, columnsA)));
+            stmp.AsSpan(0, Math.Min(rowsA, columnsA)).CopyTo(new Span<Complex>(s, Math.Min(rowsA, columnsA)));
+        }
+
+        private static unsafe double SvdNorm(int n, Complex* x)
+        {
+            double sum;
+            switch (n & 1)
+            {
+                case 0:
+                    sum = 0.0;
+                    break;
+                case 1:
+                    sum = x[0].Real * x[0].Real + x[0].Imaginary * x[0].Imaginary;
+                    x++;
+                    n--;
+                    break;
+                default:
+                    throw new LinearAlgebraException("An unexpected error occurred.");
+            }
+
+            while (n > 0)
+            {
+                sum += x[0].Real * x[0].Real + x[0].Imaginary * x[0].Imaginary + x[1].Real * x[1].Real + x[1].Imaginary * x[1].Imaginary;
+                x += 2;
+                n -= 2;
+            }
+
+            return Math.Sqrt(sum);
+        }
+
+        private static Complex ChangeArgument(Complex abs, Complex arg)
+        {
+            var num = abs.Real * abs.Real + abs.Imaginary * abs.Imaginary;
+            var den = arg.Real * arg.Real + arg.Imaginary * arg.Imaginary;
+            return Math.Sqrt(num / den) * arg;
+        }
+
+        private static unsafe void SvdDivInplace<T>(int n, T* x, T y) where T : unmanaged, INumberBase<T>
+        {
+            switch (n & 1)
+            {
+                case 0:
+                    break;
+                case 1:
+                    x[0] /= y;
+                    x++;
+                    n--;
+                    break;
+                default:
+                    throw new LinearAlgebraException("An unexpected error occurred.");
+            }
+
+            while (n > 0)
+            {
+                x[0] /= y;
+                x[1] /= y;
+                x += 2;
+                n -= 2;
+            }
+        }
+
+        private static unsafe Complex SvdDot(int n, Complex* x, Complex* y)
+        {
+            Complex sum;
+            switch (n & 1)
+            {
+                case 0:
+                    sum = Complex.Zero;
+                    break;
+                case 1:
+                    sum = SvdComplexMul(x[0], y[0]);
+                    x++;
+                    y++;
+                    n--;
+                    break;
+                default:
+                    throw new LinearAlgebraException("An unexpected error occurred.");
+            }
+
+            while (n > 0)
+            {
+                sum += SvdComplexMul(x[0], y[0]) + SvdComplexMul(x[1], y[1]);
+                x += 2;
+                y += 2;
+                n -= 2;
+            }
+
+            return sum;
+        }
+
+        private static unsafe void SvdMulAdd<T>(int n, T* x, T y, T* dst) where T : unmanaged, INumberBase<T>
+        {
+            switch (n & 1)
+            {
+                case 0:
+                    break;
+                case 1:
+                    dst[0] += x[0] * y;
+                    x++;
+                    dst++;
+                    n--;
+                    break;
+                default:
+                    throw new LinearAlgebraException("An unexpected error occurred.");
+            }
+
+            while (n > 0)
+            {
+                dst[0] += x[0] * y;
+                dst[1] += x[1] * y;
+                x += 2;
+                dst += 2;
+                n -= 2;
+            }
         }
 
         static void Drotg(ref double da, ref double db, out double c, out double s)
@@ -687,6 +787,16 @@ namespace MatFlat
 
             da = r;
             db = z;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static Complex SvdComplexMul(Complex x, Complex y)
+        {
+            var a = x.Real;
+            var b = -x.Imaginary;
+            var c = y.Real;
+            var d = y.Imaginary;
+            return new Complex(a * c - b * d, a * d + b * c);
         }
     }
 }

@@ -4,7 +4,6 @@ using System.Numerics;
 using NUnit.Framework;
 using OpenBlasSharp;
 using MatFlat;
-using System.Security.Principal;
 
 namespace MatFlatTest
 {
