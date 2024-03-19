@@ -9,21 +9,21 @@ namespace MatFlatTest
         public static float[] RandomSingle(int seed, int m, int n, int lda)
         {
             var random = new Random(seed);
-            var values = Enumerable.Range(0, n * lda).Select(i => random.NextSingle());
+            var values = Enumerable.Range(0, n * lda).Select(i => 2 * random.NextSingle() - 1);
             return values.ToArray();
         }
 
         public static double[] RandomDouble(int seed, int m, int n, int lda)
         {
             var random = new Random(seed);
-            var values = Enumerable.Range(0, n * lda).Select(i => random.NextDouble());
+            var values = Enumerable.Range(0, n * lda).Select(i => 2 * random.NextDouble() - 1);
             return values.ToArray();
         }
 
         public static Complex[] RandomComplex(int seed, int m, int n, int lda)
         {
             var random = new Random(seed);
-            var values = Enumerable.Range(0, n * lda).Select(i => new Complex(random.NextDouble(), random.NextDouble()));
+            var values = Enumerable.Range(0, n * lda).Select(i => new Complex(2 * random.NextDouble() - 1, 2 * random.NextDouble() - 1));
             return values.ToArray();
         }
 

@@ -732,14 +732,14 @@ namespace MatFlat
 
         private static unsafe float QrNorm(int n, float* x)
         {
-            float sum;
+            double sum;
             switch (n & 1)
             {
                 case 0:
-                    sum = 0.0F;
+                    sum = 0.0;
                     break;
                 case 1:
-                    sum = x[0] * x[0];
+                    sum = (double)x[0] * (double)x[0];
                     x++;
                     n--;
                     break;
@@ -749,12 +749,12 @@ namespace MatFlat
 
             while (n > 0)
             {
-                sum += x[0] * x[0] + x[1] * x[1];
+                sum += (double)x[0] * (double)x[0] + (double)x[1] * (double)x[1];
                 x += 2;
                 n -= 2;
             }
 
-            return MathF.Sqrt(sum);
+            return (float)Math.Sqrt(sum);
         }
 
         private static unsafe double QrNorm(int n, double* x)

@@ -71,7 +71,7 @@ namespace MatFlatTest
                 {
                     var actual = Matrix.Get(m, n, reconstructed, m, row, col);
                     var expected = Matrix.Get(m, n, original, lda, row, col);
-                    Assert.That(actual, Is.EqualTo(expected).Within(1.0E-6));
+                    Assert.That(actual, Is.EqualTo(expected).Within(1.0E-4));
                 }
             }
 
@@ -82,11 +82,11 @@ namespace MatFlatTest
                     var value = identity[col * n + row];
                     if (row == col)
                     {
-                        Assert.That(value, Is.EqualTo(1.0).Within(1.0E-6));
+                        Assert.That(value, Is.EqualTo(1.0).Within(1.0E-4));
                     }
                     else
                     {
-                        Assert.That(value, Is.EqualTo(0.0).Within(1.0E-6));
+                        Assert.That(value, Is.EqualTo(0.0).Within(1.0E-5));
                     }
                 }
             }

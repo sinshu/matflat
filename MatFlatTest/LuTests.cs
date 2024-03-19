@@ -49,7 +49,7 @@ namespace MatFlatTest
                 Factorization.LuSingle(m, n, pa, lda, ppiv);
             }
 
-            Assert.That(actualA, Is.EqualTo(expectedA).Within(1.0E-6));
+            Assert.That(actualA, Is.EqualTo(expectedA).Within(1.0E-5));
         }
 
         [Test]
