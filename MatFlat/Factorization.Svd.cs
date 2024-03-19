@@ -234,53 +234,45 @@ namespace MatFlat
             }
 
             // Transform "s" and "e" so that they are double
-            for (i2 = 0; i2 < p; i2++)
+            for (var i = 0; i < p; i++)
             {
-                Complex r;
-                if (stmp[i2] != 0.0)
+                if (stmp[i] != Complex.Zero)
                 {
-                    t2 = stmp[i2].Magnitude;
-                    r = stmp[i2] / t2;
-                    stmp[i2] = t2;
-                    if (i2 < p - 1)
+                    var t3 = stmp[i].Magnitude;
+                    var r = stmp[i] / t3;
+                    stmp[i] = t3;
+                    if (i < p - 1)
                     {
-                        e[i2] = e[i2] / r;
+                        e[i] /= r;
                     }
 
                     if (computeVectors)
                     {
                         // A part of column "i" of matrix U from row 0 to end multiply by r
-                        for (j2 = 0; j2 < rowsA; j2++)
-                        {
-                            u[(i2 * ldu) + j2] = u[(i2 * ldu) + j2] * r;
-                        }
+                        SvdMulInplace(rowsA, u + ldu * i, r);
                     }
                 }
 
                 // Exit
-                if (i2 == p - 1)
+                if (i == p - 1)
                 {
                     break;
                 }
 
-                if (e[i2] == 0.0)
+                if (e[i] == 0.0)
                 {
                     continue;
                 }
 
-                t2 = e[i2].Magnitude;
-                r = t2 / e[i2];
-                e[i2] = t2;
-                stmp[i2 + 1] = stmp[i2 + 1] * r;
-                if (!computeVectors)
-                {
-                    continue;
-                }
+                var t = e[i].Magnitude;
+                var r2 = t / e[i];
+                e[i] = t;
+                stmp[i + 1] = stmp[i + 1] * r2;
 
-                // A part of column "i+1" of matrix VT from row 0 to end multiply by r
-                for (j2 = 0; j2 < columnsA; j2++)
+                if (computeVectors)
                 {
-                    vt[((i2 + 1) * ldvt) + j2] = vt[((i2 + 1) * ldvt) + j2] * r;
+                    // A part of column "i+1" of matrix VT from row 0 to end multiply by r
+                    SvdMulInplace(columnsA, vt + ldvt * (i + 1), r2);
                 }
             }
 
@@ -643,6 +635,30 @@ namespace MatFlat
             {
                 x[0] /= y;
                 x[1] /= y;
+                x += 2;
+                n -= 2;
+            }
+        }
+
+        private static unsafe void SvdMulInplace(int n, Complex* x, Complex y)
+        {
+            switch (n & 1)
+            {
+                case 0:
+                    break;
+                case 1:
+                    x[0] *= y;
+                    x++;
+                    n--;
+                    break;
+                default:
+                    throw new LinearAlgebraException("An unexpected error occurred.");
+            }
+
+            while (n > 0)
+            {
+                x[0] *= y;
+                x[1] *= y;
                 x += 2;
                 n -= 2;
             }
