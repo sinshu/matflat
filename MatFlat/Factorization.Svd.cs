@@ -238,9 +238,9 @@ namespace MatFlat
             {
                 if (stmp[i] != Complex.Zero)
                 {
-                    var t3 = stmp[i].Magnitude;
-                    var r = stmp[i] / t3;
-                    stmp[i] = t3;
+                    var sm = stmp[i].Magnitude;
+                    var r = stmp[i] / sm;
+                    stmp[i] = sm;
                     if (i < p - 1)
                     {
                         e[i] /= r;
@@ -264,9 +264,9 @@ namespace MatFlat
                     continue;
                 }
 
-                var t = e[i].Magnitude;
-                var r2 = t / e[i];
-                e[i] = t;
+                var em = e[i].Magnitude;
+                var r2 = em / e[i];
+                e[i] = em;
                 stmp[i + 1] = stmp[i + 1] * r2;
 
                 if (computeVectors)
