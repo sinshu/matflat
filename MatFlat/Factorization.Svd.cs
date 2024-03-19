@@ -25,8 +25,12 @@ namespace MatFlat
             const int maxiter = 1000;
 
             var e = new Complex[columnsA];
-            var v = new Complex[columnsA * columnsA];
             var stemp = new Complex[Math.Min(rowsA + 1, columnsA)];
+
+            for (var ccc = 0; ccc < columnsA; ccc++)
+            {
+                new Span<Complex>(vt + ccc * ldvt, columnsA).Clear();
+            }
 
             int i, j, l, lp1;
 
@@ -171,7 +175,7 @@ namespace MatFlat
                 // Place the transformation in v for subsequent back multiplication.
                 for (i = lp1; i < columnsA; i++)
                 {
-                    v[(l * columnsA) + i] = e[i];
+                    vt[(l * ldvt) + i] = e[i];
                 }
             }
 
@@ -267,13 +271,13 @@ namespace MatFlat
                                 t = 0.0;
                                 for (i = lp1; i < columnsA; i++)
                                 {
-                                    t += v[(l * columnsA) + i].Conjugate() * v[(j * columnsA) + i];
+                                    t += vt[(l * ldvt) + i].Conjugate() * vt[(j * ldvt) + i];
                                 }
 
-                                t = -t / v[(l * columnsA) + lp1];
+                                t = -t / vt[(l * ldvt) + lp1];
                                 for (var ii = l; ii < columnsA; ii++)
                                 {
-                                    v[(j * columnsA) + ii] += t * v[(l * columnsA) + ii];
+                                    vt[(j * ldvt) + ii] += t * vt[(l * ldvt) + ii];
                                 }
                             }
                         }
@@ -281,10 +285,10 @@ namespace MatFlat
 
                     for (i = 0; i < columnsA; i++)
                     {
-                        v[(l * columnsA) + i] = 0.0;
+                        vt[(l * ldvt) + i] = 0.0;
                     }
 
-                    v[(l * columnsA) + l] = 1.0;
+                    vt[(l * ldvt) + l] = 1.0;
                 }
             }
 
@@ -335,7 +339,7 @@ namespace MatFlat
                 // A part of column "i+1" of matrix VT from row 0 to end multiply by r
                 for (j = 0; j < columnsA; j++)
                 {
-                    v[((i + 1) * columnsA) + j] = v[((i + 1) * columnsA) + j] * r;
+                    vt[((i + 1) * ldvt) + j] = vt[((i + 1) * ldvt) + j] * r;
                 }
             }
 
@@ -446,9 +450,9 @@ namespace MatFlat
                                 // Rotate
                                 for (i = 0; i < columnsA; i++)
                                 {
-                                    var z = (cs * v[(k * columnsA) + i]) + (sn * v[((m - 1) * columnsA) + i]);
-                                    v[((m - 1) * columnsA) + i] = (cs * v[((m - 1) * columnsA) + i]) - (sn * v[(k * columnsA) + i]);
-                                    v[(k * columnsA) + i] = z;
+                                    var z = (cs * vt[(k * ldvt) + i]) + (sn * vt[((m - 1) * ldvt) + i]);
+                                    vt[((m - 1) * ldvt) + i] = (cs * vt[((m - 1) * ldvt) + i]) - (sn * vt[(k * ldvt) + i]);
+                                    vt[(k * ldvt) + i] = z;
                                 }
                             }
                         }
@@ -528,9 +532,9 @@ namespace MatFlat
                             {
                                 for (i = 0; i < columnsA; i++)
                                 {
-                                    var z = (cs * v[(k * columnsA) + i]) + (sn * v[((k + 1) * columnsA) + i]);
-                                    v[((k + 1) * columnsA) + i] = (cs * v[((k + 1) * columnsA) + i]) - (sn * v[(k * columnsA) + i]);
-                                    v[(k * columnsA) + i] = z;
+                                    var z = (cs * vt[(k * ldvt) + i]) + (sn * vt[((k + 1) * ldvt) + i]);
+                                    vt[((k + 1) * ldvt) + i] = (cs * vt[((k + 1) * ldvt) + i]) - (sn * vt[(k * ldvt) + i]);
+                                    vt[(k * ldvt) + i] = z;
                                 }
                             }
 
@@ -567,7 +571,7 @@ namespace MatFlat
                                 // A part of column "l" of matrix VT from row 0 to end multiply by -1
                                 for (i = 0; i < columnsA; i++)
                                 {
-                                    v[(l * columnsA) + i] = v[(l * columnsA) + i] * -1.0;
+                                    vt[(l * ldvt) + i] = vt[(l * ldvt) + i] * -1.0;
                                 }
                             }
                         }
@@ -588,7 +592,7 @@ namespace MatFlat
                                 // Swap columns l, l + 1
                                 for (i = 0; i < columnsA; i++)
                                 {
-                                    (v[(l * columnsA) + i], v[((l + 1) * columnsA) + i]) = (v[((l + 1) * columnsA) + i], v[(l * columnsA) + i]);
+                                    (vt[(l * ldvt) + i], vt[((l + 1) * ldvt) + i]) = (vt[((l + 1) * ldvt) + i], vt[(l * ldvt) + i]);
                                 }
                             }
 
@@ -613,9 +617,19 @@ namespace MatFlat
                 // Finally transpose "v" to get "vt" matrix
                 for (i = 0; i < columnsA; i++)
                 {
-                    for (j = 0; j < columnsA; j++)
+                    for (j = 0; j <= i; j++)
                     {
-                        vt[(j * ldvt) + i] = v[(i * columnsA) + j].Conjugate();
+                        if (j == i)
+                        {
+                            vt[(j * ldvt) + i] = vt[(j * ldvt) + i].Conjugate();
+                        }
+                        else
+                        {
+                            var val1 = vt[(j * ldvt) + i];
+                            var val2 = vt[(i * ldvt) + j];
+                            vt[(j * ldvt) + i] = val2.Conjugate();
+                            vt[(i * ldvt) + j] = val1.Conjugate();
+                        }
                     }
                 }
             }
