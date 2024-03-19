@@ -43,7 +43,7 @@ namespace MatFlat
                 new Span<Complex>(vt + ccc * ldvt, columnsA).Clear();
             }
 
-            int i2, j2, l, lp1;
+            int i2, j2, l;
 
             Complex t2;
 
@@ -59,7 +59,6 @@ namespace MatFlat
                 var kp1 = k + 1;
                 var aColk = a + lda * k;
 
-                lp1 = k + 1;
                 if (k < nct)
                 {
                     // Compute the transformation for the l-th column and
@@ -102,9 +101,8 @@ namespace MatFlat
 
                 if (computeVectors && k < nct)
                 {
-                    var uColk = u + ldu * k;
-
                     // Place the transformation in "u" for subsequent back multiplication.
+                    var uColk = u + ldu * k;
                     var copyLength = sizeof(Complex) * (rowsA - k);
                     Buffer.MemoryCopy(aColk + k, uColk + k, copyLength, copyLength);
                 }
@@ -149,9 +147,8 @@ namespace MatFlat
 
                 if (computeVectors)
                 {
-                    var vtColk = vt + ldvt * k;
-
                     // Place the transformation in v for subsequent back multiplication.
+                    var vtColk = vt + ldvt * k;
                     var copyLength = sizeof(Complex) * (columnsA - kp1);
                     Buffer.MemoryCopy(e + kp1, vtColk + kp1, copyLength, copyLength);
                 }
@@ -159,23 +156,18 @@ namespace MatFlat
 
             // Set up the final bidiagonal matrix or order m.
             var p = Math.Min(columnsA, rowsA + 1);
-            var nctp1 = nct + 1;
-            var nrtp1 = nrt + 1;
             if (nct < columnsA)
             {
                 stmp[nct] = a[(nct * lda) + nct];
             }
-
             if (rowsA < p)
             {
                 stmp[p - 1] = Complex.Zero;
             }
-
-            if (nrtp1 < p)
+            if (nrt + 1 < p)
             {
                 e[nrt] = a[((p - 1) * lda) + nrt];
             }
-
             e[p - 1] = Complex.Zero;
 
             // If required, generate "u".
@@ -188,29 +180,29 @@ namespace MatFlat
                     uColj[j] = Complex.One;
                 }
 
-                for (l = nct - 1; l >= 0; l--)
+                for (var k = nct - 1; k >= 0; k--)
                 {
-                    var uColl = u + ldu * l;
+                    var uColk = u + ldu * k;
 
-                    if (stmp[l] != Complex.Zero)
+                    if (stmp[k] != Complex.Zero)
                     {
-                        for (j2 = l + 1; j2 < ncu; j2++)
+                        for (var j = k + 1; j < ncu; j++)
                         {
-                            var uColj = u + ldu * j2;
-                            t2 = -SvdDot(rowsA - l, uColl + l, uColj + l) / uColl[l];
-                            SvdMulAdd(rowsA - l, uColl + l, t2, uColj + l);
+                            var uColj = u + ldu * j;
+                            var t = -SvdDot(rowsA - k, uColk + k, uColj + k) / uColk[k];
+                            SvdMulAdd(rowsA - k, uColk + k, t, uColj + k);
                         }
 
                         // A part of column "l" of matrix A from row "l" to end multiply by -1.0
-                        SvdFlipSign(rowsA - l, uColl + l);
+                        SvdFlipSign(rowsA - k, uColk + k);
 
-                        uColl[l] += Complex.One;
-                        new Span<Complex>(uColl, l).Clear();
+                        uColk[k] += Complex.One;
+                        new Span<Complex>(uColk, k).Clear();
                     }
                     else
                     {
-                        new Span<Complex>(uColl, rowsA).Clear();
-                        uColl[l] = Complex.One;
+                        new Span<Complex>(uColk, rowsA).Clear();
+                        uColk[k] = Complex.One;
                     }
                 }
             }
@@ -218,36 +210,26 @@ namespace MatFlat
             // If it is required, generate v.
             if (computeVectors)
             {
-                for (l = columnsA - 1; l >= 0; l--)
+                for (var k = columnsA - 1; k >= 0; k--)
                 {
-                    lp1 = l + 1;
-                    if (l < nrt)
-                    {
-                        if (e[l] != 0.0)
-                        {
-                            for (j2 = lp1; j2 < columnsA; j2++)
-                            {
-                                t2 = 0.0;
-                                for (i2 = lp1; i2 < columnsA; i2++)
-                                {
-                                    t2 += vt[(l * ldvt) + i2].Conjugate() * vt[(j2 * ldvt) + i2];
-                                }
+                    var kp1 = k + 1;
+                    var vtColl = vt + ldvt * k;
 
-                                t2 = -t2 / vt[(l * ldvt) + lp1];
-                                for (var ii = l; ii < columnsA; ii++)
-                                {
-                                    vt[(j2 * ldvt) + ii] += t2 * vt[(l * ldvt) + ii];
-                                }
+                    if (k < nrt)
+                    {
+                        if (e[k] != Complex.Zero)
+                        {
+                            for (var j = kp1; j < columnsA; j++)
+                            {
+                                var vtColj = vt + ldvt * j;
+                                var t = -SvdDot(columnsA - kp1, vtColl + kp1, vtColj + kp1) / vtColl[kp1];
+                                SvdMulAdd(columnsA - k, vtColl + k, t, vtColj + k);
                             }
                         }
                     }
 
-                    for (i2 = 0; i2 < columnsA; i2++)
-                    {
-                        vt[(l * ldvt) + i2] = 0.0;
-                    }
-
-                    vt[(l * ldvt) + l] = 1.0;
+                    new Span<Complex>(vtColl, columnsA).Clear();
+                    vtColl[k] = Complex.One;
                 }
             }
 
