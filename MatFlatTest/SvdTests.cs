@@ -10,9 +10,28 @@ namespace MatFlatTest
 {
     public class SvdTests
     {
+        [TestCase(1, 1, 1, 1, 1)]
+        [TestCase(1, 1, 3, 2, 4)]
+        [TestCase(2, 2, 2, 2, 2)]
+        [TestCase(2, 2, 5, 3, 4)]
         [TestCase(3, 3, 3, 3, 3)]
+        [TestCase(3, 3, 5, 4, 6)]
+        [TestCase(3, 1, 3, 3, 1)]
+        [TestCase(3, 1, 4, 5, 2)]
+        [TestCase(1, 3, 1, 1, 3)]
+        [TestCase(1, 3, 4, 2, 5)]
         [TestCase(4, 3, 4, 4, 3)]
+        [TestCase(4, 3, 6, 5, 4)]
         [TestCase(3, 4, 3, 3, 4)]
+        [TestCase(3, 4, 5, 4, 7)]
+        [TestCase(11, 23, 11, 11, 23)]
+        [TestCase(11, 23, 17, 19, 31)]
+        [TestCase(23, 11, 23, 23, 11)]
+        [TestCase(23, 11, 31, 29, 17)]
+        [TestCase(16, 8, 16, 16, 8)]
+        [TestCase(16, 8, 32, 32, 16)]
+        [TestCase(8, 16, 8, 8, 16)]
+        [TestCase(8, 16, 16, 16, 32)]
         public unsafe void SvdComplex_General(int m, int n, int lda, int ldu, int ldvt)
         {
             var original = Matrix.RandomComplex(42, m, n, lda);
