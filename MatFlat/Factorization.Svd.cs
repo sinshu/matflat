@@ -47,8 +47,7 @@ namespace MatFlat
 
             Complex t2;
 
-            // Reduce matrix to bidiagonal form, storing the diagonal elements
-            // in "s" and the super-diagonal elements in "e".
+            // Reduce A to bidiagonal form, storing the diagonal elements in s and the super-diagonal elements in e.
             var nct = Math.Min(m - 1, n);
             var nrt = Math.Max(0, Math.Min(n - 2, m));
             var kmax = Math.Max(nct, nrt);
@@ -59,8 +58,8 @@ namespace MatFlat
 
                 if (k < nct)
                 {
-                    // Compute the transformation for the l-th column and
-                    // place the l-th diagonal in vector s[l].
+                    // Compute the transformation for the k-th column and place the k-th diagonal in s[k].
+                    // Compute 2-norm of k-th column.
                     stmp[k] = SvdNorm(m - k, aColk + k);
 
                     if (stmp[k] != Complex.Zero)
@@ -70,8 +69,8 @@ namespace MatFlat
                             stmp[k] = ChangeArgument(stmp[k], aColk[k]);
                         }
 
-                        // A part of column "l" of Matrix A from row "l" to end multiply by 1.0 / s[l]
                         SvdDivInplace(m - k, aColk + k, stmp[k]);
+
                         aColk[k] += 1.0;
                     }
 
@@ -82,77 +81,73 @@ namespace MatFlat
                 {
                     var aColj = a + lda * j;
 
-                    if (k < nct)
+                    if (k < nct && stmp[k] != Complex.Zero)
                     {
-                        if (stmp[k] != Complex.Zero)
-                        {
-                            // Apply the transformation.
-                            var t = -SvdDot(m - k, aColk + k, aColj + k) / aColk[k];
-                            SvdMulAdd(m - k, aColk + k, t, aColj + k);
-                        }
+                        // Apply the transformation.
+                        var t = -SvdDot(m - k, aColk + k, aColj + k) / aColk[k];
+                        SvdMulAdd(m - k, aColk + k, t, aColj + k);
                     }
 
-                    // Place the l-th row of matrix into "e" for the
-                    // subsequent calculation of the row transformation.
+                    // Place the k-th row of A into e for the subsequent calculation of the row transformation.
                     e[j] = aColj[k].Conjugate();
                 }
 
                 if (computeVectors && k < nct)
                 {
-                    // Place the transformation in "u" for subsequent back multiplication.
+                    // Place the transformation in U for subsequent back multiplication.
                     var uColk = u + ldu * k;
                     var copyLength = sizeof(Complex) * (m - k);
                     Buffer.MemoryCopy(aColk + k, uColk + k, copyLength, copyLength);
                 }
 
-                if (k >= nrt)
+                if (k < nrt)
                 {
-                    continue;
-                }
+                    // Compute the k-th row transformation and place the k-th super-diagonal in e[k].
+                    // Compute 2-norm.
+                    e[k] = SvdNorm(n - kp1, e + kp1);
 
-                // Compute the l-th row transformation and place the l-th super-diagonal in e(l).
-                e[k] = SvdNorm(n - kp1, e + kp1);
-                if (e[k] != Complex.Zero)
-                {
-                    if (e[kp1] != Complex.Zero)
+                    if (e[k] != Complex.Zero)
                     {
-                        e[k] = ChangeArgument(e[k], e[kp1]);
+                        if (e[kp1] != Complex.Zero)
+                        {
+                            e[k] = ChangeArgument(e[k], e[kp1]);
+                        }
+
+                        SvdDivInplace(n - kp1, e + kp1, e[k]);
+
+                        e[kp1] += Complex.One;
                     }
 
-                    // Scale vector "e" from "lp1" by 1.0 / e[l]
-                    SvdDivInplace(n - kp1, e + kp1, e[k]);
-
-                    e[kp1] += Complex.One;
-                }
-                e[k] = new Complex(-e[k].Real, e[k].Imaginary);
-
-                if (kp1 < m && e[k] != Complex.Zero)
-                {
-                    // Apply the transformation.
-                    new Span<Complex>(work + kp1, m - kp1).Clear();
-                    for (var j = kp1; j < n; j++)
+                    e[k] = new Complex(-e[k].Real, e[k].Imaginary);
+                    if (kp1 < m && e[k] != Complex.Zero)
                     {
-                        var aColj = a + lda * j;
-                        SvdMulAdd(m - kp1, aColj + kp1, e[j], work + kp1);
+                        // Apply the transformation.
+                        new Span<Complex>(work + kp1, m - kp1).Clear();
+
+                        for (var j = kp1; j < n; j++)
+                        {
+                            var aColj = a + lda * j;
+                            SvdMulAdd(m - kp1, aColj + kp1, e[j], work + kp1);
+                        }
+
+                        for (var j = kp1; j < n; j++)
+                        {
+                            var aColj = a + lda * j;
+                            SvdMulAdd(m - kp1, work + kp1, (-e[j] / e[kp1]).Conjugate(), aColj + kp1);
+                        }
                     }
 
-                    for (var j = kp1; j < n; j++)
+                    if (computeVectors)
                     {
-                        var aColj = a + lda * j;
-                        SvdMulAdd(m - kp1, work + kp1, (-e[j] / e[kp1]).Conjugate(), aColj + kp1);
+                        // Place the transformation in V for subsequent back multiplication.
+                        var vtColk = vt + ldvt * k;
+                        var copyLength = sizeof(Complex) * (n - kp1);
+                        Buffer.MemoryCopy(e + kp1, vtColk + kp1, copyLength, copyLength);
                     }
-                }
-
-                if (computeVectors)
-                {
-                    // Place the transformation in v for subsequent back multiplication.
-                    var vtColk = vt + ldvt * k;
-                    var copyLength = sizeof(Complex) * (n - kp1);
-                    Buffer.MemoryCopy(e + kp1, vtColk + kp1, copyLength, copyLength);
                 }
             }
 
-            // Set up the final bidiagonal matrix or order m.
+            // Set up the final bidiagonal matrix or order p.
             var p = Math.Min(n, m + 1);
             if (nct < n)
             {
@@ -168,7 +163,7 @@ namespace MatFlat
             }
             e[p - 1] = Complex.Zero;
 
-            // If required, generate "u".
+            // If required, generate U.
             if (computeVectors)
             {
                 for (var j = nct; j < m; j++)
@@ -191,7 +186,6 @@ namespace MatFlat
                             SvdMulAdd(m - k, uColk + k, t, uColj + k);
                         }
 
-                        // A part of column "l" of matrix A from row "l" to end multiply by -1.0
                         SvdFlipSign(m - k, uColk + k);
 
                         uColk[k] += Complex.One;
@@ -205,7 +199,7 @@ namespace MatFlat
                 }
             }
 
-            // If it is required, generate v.
+            // If required, generate V.
             if (computeVectors)
             {
                 for (var k = n - 1; k >= 0; k--)
@@ -231,14 +225,13 @@ namespace MatFlat
                 }
             }
 
-            // Transform "s" and "e" so that they are double
             for (var i = 0; i < p; i++)
             {
                 if (stmp[i] != Complex.Zero)
                 {
-                    var sm = stmp[i].Magnitude;
-                    var r = stmp[i] / sm;
-                    stmp[i] = sm;
+                    var t = stmp[i].Magnitude;
+                    var r = stmp[i] / t;
+                    stmp[i] = t;
                     if (i < p - 1)
                     {
                         e[i] /= r;
@@ -246,38 +239,33 @@ namespace MatFlat
 
                     if (computeVectors)
                     {
-                        // A part of column "i" of matrix U from row 0 to end multiply by r
                         SvdMulInplace(m, u + ldu * i, r);
                     }
                 }
 
-                // Exit
                 if (i == p - 1)
                 {
                     break;
                 }
 
-                if (e[i] == 0.0)
+                if (e[i] != Complex.Zero)
                 {
-                    continue;
-                }
+                    var t = e[i].Magnitude;
+                    var r = t / e[i];
+                    e[i] = t;
+                    stmp[i + 1] = stmp[i + 1] * r;
 
-                var em = e[i].Magnitude;
-                var r2 = em / e[i];
-                e[i] = em;
-                stmp[i + 1] = stmp[i + 1] * r2;
-
-                if (computeVectors)
-                {
-                    // A part of column "i+1" of matrix VT from row 0 to end multiply by r
-                    SvdMulInplace(n, vt + ldvt * (i + 1), r2);
+                    if (computeVectors)
+                    {
+                        SvdMulInplace(n, vt + ldvt * (i + 1), r);
+                    }
                 }
             }
 
             // Main iteration loop for the singular values.
             var mn = p;
             var iter = 0;
-
+            var eps = Math.Pow(2.0, -52.0);
             while (p > 0)
             {
                 // Quit if all the singular values have been found.
@@ -296,9 +284,7 @@ namespace MatFlat
                 int l;
                 for (l = p - 2; l >= 0; l--)
                 {
-                    var test = stmp[l].Magnitude + stmp[l + 1].Magnitude;
-                    var ztest = test + e[l].Magnitude;
-                    if (ztest.AlmostEqualRelative(test, 15))
+                    if (SvdFastMagnitude(e[l]) <= eps * (SvdFastMagnitude(stmp[l]) + SvdFastMagnitude(stmp[l + 1])))
                     {
                         e[l] = 0.0;
                         break;
@@ -804,6 +790,11 @@ namespace MatFlat
             var c = y.Real;
             var d = y.Imaginary;
             return new Complex(a * c - b * d, a * d + b * c);
+        }
+
+        private static double SvdFastMagnitude(Complex x)
+        {
+            return Math.Abs(x.Real) + Math.Abs(x.Imaginary);
         }
     }
 }
