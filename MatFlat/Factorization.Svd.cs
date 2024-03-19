@@ -123,38 +123,27 @@ namespace MatFlat
                 if (kp1 < rowsA && e[k] != 0.0)
                 {
                     // Apply the transformation.
-                    for (i2 = lp1; i2 < rowsA; i2++)
+                    work.AsSpan(kp1).Clear();
+                    for (var j = kp1; j < columnsA; j++)
                     {
-                        work[i2] = 0.0;
+                        var aColj = a + lda * j;
+                        SvdMulAdd(aColj + kp1, e[j], work.AsSpan(kp1));
                     }
 
-                    for (j2 = lp1; j2 < columnsA; j2++)
+                    for (var j = kp1; j < columnsA; j++)
                     {
-                        for (var ii = lp1; ii < rowsA; ii++)
-                        {
-                            work[ii] += e[j2] * a[(j2 * lda) + ii];
-                        }
-                    }
-
-                    for (j2 = lp1; j2 < columnsA; j2++)
-                    {
-                        var ww = (-e[j2] / e[lp1]).Conjugate();
-                        for (var ii = lp1; ii < rowsA; ii++)
-                        {
-                            a[(j2 * lda) + ii] += ww * work[ii];
-                        }
+                        var aColj = a + lda * j;
+                        SvdMulAdd(work.AsSpan(kp1), (-e[j] / e[kp1]).Conjugate(), aColj + kp1);
                     }
                 }
 
-                if (!computeVectors)
+                if (computeVectors)
                 {
-                    continue;
-                }
-
-                // Place the transformation in v for subsequent back multiplication.
-                for (i2 = lp1; i2 < columnsA; i2++)
-                {
-                    vt[(k * ldvt) + i2] = e[i2];
+                    // Place the transformation in v for subsequent back multiplication.
+                    for (i2 = lp1; i2 < columnsA; i2++)
+                    {
+                        vt[(k * ldvt) + i2] = e[i2];
+                    }
                 }
             }
 
@@ -746,6 +735,22 @@ namespace MatFlat
                 x += 2;
                 dst += 2;
                 n -= 2;
+            }
+        }
+
+        private static unsafe void SvdMulAdd<T>(T* x, T y, Span<T> dst) where T : unmanaged, INumberBase<T>
+        {
+            fixed (T* pdst = dst)
+            {
+                SvdMulAdd(dst.Length, x, y, pdst);
+            }
+        }
+
+        private static unsafe void SvdMulAdd<T>(Span<T> x, T y, T* dst) where T : unmanaged, INumberBase<T>
+        {
+            fixed (T* px = x)
+            {
+                SvdMulAdd(x.Length, px, y, dst);
             }
         }
 
