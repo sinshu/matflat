@@ -19,14 +19,23 @@ namespace MatFlat
 
         public static unsafe void SvdComplex(int rowsA, int columnsA, Complex* a, int lda, Complex* s, Complex* u, int ldu, Complex* vt, int ldvt)
         {
-            var computeVectors = true;
-
             var work = new Complex[rowsA];
-
-            const int maxiter = 1000;
-
             var e = new Complex[columnsA];
             var stmp = new Complex[Math.Min(rowsA + 1, columnsA)];
+
+            fixed (Complex* pwork = work)
+            fixed (Complex* pe = e)
+            fixed (Complex* pstmp = stmp)
+            {
+                SvdCore(rowsA, columnsA, a, lda, s, u, ldu, vt, ldvt, pwork, pe, pstmp);
+            }
+        }
+
+        public static unsafe void SvdCore(int rowsA, int columnsA, Complex* a, int lda, Complex* s, Complex* u, int ldu, Complex* vt, int ldvt, Complex* work, Complex* e, Complex* stmp)
+        {
+            var computeVectors = true;
+
+            const int maxiter = 1000;
 
             for (var ccc = 0; ccc < columnsA; ccc++)
             {
@@ -105,7 +114,7 @@ namespace MatFlat
                 }
 
                 // Compute the l-th row transformation and place the l-th super-diagonal in e(l).
-                e[k] = SvdNorm(e.AsSpan(kp1));
+                e[k] = SvdNorm(columnsA - kp1, e + kp1);
                 if (e[k] != 0.0)
                 {
                     if (e[kp1] != 0.0)
@@ -114,7 +123,7 @@ namespace MatFlat
                     }
 
                     // Scale vector "e" from "lp1" by 1.0 / e[l]
-                    SvdDivInplace(e.AsSpan(kp1), e[k]);
+                    SvdDivInplace(columnsA - kp1, e + kp1, e[k]);
 
                     e[kp1] += 1.0;
                 }
@@ -123,27 +132,27 @@ namespace MatFlat
                 if (kp1 < rowsA && e[k] != 0.0)
                 {
                     // Apply the transformation.
-                    work.AsSpan(kp1).Clear();
+                    new Span<Complex>(work + kp1, rowsA - kp1).Clear();
                     for (var j = kp1; j < columnsA; j++)
                     {
                         var aColj = a + lda * j;
-                        SvdMulAdd(aColj + kp1, e[j], work.AsSpan(kp1));
+                        SvdMulAdd(rowsA - kp1, aColj + kp1, e[j], work + kp1);
                     }
 
                     for (var j = kp1; j < columnsA; j++)
                     {
                         var aColj = a + lda * j;
-                        SvdMulAdd(work.AsSpan(kp1), (-e[j] / e[kp1]).Conjugate(), aColj + kp1);
+                        SvdMulAdd(rowsA - kp1, work + kp1, (-e[j] / e[kp1]).Conjugate(), aColj + kp1);
                     }
                 }
 
                 if (computeVectors)
                 {
+                    var vtColk = vt + ldvt * k;
+
                     // Place the transformation in v for subsequent back multiplication.
-                    for (i2 = lp1; i2 < columnsA; i2++)
-                    {
-                        vt[(k * ldvt) + i2] = e[i2];
-                    }
+                    var copyLength = sizeof(Complex) * (columnsA - kp1);
+                    Buffer.MemoryCopy(e + kp1, vtColk + kp1, copyLength, copyLength);
                 }
             }
 
@@ -606,7 +615,7 @@ namespace MatFlat
             // a singular vector of length rows+1 when rows < columns. The last element is not used and needs to be removed.
             // We should port lapack's svd routine to remove this problem.
             //Array.Copy(stemp, 0, s, 0, Math.Min(rowsA, columnsA));
-            stmp.AsSpan(0, Math.Min(rowsA, columnsA)).CopyTo(new Span<Complex>(s, Math.Min(rowsA, columnsA)));
+            new Span<Complex>(stmp, Math.Min(rowsA, columnsA)).CopyTo(new Span<Complex>(s, Math.Min(rowsA, columnsA)));
         }
 
         private static unsafe double SvdNorm(int n, Complex* x)
