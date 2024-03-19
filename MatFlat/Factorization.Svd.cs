@@ -32,27 +32,25 @@ namespace MatFlat
             }
         }
 
-        public static unsafe void SvdCore(int rowsA, int columnsA, Complex* a, int lda, Complex* s, Complex* u, int ldu, Complex* vt, int ldvt, Complex* work, Complex* e, Complex* stmp)
+        public static unsafe void SvdCore(int m, int n, Complex* a, int lda, Complex* s, Complex* u, int ldu, Complex* vt, int ldvt, Complex* work, Complex* e, Complex* stmp)
         {
             var computeVectors = true;
 
             const int maxiter = 1000;
 
-            for (var ccc = 0; ccc < columnsA; ccc++)
+            for (var ccc = 0; ccc < n; ccc++)
             {
-                new Span<Complex>(vt + ccc * ldvt, columnsA).Clear();
+                new Span<Complex>(vt + ccc * ldvt, n).Clear();
             }
 
             int i2, j2;
 
             Complex t2;
 
-            var ncu = rowsA;
-
             // Reduce matrix to bidiagonal form, storing the diagonal elements
             // in "s" and the super-diagonal elements in "e".
-            var nct = Math.Min(rowsA - 1, columnsA);
-            var nrt = Math.Max(0, Math.Min(columnsA - 2, rowsA));
+            var nct = Math.Min(m - 1, n);
+            var nrt = Math.Max(0, Math.Min(n - 2, m));
             var kmax = Math.Max(nct, nrt);
             for (var k = 0; k < kmax; k++)
             {
@@ -63,7 +61,7 @@ namespace MatFlat
                 {
                     // Compute the transformation for the l-th column and
                     // place the l-th diagonal in vector s[l].
-                    stmp[k] = SvdNorm(rowsA - k, aColk + k);
+                    stmp[k] = SvdNorm(m - k, aColk + k);
 
                     if (stmp[k] != Complex.Zero)
                     {
@@ -73,14 +71,14 @@ namespace MatFlat
                         }
 
                         // A part of column "l" of Matrix A from row "l" to end multiply by 1.0 / s[l]
-                        SvdDivInplace(rowsA - k, aColk + k, stmp[k]);
+                        SvdDivInplace(m - k, aColk + k, stmp[k]);
                         aColk[k] += 1.0;
                     }
 
                     stmp[k] = -stmp[k];
                 }
 
-                for (var j = kp1; j < columnsA; j++)
+                for (var j = kp1; j < n; j++)
                 {
                     var aColj = a + lda * j;
 
@@ -89,8 +87,8 @@ namespace MatFlat
                         if (stmp[k] != Complex.Zero)
                         {
                             // Apply the transformation.
-                            var t = -SvdDot(rowsA - k, aColk + k, aColj + k) / aColk[k];
-                            SvdMulAdd(rowsA - k, aColk + k, t, aColj + k);
+                            var t = -SvdDot(m - k, aColk + k, aColj + k) / aColk[k];
+                            SvdMulAdd(m - k, aColk + k, t, aColj + k);
                         }
                     }
 
@@ -103,7 +101,7 @@ namespace MatFlat
                 {
                     // Place the transformation in "u" for subsequent back multiplication.
                     var uColk = u + ldu * k;
-                    var copyLength = sizeof(Complex) * (rowsA - k);
+                    var copyLength = sizeof(Complex) * (m - k);
                     Buffer.MemoryCopy(aColk + k, uColk + k, copyLength, copyLength);
                 }
 
@@ -113,7 +111,7 @@ namespace MatFlat
                 }
 
                 // Compute the l-th row transformation and place the l-th super-diagonal in e(l).
-                e[k] = SvdNorm(columnsA - kp1, e + kp1);
+                e[k] = SvdNorm(n - kp1, e + kp1);
                 if (e[k] != Complex.Zero)
                 {
                     if (e[kp1] != Complex.Zero)
@@ -122,26 +120,26 @@ namespace MatFlat
                     }
 
                     // Scale vector "e" from "lp1" by 1.0 / e[l]
-                    SvdDivInplace(columnsA - kp1, e + kp1, e[k]);
+                    SvdDivInplace(n - kp1, e + kp1, e[k]);
 
                     e[kp1] += Complex.One;
                 }
                 e[k] = new Complex(-e[k].Real, e[k].Imaginary);
 
-                if (kp1 < rowsA && e[k] != Complex.Zero)
+                if (kp1 < m && e[k] != Complex.Zero)
                 {
                     // Apply the transformation.
-                    new Span<Complex>(work + kp1, rowsA - kp1).Clear();
-                    for (var j = kp1; j < columnsA; j++)
+                    new Span<Complex>(work + kp1, m - kp1).Clear();
+                    for (var j = kp1; j < n; j++)
                     {
                         var aColj = a + lda * j;
-                        SvdMulAdd(rowsA - kp1, aColj + kp1, e[j], work + kp1);
+                        SvdMulAdd(m - kp1, aColj + kp1, e[j], work + kp1);
                     }
 
-                    for (var j = kp1; j < columnsA; j++)
+                    for (var j = kp1; j < n; j++)
                     {
                         var aColj = a + lda * j;
-                        SvdMulAdd(rowsA - kp1, work + kp1, (-e[j] / e[kp1]).Conjugate(), aColj + kp1);
+                        SvdMulAdd(m - kp1, work + kp1, (-e[j] / e[kp1]).Conjugate(), aColj + kp1);
                     }
                 }
 
@@ -149,18 +147,18 @@ namespace MatFlat
                 {
                     // Place the transformation in v for subsequent back multiplication.
                     var vtColk = vt + ldvt * k;
-                    var copyLength = sizeof(Complex) * (columnsA - kp1);
+                    var copyLength = sizeof(Complex) * (n - kp1);
                     Buffer.MemoryCopy(e + kp1, vtColk + kp1, copyLength, copyLength);
                 }
             }
 
             // Set up the final bidiagonal matrix or order m.
-            var p = Math.Min(columnsA, rowsA + 1);
-            if (nct < columnsA)
+            var p = Math.Min(n, m + 1);
+            if (nct < n)
             {
                 stmp[nct] = a[(nct * lda) + nct];
             }
-            if (rowsA < p)
+            if (m < p)
             {
                 stmp[p - 1] = Complex.Zero;
             }
@@ -173,10 +171,10 @@ namespace MatFlat
             // If required, generate "u".
             if (computeVectors)
             {
-                for (var j = nct; j < ncu; j++)
+                for (var j = nct; j < m; j++)
                 {
                     var uColj = u + ldu * j;
-                    new Span<Complex>(uColj, rowsA).Clear();
+                    new Span<Complex>(uColj, m).Clear();
                     uColj[j] = Complex.One;
                 }
 
@@ -186,22 +184,22 @@ namespace MatFlat
 
                     if (stmp[k] != Complex.Zero)
                     {
-                        for (var j = k + 1; j < ncu; j++)
+                        for (var j = k + 1; j < m; j++)
                         {
                             var uColj = u + ldu * j;
-                            var t = -SvdDot(rowsA - k, uColk + k, uColj + k) / uColk[k];
-                            SvdMulAdd(rowsA - k, uColk + k, t, uColj + k);
+                            var t = -SvdDot(m - k, uColk + k, uColj + k) / uColk[k];
+                            SvdMulAdd(m - k, uColk + k, t, uColj + k);
                         }
 
                         // A part of column "l" of matrix A from row "l" to end multiply by -1.0
-                        SvdFlipSign(rowsA - k, uColk + k);
+                        SvdFlipSign(m - k, uColk + k);
 
                         uColk[k] += Complex.One;
                         new Span<Complex>(uColk, k).Clear();
                     }
                     else
                     {
-                        new Span<Complex>(uColk, rowsA).Clear();
+                        new Span<Complex>(uColk, m).Clear();
                         uColk[k] = Complex.One;
                     }
                 }
@@ -210,7 +208,7 @@ namespace MatFlat
             // If it is required, generate v.
             if (computeVectors)
             {
-                for (var k = columnsA - 1; k >= 0; k--)
+                for (var k = n - 1; k >= 0; k--)
                 {
                     var kp1 = k + 1;
                     var vtColl = vt + ldvt * k;
@@ -219,16 +217,16 @@ namespace MatFlat
                     {
                         if (e[k] != Complex.Zero)
                         {
-                            for (var j = kp1; j < columnsA; j++)
+                            for (var j = kp1; j < n; j++)
                             {
                                 var vtColj = vt + ldvt * j;
-                                var t = -SvdDot(columnsA - kp1, vtColl + kp1, vtColj + kp1) / vtColl[kp1];
-                                SvdMulAdd(columnsA - k, vtColl + k, t, vtColj + k);
+                                var t = -SvdDot(n - kp1, vtColl + kp1, vtColj + kp1) / vtColl[kp1];
+                                SvdMulAdd(n - k, vtColl + k, t, vtColj + k);
                             }
                         }
                     }
 
-                    new Span<Complex>(vtColl, columnsA).Clear();
+                    new Span<Complex>(vtColl, n).Clear();
                     vtColl[k] = Complex.One;
                 }
             }
@@ -249,7 +247,7 @@ namespace MatFlat
                     if (computeVectors)
                     {
                         // A part of column "i" of matrix U from row 0 to end multiply by r
-                        SvdMulInplace(rowsA, u + ldu * i, r);
+                        SvdMulInplace(m, u + ldu * i, r);
                     }
                 }
 
@@ -272,7 +270,7 @@ namespace MatFlat
                 if (computeVectors)
                 {
                     // A part of column "i+1" of matrix VT from row 0 to end multiply by r
-                    SvdMulInplace(columnsA, vt + ldvt * (i + 1), r2);
+                    SvdMulInplace(n, vt + ldvt * (i + 1), r2);
                 }
             }
 
@@ -380,7 +378,7 @@ namespace MatFlat
                             if (computeVectors)
                             {
                                 // Rotate
-                                for (i2 = 0; i2 < columnsA; i2++)
+                                for (i2 = 0; i2 < n; i2++)
                                 {
                                     var z = (cs * vt[(k * ldvt) + i2]) + (sn * vt[((p - 1) * ldvt) + i2]);
                                     vt[((p - 1) * ldvt) + i2] = (cs * vt[((p - 1) * ldvt) + i2]) - (sn * vt[(k * ldvt) + i2]);
@@ -405,7 +403,7 @@ namespace MatFlat
                             if (computeVectors)
                             {
                                 // Rotate
-                                for (i2 = 0; i2 < rowsA; i2++)
+                                for (i2 = 0; i2 < m; i2++)
                                 {
                                     var z = (cs * u[(k * ldu) + i2]) + (sn * u[((l - 1) * ldu) + i2]);
                                     u[((l - 1) * ldu) + i2] = (cs * u[((l - 1) * ldu) + i2]) - (sn * u[(k * ldu) + i2]);
@@ -462,7 +460,7 @@ namespace MatFlat
                             stmp[k + 1] = cs * stmp[k + 1];
                             if (computeVectors)
                             {
-                                for (i2 = 0; i2 < columnsA; i2++)
+                                for (i2 = 0; i2 < n; i2++)
                                 {
                                     var z = (cs * vt[(k * ldvt) + i2]) + (sn * vt[((k + 1) * ldvt) + i2]);
                                     vt[((k + 1) * ldvt) + i2] = (cs * vt[((k + 1) * ldvt) + i2]) - (sn * vt[(k * ldvt) + i2]);
@@ -476,9 +474,9 @@ namespace MatFlat
                             stmp[k + 1] = -(sn * e[k]) + (cs * stmp[k + 1]);
                             g = sn * e[k + 1].Real;
                             e[k + 1] = cs * e[k + 1];
-                            if (computeVectors && k < rowsA)
+                            if (computeVectors && k < m)
                             {
-                                for (i2 = 0; i2 < rowsA; i2++)
+                                for (i2 = 0; i2 < m; i2++)
                                 {
                                     var z = (cs * u[(k * ldu) + i2]) + (sn * u[((k + 1) * ldu) + i2]);
                                     u[((k + 1) * ldu) + i2] = (cs * u[((k + 1) * ldu) + i2]) - (sn * u[(k * ldu) + i2]);
@@ -501,7 +499,7 @@ namespace MatFlat
                             if (computeVectors)
                             {
                                 // A part of column "l" of matrix VT from row 0 to end multiply by -1
-                                for (i2 = 0; i2 < columnsA; i2++)
+                                for (i2 = 0; i2 < n; i2++)
                                 {
                                     vt[(l * ldvt) + i2] = vt[(l * ldvt) + i2] * -1.0;
                                 }
@@ -519,19 +517,19 @@ namespace MatFlat
                             t2 = stmp[l];
                             stmp[l] = stmp[l + 1];
                             stmp[l + 1] = t2;
-                            if (computeVectors && l < columnsA)
+                            if (computeVectors && l < n)
                             {
                                 // Swap columns l, l + 1
-                                for (i2 = 0; i2 < columnsA; i2++)
+                                for (i2 = 0; i2 < n; i2++)
                                 {
                                     (vt[(l * ldvt) + i2], vt[((l + 1) * ldvt) + i2]) = (vt[((l + 1) * ldvt) + i2], vt[(l * ldvt) + i2]);
                                 }
                             }
 
-                            if (computeVectors && l < rowsA)
+                            if (computeVectors && l < m)
                             {
                                 // Swap columns l, l + 1
-                                for (i2 = 0; i2 < rowsA; i2++)
+                                for (i2 = 0; i2 < m; i2++)
                                 {
                                     (u[(l * ldu) + i2], u[((l + 1) * ldu) + i2]) = (u[((l + 1) * ldu) + i2], u[(l * ldu) + i2]);
                                 }
@@ -547,7 +545,7 @@ namespace MatFlat
             if (computeVectors)
             {
                 // Finally transpose "v" to get "vt" matrix
-                for (i2 = 0; i2 < columnsA; i2++)
+                for (i2 = 0; i2 < n; i2++)
                 {
                     for (j2 = 0; j2 <= i2; j2++)
                     {
@@ -570,7 +568,7 @@ namespace MatFlat
             // a singular vector of length rows+1 when rows < columns. The last element is not used and needs to be removed.
             // We should port lapack's svd routine to remove this problem.
             //Array.Copy(stemp, 0, s, 0, Math.Min(rowsA, columnsA));
-            new Span<Complex>(stmp, Math.Min(rowsA, columnsA)).CopyTo(new Span<Complex>(s, Math.Min(rowsA, columnsA)));
+            new Span<Complex>(stmp, Math.Min(m, n)).CopyTo(new Span<Complex>(s, Math.Min(m, n)));
         }
 
         private static unsafe double SvdNorm(int n, Complex* x)
