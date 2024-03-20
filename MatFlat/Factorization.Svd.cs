@@ -263,7 +263,7 @@ namespace MatFlat
             }
 
             // Main iteration loop for the singular values.
-            var mn = p;
+            var pp = p - 1;
             var iter = 0;
             var eps = Math.Pow(2.0, -52.0);
             while (p > 0)
@@ -464,13 +464,13 @@ namespace MatFlat
 
                             if (computeVectors && j < m)
                             {
-                                for (i2 = 0; i2 < m; i2++)
+                                for (var i = 0; i < m; i++)
                                 {
                                     var uColj = u + ldu * j;
                                     var uColjp1 = u + ldu * (j + 1);
-                                    var z = cs * uColj[i2] + sn * uColjp1[i2];
-                                    uColjp1[i2] = cs * uColjp1[i2] - sn * uColj[i2];
-                                    uColj[i2] = z;
+                                    var z = cs * uColj[i] + sn * uColjp1[i];
+                                    uColjp1[i] = cs * uColjp1[i] - sn * uColj[i];
+                                    uColj[i] = z;
                                 }
                             }
                         }
@@ -480,25 +480,22 @@ namespace MatFlat
 
                         break;
 
-                    // Convergence
+                    // Convergence.
                     case 4:
 
-                        // Make the singular value  positive
+                        // Make the singular value positive.
                         if (stmp[k].Real < 0.0)
                         {
                             stmp[k] = -stmp[k];
+
                             if (computeVectors)
                             {
-                                // A part of column "l" of matrix VT from row 0 to end multiply by -1
-                                for (i2 = 0; i2 < n; i2++)
-                                {
-                                    vt[(k * ldvt) + i2] = vt[(k * ldvt) + i2] * -1.0;
-                                }
+                                SvdFlipSign(n, vt + ldvt * k);
                             }
                         }
 
-                        // Order the singular value.
-                        while (k != mn - 1)
+                        // Order the singular values.
+                        while (k < pp)
                         {
                             if (stmp[k].Real >= stmp[k + 1].Real)
                             {
@@ -508,27 +505,33 @@ namespace MatFlat
                             t2 = stmp[k];
                             stmp[k] = stmp[k + 1];
                             stmp[k + 1] = t2;
+
                             if (computeVectors && k < n)
                             {
-                                // Swap columns l, l + 1
-                                for (i2 = 0; i2 < n; i2++)
+                                var vtColk = vt + ldvt * k;
+                                var vtColkp1 = vt + ldvt * (k + 1);
+                                for (var i = 0; i < n; i++)
                                 {
-                                    (vt[(k * ldvt) + i2], vt[((k + 1) * ldvt) + i2]) = (vt[((k + 1) * ldvt) + i2], vt[(k * ldvt) + i2]);
+                                    (vtColk[i], vtColkp1[i]) = (vtColkp1[i], vtColk[i]);
                                 }
                             }
 
                             if (computeVectors && k < m)
                             {
-                                // Swap columns l, l + 1
-                                for (i2 = 0; i2 < m; i2++)
+                                var uColk = u + ldu * k;
+                                var uColkp1 = u + ldu * (k + 1);
+                                for (var i = 0; i < m; i++)
                                 {
-                                    (u[(k * ldu) + i2], u[((k + 1) * ldu) + i2]) = (u[((k + 1) * ldu) + i2], u[(k * ldu) + i2]);
+                                    (uColk[i], uColkp1[i]) = (uColkp1[i], uColk[i]);
                                 }
                             }
-                            k = k + 1;
+
+                            k++;
                         }
+
                         iter = 0;
                         p = p - 1;
+
                         break;
                 }
             }
