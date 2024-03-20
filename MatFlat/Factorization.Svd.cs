@@ -57,25 +57,25 @@ namespace MatFlat
                     var sum = 0.0;
                     for (var i1 = l; i1 < rowsA; i1++)
                     {
-                        sum += a[(l * rowsA) + i1] * a[(l * rowsA) + i1];
+                        sum += a[(l * lda) + i1] * a[(l * lda) + i1];
                     }
 
                     stemp[l] = Math.Sqrt(sum);
 
                     if (stemp[l] != 0.0)
                     {
-                        if (a[(l * rowsA) + l] != 0.0)
+                        if (a[(l * lda) + l] != 0.0)
                         {
-                            stemp[l] = Math.Abs(stemp[l]) * (a[(l * rowsA) + l] / Math.Abs(a[(l * rowsA) + l]));
+                            stemp[l] = Math.Abs(stemp[l]) * (a[(l * lda) + l] / Math.Abs(a[(l * lda) + l]));
                         }
 
                         // A part of column "l" of Matrix A from row "l" to end multiply by 1.0 / s[l]
                         for (i = l; i < rowsA; i++)
                         {
-                            a[(l * rowsA) + i] = a[(l * rowsA) + i] * (1.0 / stemp[l]);
+                            a[(l * lda) + i] = a[(l * lda) + i] * (1.0 / stemp[l]);
                         }
 
-                        a[(l * rowsA) + l] = 1.0 + a[(l * rowsA) + l];
+                        a[(l * lda) + l] = 1.0 + a[(l * lda) + l];
                     }
 
                     stemp[l] = -stemp[l];
@@ -91,21 +91,21 @@ namespace MatFlat
                             t = 0.0;
                             for (i = l; i < rowsA; i++)
                             {
-                                t += a[(j * rowsA) + i] * a[(l * rowsA) + i];
+                                t += a[(j * lda) + i] * a[(l * lda) + i];
                             }
 
-                            t = -t / a[(l * rowsA) + l];
+                            t = -t / a[(l * lda) + l];
 
                             for (var ii = l; ii < rowsA; ii++)
                             {
-                                a[(j * rowsA) + ii] += t * a[(l * rowsA) + ii];
+                                a[(j * lda) + ii] += t * a[(l * lda) + ii];
                             }
                         }
                     }
 
                     // Place the l-th row of matrix into "e" for the
                     // subsequent calculation of the row transformation.
-                    e[j] = a[(j * rowsA) + l];
+                    e[j] = a[(j * lda) + l];
                 }
 
                 if (computeVectors && l < nct)
@@ -113,7 +113,7 @@ namespace MatFlat
                     // Place the transformation in "u" for subsequent back multiplication.
                     for (i = l; i < rowsA; i++)
                     {
-                        u[(l * rowsA) + i] = a[(l * rowsA) + i];
+                        u[(l * ldu) + i] = a[(l * lda) + i];
                     }
                 }
 
@@ -160,7 +160,7 @@ namespace MatFlat
                     {
                         for (var ii = lp1; ii < rowsA; ii++)
                         {
-                            work[ii] += e[j] * a[(j * rowsA) + ii];
+                            work[ii] += e[j] * a[(j * lda) + ii];
                         }
                     }
 
@@ -169,7 +169,7 @@ namespace MatFlat
                         var ww = -e[j] / e[lp1];
                         for (var ii = lp1; ii < rowsA; ii++)
                         {
-                            a[(j * rowsA) + ii] += ww * work[ii];
+                            a[(j * lda) + ii] += ww * work[ii];
                         }
                     }
                 }
@@ -182,7 +182,7 @@ namespace MatFlat
                 // Place the transformation in v for subsequent back multiplication.
                 for (i = lp1; i < columnsA; i++)
                 {
-                    v[(l * columnsA) + i] = e[i];
+                    v[(l * ldvt) + i] = e[i];
                 }
             }
 
@@ -192,7 +192,7 @@ namespace MatFlat
             var nrtp1 = nrt + 1;
             if (nct < columnsA)
             {
-                stemp[nctp1 - 1] = a[((nctp1 - 1) * rowsA) + (nctp1 - 1)];
+                stemp[nctp1 - 1] = a[((nctp1 - 1) * lda) + (nctp1 - 1)];
             }
 
             if (rowsA < m)
@@ -202,7 +202,7 @@ namespace MatFlat
 
             if (nrtp1 < m)
             {
-                e[nrtp1 - 1] = a[((m - 1) * rowsA) + (nrtp1 - 1)];
+                e[nrtp1 - 1] = a[((m - 1) * lda) + (nrtp1 - 1)];
             }
 
             e[m - 1] = 0.0;
@@ -214,10 +214,10 @@ namespace MatFlat
                 {
                     for (i = 0; i < rowsA; i++)
                     {
-                        u[(j * rowsA) + i] = 0.0;
+                        u[(j * ldu) + i] = 0.0;
                     }
 
-                    u[(j * rowsA) + j] = 1.0;
+                    u[(j * ldu) + j] = 1.0;
                 }
 
                 for (l = nct - 1; l >= 0; l--)
@@ -229,37 +229,37 @@ namespace MatFlat
                             t = 0.0;
                             for (i = l; i < rowsA; i++)
                             {
-                                t += u[(j * rowsA) + i] * u[(l * rowsA) + i];
+                                t += u[(j * ldu) + i] * u[(l * ldu) + i];
                             }
 
-                            t = -t / u[(l * rowsA) + l];
+                            t = -t / u[(l * ldu) + l];
 
                             for (var ii = l; ii < rowsA; ii++)
                             {
-                                u[(j * rowsA) + ii] += t * u[(l * rowsA) + ii];
+                                u[(j * ldu) + ii] += t * u[(l * ldu) + ii];
                             }
                         }
 
                         // A part of column "l" of matrix A from row "l" to end multiply by -1.0
                         for (i = l; i < rowsA; i++)
                         {
-                            u[(l * rowsA) + i] = u[(l * rowsA) + i] * -1.0;
+                            u[(l * ldu) + i] = u[(l * ldu) + i] * -1.0;
                         }
 
-                        u[(l * rowsA) + l] = 1.0 + u[(l * rowsA) + l];
+                        u[(l * ldu) + l] = 1.0 + u[(l * ldu) + l];
                         for (i = 0; i < l; i++)
                         {
-                            u[(l * rowsA) + i] = 0.0;
+                            u[(l * ldu) + i] = 0.0;
                         }
                     }
                     else
                     {
                         for (i = 0; i < rowsA; i++)
                         {
-                            u[(l * rowsA) + i] = 0.0;
+                            u[(l * ldu) + i] = 0.0;
                         }
 
-                        u[(l * rowsA) + l] = 1.0;
+                        u[(l * ldu) + l] = 1.0;
                     }
                 }
             }
@@ -279,13 +279,13 @@ namespace MatFlat
                                 t = 0.0;
                                 for (i = lp1; i < columnsA; i++)
                                 {
-                                    t += v[(j * columnsA) + i] * v[(l * columnsA) + i];
+                                    t += v[(j * ldvt) + i] * v[(l * ldvt) + i];
                                 }
 
-                                t = -t / v[(l * columnsA) + lp1];
+                                t = -t / v[(l * ldvt) + lp1];
                                 for (var ii = l; ii < columnsA; ii++)
                                 {
-                                    v[(j * columnsA) + ii] += t * v[(l * columnsA) + ii];
+                                    v[(j * ldvt) + ii] += t * v[(l * ldvt) + ii];
                                 }
                             }
                         }
@@ -293,10 +293,10 @@ namespace MatFlat
 
                     for (i = 0; i < columnsA; i++)
                     {
-                        v[(l * columnsA) + i] = 0.0;
+                        v[(l * ldvt) + i] = 0.0;
                     }
 
-                    v[(l * columnsA) + l] = 1.0;
+                    v[(l * ldvt) + l] = 1.0;
                 }
             }
 
@@ -319,7 +319,7 @@ namespace MatFlat
                         // A part of column "i" of matrix U from row 0 to end multiply by r
                         for (j = 0; j < rowsA; j++)
                         {
-                            u[(i * rowsA) + j] = u[(i * rowsA) + j] * r;
+                            u[(i * ldu) + j] = u[(i * ldu) + j] * r;
                         }
                     }
                 }
@@ -347,7 +347,7 @@ namespace MatFlat
                 // A part of column "i+1" of matrix VT from row 0 to end multiply by r
                 for (j = 0; j < columnsA; j++)
                 {
-                    v[((i + 1) * columnsA) + j] = v[((i + 1) * columnsA) + j] * r;
+                    v[((i + 1) * ldvt) + j] = v[((i + 1) * ldvt) + j] * r;
                 }
             }
 
@@ -459,9 +459,9 @@ namespace MatFlat
                                 // Rotate
                                 for (i = 0; i < columnsA; i++)
                                 {
-                                    var z = (cs * v[(k * columnsA) + i]) + (sn * v[((m - 1) * columnsA) + i]);
-                                    v[((m - 1) * columnsA) + i] = (cs * v[((m - 1) * columnsA) + i]) - (sn * v[(k * columnsA) + i]);
-                                    v[(k * columnsA) + i] = z;
+                                    var z = (cs * v[(k * ldvt) + i]) + (sn * v[((m - 1) * ldvt) + i]);
+                                    v[((m - 1) * ldvt) + i] = (cs * v[((m - 1) * ldvt) + i]) - (sn * v[(k * ldvt) + i]);
+                                    v[(k * ldvt) + i] = z;
                                 }
                             }
                         }
@@ -484,9 +484,9 @@ namespace MatFlat
                                 // Rotate
                                 for (i = 0; i < rowsA; i++)
                                 {
-                                    var z = (cs * u[(k * rowsA) + i]) + (sn * u[((l - 1) * rowsA) + i]);
-                                    u[((l - 1) * rowsA) + i] = (cs * u[((l - 1) * rowsA) + i]) - (sn * u[(k * rowsA) + i]);
-                                    u[(k * rowsA) + i] = z;
+                                    var z = (cs * u[(k * ldu) + i]) + (sn * u[((l - 1) * ldu) + i]);
+                                    u[((l - 1) * ldu) + i] = (cs * u[((l - 1) * ldu) + i]) - (sn * u[(k * ldu) + i]);
+                                    u[(k * ldu) + i] = z;
                                 }
                             }
                         }
@@ -542,9 +542,9 @@ namespace MatFlat
                             {
                                 for (i = 0; i < columnsA; i++)
                                 {
-                                    var z = (cs * v[(k * columnsA) + i]) + (sn * v[((k + 1) * columnsA) + i]);
-                                    v[((k + 1) * columnsA) + i] = (cs * v[((k + 1) * columnsA) + i]) - (sn * v[(k * columnsA) + i]);
-                                    v[(k * columnsA) + i] = z;
+                                    var z = (cs * v[(k * ldvt) + i]) + (sn * v[((k + 1) * ldvt) + i]);
+                                    v[((k + 1) * ldvt) + i] = (cs * v[((k + 1) * ldvt) + i]) - (sn * v[(k * ldvt) + i]);
+                                    v[(k * ldvt) + i] = z;
                                 }
                             }
 
@@ -558,9 +558,9 @@ namespace MatFlat
                             {
                                 for (i = 0; i < rowsA; i++)
                                 {
-                                    var z = (cs * u[(k * rowsA) + i]) + (sn * u[((k + 1) * rowsA) + i]);
-                                    u[((k + 1) * rowsA) + i] = (cs * u[((k + 1) * rowsA) + i]) - (sn * u[(k * rowsA) + i]);
-                                    u[(k * rowsA) + i] = z;
+                                    var z = (cs * u[(k * ldu) + i]) + (sn * u[((k + 1) * ldu) + i]);
+                                    u[((k + 1) * ldu) + i] = (cs * u[((k + 1) * ldu) + i]) - (sn * u[(k * ldu) + i]);
+                                    u[(k * ldu) + i] = z;
                                 }
                             }
                         }
@@ -581,7 +581,7 @@ namespace MatFlat
                                 // A part of column "l" of matrix VT from row 0 to end multiply by -1
                                 for (i = 0; i < columnsA; i++)
                                 {
-                                    v[(l * columnsA) + i] = v[(l * columnsA) + i] * -1.0;
+                                    v[(l * ldvt) + i] = v[(l * ldvt) + i] * -1.0;
                                 }
                             }
                         }
@@ -602,7 +602,7 @@ namespace MatFlat
                                 // Swap columns l, l + 1
                                 for (i = 0; i < columnsA; i++)
                                 {
-                                    (v[(l * columnsA) + i], v[((l + 1) * columnsA) + i]) = (v[((l + 1) * columnsA) + i], v[(l * columnsA) + i]);
+                                    (v[(l * ldvt) + i], v[((l + 1) * ldvt) + i]) = (v[((l + 1) * ldvt) + i], v[(l * ldvt) + i]);
                                 }
                             }
 
@@ -611,7 +611,7 @@ namespace MatFlat
                                 // Swap columns l, l + 1
                                 for (i = 0; i < rowsA; i++)
                                 {
-                                    (u[(l * rowsA) + i], u[((l + 1) * rowsA) + i]) = (u[((l + 1) * rowsA) + i], u[(l * rowsA) + i]);
+                                    (u[(l * ldu) + i], u[((l + 1) * ldu) + i]) = (u[((l + 1) * ldu) + i], u[(l * ldu) + i]);
                                 }
                             }
 
@@ -631,7 +631,7 @@ namespace MatFlat
                 {
                     for (j = 0; j < i; j++)
                     {
-                        (v[(j * columnsA) + i], v[(i * columnsA) + j]) = (v[(i * columnsA) + j], v[(j * columnsA) + i]);
+                        (v[(j * ldvt) + i], v[(i * ldvt) + j]) = (v[(i * ldvt) + j], v[(j * ldvt) + i]);
                     }
                 }
             }
