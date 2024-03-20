@@ -281,119 +281,120 @@ namespace MatFlat
                 // case = 2: if mS[l] is negligible and l < m
                 // case = 3: if e[l-1] is negligible, l < m, and mS[l, ..., mS[m] are not negligible (qr step).
                 // case = 4: if e[m-1] is negligible (convergence).
-                int l;
-                for (l = p - 2; l >= 0; l--)
+                int k;
+                for (k = p - 2; k >= 0; k--)
                 {
-                    if (SvdFastMagnitude(e[l]) <= eps * (SvdFastMagnitude(stmp[l]) + SvdFastMagnitude(stmp[l + 1])))
+                    if (e[k].Magnitude <= eps * (stmp[k].Magnitude + stmp[k + 1].Magnitude))
                     {
-                        e[l] = 0.0;
+                        e[k] = 0.0;
                         break;
                     }
                 }
 
                 int kase;
-                if (l == p - 2)
+                if (k == p - 2)
                 {
                     kase = 4;
                 }
                 else
                 {
-                    int ls;
-                    for (ls = p - 1; ls > l; ls--)
+                    int ks;
+                    for (ks = p - 1; ks > k; ks--)
                     {
-                        var test = 0.0;
-                        if (ls != p - 1)
+                        var t = 0.0;
+                        if (ks != p - 1)
                         {
-                            test = test + e[ls].Magnitude;
+                            t += e[ks].Magnitude;
                         }
-
-                        if (ls != l + 1)
+                        if (ks != k + 1)
                         {
-                            test = test + e[ls - 1].Magnitude;
+                            t += e[ks - 1].Magnitude;
                         }
-
-                        var ztest = test + stmp[ls].Magnitude;
-                        if (ztest.AlmostEqualRelative(test, 15))
+                        if (stmp[ks].Magnitude <= eps * t)
                         {
-                            stmp[ls] = 0.0;
+                            stmp[ks] = Complex.Zero;
                             break;
                         }
                     }
 
-                    if (ls == l)
+                    if (ks == k)
                     {
                         kase = 3;
                     }
-                    else if (ls == p - 1)
+                    else if (ks == p - 1)
                     {
                         kase = 1;
                     }
                     else
                     {
                         kase = 2;
-                        l = ls;
+                        k = ks;
                     }
                 }
 
-                l++;
+                k++;
 
-                // Perform the task indicated by case.
-                int k;
+                // Perform the task indicated by kase.
+                //int l3;
                 double f;
                 double cs;
                 double sn;
                 switch (kase)
                 {
-                    // Deflate negligible s[m].
+                    // Deflate negligible s(p).
                     case 1:
                         f = e[p - 2].Real;
-                        e[p - 2] = 0.0;
-                        double t1;
-                        for (var kk = l; kk < p - 1; kk++)
+                        e[p - 2] = Complex.Zero;
+                        for (var j = k; j < p - 1; j++)
                         {
-                            k = p - 2 - kk + l;
-                            t1 = stmp[k].Real;
-                            Drotg(ref t1, ref f, out cs, out sn);
-                            stmp[k] = t1;
-                            if (k != l)
+                            var l = p - 2 - j + k;
+                            var t = stmp[l].Real;
+                            Drotg(ref t, ref f, out cs, out sn);
+                            stmp[l] = t;
+                            if (l != k)
                             {
-                                f = -sn * e[k - 1].Real;
-                                e[k - 1] = cs * e[k - 1];
+                                f = -sn * e[l - 1].Real;
+                                e[l - 1] = cs * e[l - 1];
                             }
 
                             if (computeVectors)
                             {
-                                // Rotate
-                                for (i2 = 0; i2 < n; i2++)
+                                var vtColl = vt + ldvt * l;
+                                var vtColpm1 = vt + ldvt * (p - 1);
+
+                                for (var i = 0; i < n; i++)
                                 {
-                                    var z = (cs * vt[(k * ldvt) + i2]) + (sn * vt[((p - 1) * ldvt) + i2]);
-                                    vt[((p - 1) * ldvt) + i2] = (cs * vt[((p - 1) * ldvt) + i2]) - (sn * vt[(k * ldvt) + i2]);
-                                    vt[(k * ldvt) + i2] = z;
+                                    var z = cs * vtColl[i] + sn * vtColpm1[i];
+                                    vtColpm1[i] = cs * vtColpm1[i] - sn * vtColl[i];
+                                    vtColl[i] = z;
                                 }
                             }
                         }
 
                         break;
 
-                    // Split at negligible s[l].
+                    // Split at negligible s(k).
                     case 2:
-                        f = e[l - 1].Real;
-                        e[l - 1] = 0.0;
-                        for (k = l; k < p; k++)
+                        f = e[k - 1].Real;
+                        e[k - 1] = 0.0;
+                        for (var j = k; j < p; j++)
                         {
-                            t1 = stmp[k].Real;
-                            Drotg(ref t1, ref f, out cs, out sn);
-                            stmp[k] = t1;
-                            f = -sn * e[k].Real;
-                            e[k] = cs * e[k];
+                            var t = stmp[j].Real;
+                            Drotg(ref t, ref f, out cs, out sn);
+                            stmp[j] = t;
+                            f = -sn * e[j].Real;
+                            e[j] = cs * e[j];
+
                             if (computeVectors)
                             {
-                                // Rotate
-                                for (i2 = 0; i2 < m; i2++)
+                                var uColj = u + ldu * j;
+                                var uColkm1 = u + ldu * (k - 1);
+
+                                for (var i = 0; i < m; i++)
                                 {
-                                    var z = (cs * u[(k * ldu) + i2]) + (sn * u[((l - 1) * ldu) + i2]);
-                                    u[((l - 1) * ldu) + i2] = (cs * u[((l - 1) * ldu) + i2]) - (sn * u[(k * ldu) + i2]);
-                                    u[(k * ldu) + i2] = z;
+                                    var z = (cs * uColj[i]) + (sn * uColkm1[i]);
+                                    uColkm1[i] = (cs * uColkm1[i]) - (sn * uColj[i]);
+                                    uColj[i] = z;
                                 }
                             }
                         }
@@ -407,13 +408,13 @@ namespace MatFlat
                         scale = Math.Max(scale, stmp[p - 1].Magnitude);
                         scale = Math.Max(scale, stmp[p - 2].Magnitude);
                         scale = Math.Max(scale, e[p - 2].Magnitude);
-                        scale = Math.Max(scale, stmp[l].Magnitude);
-                        scale = Math.Max(scale, e[l].Magnitude);
+                        scale = Math.Max(scale, stmp[k].Magnitude);
+                        scale = Math.Max(scale, e[k].Magnitude);
                         var sm = stmp[p - 1].Real / scale;
                         var smm1 = stmp[p - 2].Real / scale;
                         var emm1 = e[p - 2].Real / scale;
-                        var sl = stmp[l].Real / scale;
-                        var el = e[l].Real / scale;
+                        var sl = stmp[k].Real / scale;
+                        var el = e[k].Real / scale;
                         var b = (((smm1 + sm) * (smm1 - sm)) + (emm1 * emm1)) / 2.0;
                         var c = (sm * emm1) * (sm * emm1);
                         var shift = 0.0;
@@ -432,41 +433,41 @@ namespace MatFlat
                         var g = sl * el;
 
                         // Chase zeros
-                        for (k = l; k < p - 1; k++)
+                        for (var l3 = k; l3 < p - 1; l3++)
                         {
                             Drotg(ref f, ref g, out cs, out sn);
-                            if (k != l)
+                            if (l3 != k)
                             {
-                                e[k - 1] = f;
+                                e[l3 - 1] = f;
                             }
 
-                            f = (cs * stmp[k].Real) + (sn * e[k].Real);
-                            e[k] = (cs * e[k]) - (sn * stmp[k]);
-                            g = sn * stmp[k + 1].Real;
-                            stmp[k + 1] = cs * stmp[k + 1];
+                            f = (cs * stmp[l3].Real) + (sn * e[l3].Real);
+                            e[l3] = (cs * e[l3]) - (sn * stmp[l3]);
+                            g = sn * stmp[l3 + 1].Real;
+                            stmp[l3 + 1] = cs * stmp[l3 + 1];
                             if (computeVectors)
                             {
                                 for (i2 = 0; i2 < n; i2++)
                                 {
-                                    var z = (cs * vt[(k * ldvt) + i2]) + (sn * vt[((k + 1) * ldvt) + i2]);
-                                    vt[((k + 1) * ldvt) + i2] = (cs * vt[((k + 1) * ldvt) + i2]) - (sn * vt[(k * ldvt) + i2]);
-                                    vt[(k * ldvt) + i2] = z;
+                                    var z = (cs * vt[(l3 * ldvt) + i2]) + (sn * vt[((l3 + 1) * ldvt) + i2]);
+                                    vt[((l3 + 1) * ldvt) + i2] = (cs * vt[((l3 + 1) * ldvt) + i2]) - (sn * vt[(l3 * ldvt) + i2]);
+                                    vt[(l3 * ldvt) + i2] = z;
                                 }
                             }
 
                             Drotg(ref f, ref g, out cs, out sn);
-                            stmp[k] = f;
-                            f = (cs * e[k].Real) + (sn * stmp[k + 1].Real);
-                            stmp[k + 1] = -(sn * e[k]) + (cs * stmp[k + 1]);
-                            g = sn * e[k + 1].Real;
-                            e[k + 1] = cs * e[k + 1];
-                            if (computeVectors && k < m)
+                            stmp[l3] = f;
+                            f = (cs * e[l3].Real) + (sn * stmp[l3 + 1].Real);
+                            stmp[l3 + 1] = -(sn * e[l3]) + (cs * stmp[l3 + 1]);
+                            g = sn * e[l3 + 1].Real;
+                            e[l3 + 1] = cs * e[l3 + 1];
+                            if (computeVectors && l3 < m)
                             {
                                 for (i2 = 0; i2 < m; i2++)
                                 {
-                                    var z = (cs * u[(k * ldu) + i2]) + (sn * u[((k + 1) * ldu) + i2]);
-                                    u[((k + 1) * ldu) + i2] = (cs * u[((k + 1) * ldu) + i2]) - (sn * u[(k * ldu) + i2]);
-                                    u[(k * ldu) + i2] = z;
+                                    var z = (cs * u[(l3 * ldu) + i2]) + (sn * u[((l3 + 1) * ldu) + i2]);
+                                    u[((l3 + 1) * ldu) + i2] = (cs * u[((l3 + 1) * ldu) + i2]) - (sn * u[(l3 * ldu) + i2]);
+                                    u[(l3 * ldu) + i2] = z;
                                 }
                             }
                         }
@@ -479,48 +480,48 @@ namespace MatFlat
                     case 4:
 
                         // Make the singular value  positive
-                        if (stmp[l].Real < 0.0)
+                        if (stmp[k].Real < 0.0)
                         {
-                            stmp[l] = -stmp[l];
+                            stmp[k] = -stmp[k];
                             if (computeVectors)
                             {
                                 // A part of column "l" of matrix VT from row 0 to end multiply by -1
                                 for (i2 = 0; i2 < n; i2++)
                                 {
-                                    vt[(l * ldvt) + i2] = vt[(l * ldvt) + i2] * -1.0;
+                                    vt[(k * ldvt) + i2] = vt[(k * ldvt) + i2] * -1.0;
                                 }
                             }
                         }
 
                         // Order the singular value.
-                        while (l != mn - 1)
+                        while (k != mn - 1)
                         {
-                            if (stmp[l].Real >= stmp[l + 1].Real)
+                            if (stmp[k].Real >= stmp[k + 1].Real)
                             {
                                 break;
                             }
 
-                            t2 = stmp[l];
-                            stmp[l] = stmp[l + 1];
-                            stmp[l + 1] = t2;
-                            if (computeVectors && l < n)
+                            t2 = stmp[k];
+                            stmp[k] = stmp[k + 1];
+                            stmp[k + 1] = t2;
+                            if (computeVectors && k < n)
                             {
                                 // Swap columns l, l + 1
                                 for (i2 = 0; i2 < n; i2++)
                                 {
-                                    (vt[(l * ldvt) + i2], vt[((l + 1) * ldvt) + i2]) = (vt[((l + 1) * ldvt) + i2], vt[(l * ldvt) + i2]);
+                                    (vt[(k * ldvt) + i2], vt[((k + 1) * ldvt) + i2]) = (vt[((k + 1) * ldvt) + i2], vt[(k * ldvt) + i2]);
                                 }
                             }
 
-                            if (computeVectors && l < m)
+                            if (computeVectors && k < m)
                             {
                                 // Swap columns l, l + 1
                                 for (i2 = 0; i2 < m; i2++)
                                 {
-                                    (u[(l * ldu) + i2], u[((l + 1) * ldu) + i2]) = (u[((l + 1) * ldu) + i2], u[(l * ldu) + i2]);
+                                    (u[(k * ldu) + i2], u[((k + 1) * ldu) + i2]) = (u[((k + 1) * ldu) + i2], u[(k * ldu) + i2]);
                                 }
                             }
-                            l = l + 1;
+                            k = k + 1;
                         }
                         iter = 0;
                         p = p - 1;
@@ -794,7 +795,7 @@ namespace MatFlat
 
         private static double SvdFastMagnitude(Complex x)
         {
-            return Math.Abs(x.Real) + Math.Abs(x.Imaginary);
+            return Math.Max(Math.Abs(x.Real), Math.Abs(x.Imaginary));
         }
     }
 }
