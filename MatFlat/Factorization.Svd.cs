@@ -8,16 +8,6 @@ namespace MatFlat
 {
     public static partial class Factorization
     {
-        public static Complex Conjugate(this Complex value)
-        {
-            return new Complex(value.Real, -value.Imaginary);
-        }
-
-        public static bool AlmostEqualRelative(this double a, double b, double maximumError)
-        {
-            return Math.Abs(a - b) < 1.0E-15;
-        }
-
         public static unsafe void SvdComplex(int rowsA, int columnsA, Complex* a, int lda, Complex* s, Complex* u, int ldu, Complex* vt, int ldvt)
         {
             var work = new Complex[rowsA];
