@@ -43,10 +43,6 @@ namespace MatFlat
                 new Span<Complex>(vt + ccc * ldvt, n).Clear();
             }
 
-            int i2, j2;
-
-            Complex t2;
-
             // Reduce A to bidiagonal form, storing the diagonal elements in s and the super-diagonal elements in e.
             var nct = Math.Min(m - 1, n);
             var nrt = Math.Max(0, Math.Min(n - 2, m));
@@ -275,12 +271,14 @@ namespace MatFlat
                     throw new Exception();
                 }
 
-                // This section of the program inspects for negligible elements in the s and e arrays,
-                // on completion the variables case and l are set as follows:
-                // case = 1: if mS[m] and e[l-1] are negligible and l < m
-                // case = 2: if mS[l] is negligible and l < m
-                // case = 3: if e[l-1] is negligible, l < m, and mS[l, ..., mS[m] are not negligible (qr step).
-                // case = 4: if e[m-1] is negligible (convergence).
+                // Here is where a test for too many iterations would go.
+                // This section of the program inspects for
+                // negligible elements in the s and e arrays.  On
+                // completion the variables kase and k are set as follows.
+                // kase = 1     if s(p) and e[k-1] are negligible and k<p
+                // kase = 2     if s(k) is negligible and k<p
+                // kase = 3     if e[k-1] is negligible, k<p, and s(k), ..., s(p) are not negligible (qr step).
+                // kase = 4     if e(p-1) is negligible (convergence).
                 int k;
                 for (k = p - 2; k >= 0; k--)
                 {
@@ -335,7 +333,6 @@ namespace MatFlat
                 k++;
 
                 // Perform the task indicated by kase.
-                //int l3;
                 double f;
                 double cs;
                 double sn;
@@ -482,7 +479,6 @@ namespace MatFlat
 
                     // Convergence.
                     case 4:
-
                         // Make the singular value positive.
                         if (stmp[k].Real < 0.0)
                         {
@@ -502,9 +498,7 @@ namespace MatFlat
                                 break;
                             }
 
-                            t2 = stmp[k];
-                            stmp[k] = stmp[k + 1];
-                            stmp[k + 1] = t2;
+                            (stmp[k], stmp[k + 1]) = (stmp[k + 1], stmp[k]);
 
                             if (computeVectors && k < n)
                             {
@@ -538,30 +532,28 @@ namespace MatFlat
 
             if (computeVectors)
             {
-                // Finally transpose "v" to get "vt" matrix
-                for (i2 = 0; i2 < n; i2++)
+                for (var j = 0; j < n; j++)
                 {
-                    for (j2 = 0; j2 <= i2; j2++)
+                    var vtColj = vt + ldvt * j;
+
+                    for (var i = 0; i <= j; i++)
                     {
-                        if (j2 == i2)
+                        if (i == j)
                         {
-                            vt[(j2 * ldvt) + i2] = vt[(j2 * ldvt) + i2].Conjugate();
+                            vtColj[j] = vtColj[j].Conjugate();
                         }
                         else
                         {
-                            var val1 = vt[(j2 * ldvt) + i2];
-                            var val2 = vt[(i2 * ldvt) + j2];
-                            vt[(j2 * ldvt) + i2] = val2.Conjugate();
-                            vt[(i2 * ldvt) + j2] = val1.Conjugate();
+                            var vtColi = vt + ldvt * i;
+                            var t1 = vtColj[i];
+                            var t2 = vtColi[j];
+                            vtColj[i] = t2.Conjugate();
+                            vtColi[j] = t1.Conjugate();
                         }
                     }
                 }
             }
 
-            // Copy stemp to s with size adjustment. We are using ported copy of linpack's svd code and it uses
-            // a singular vector of length rows+1 when rows < columns. The last element is not used and needs to be removed.
-            // We should port lapack's svd routine to remove this problem.
-            //Array.Copy(stemp, 0, s, 0, Math.Min(rowsA, columnsA));
             new Span<Complex>(stmp, Math.Min(m, n)).CopyTo(new Span<Complex>(s, Math.Min(m, n)));
         }
 
