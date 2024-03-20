@@ -34,8 +34,6 @@ namespace MatFlat
 
         public static unsafe void SvdCore(int m, int n, Complex* a, int lda, Complex* s, Complex* u, int ldu, Complex* vt, int ldvt, Complex* work, Complex* e, Complex* stmp)
         {
-            var computeVectors = true;
-
             const int maxiter = 1000;
 
             // Reduce A to bidiagonal form, storing the diagonal elements in s and the super-diagonal elements in e.
@@ -83,7 +81,7 @@ namespace MatFlat
                     e[j] = aColj[k].Conjugate();
                 }
 
-                if (computeVectors && k < nct)
+                if (u != null && k < nct)
                 {
                     // Place the transformation in U for subsequent back multiplication.
                     var uColk = u + ldu * k;
@@ -128,7 +126,7 @@ namespace MatFlat
                         }
                     }
 
-                    if (computeVectors)
+                    if (vt != null)
                     {
                         // Place the transformation in V for subsequent back multiplication.
                         var vtColk = vt + ldvt * k;
@@ -156,7 +154,7 @@ namespace MatFlat
             e[p - 1] = Complex.Zero;
 
             // If required, generate U.
-            if (computeVectors)
+            if (u != null)
             {
                 for (var j = nct; j < m; j++)
                 {
@@ -192,7 +190,7 @@ namespace MatFlat
             }
 
             // If required, generate V.
-            if (computeVectors)
+            if (vt != null)
             {
                 for (var k = n - 1; k >= 0; k--)
                 {
@@ -229,7 +227,7 @@ namespace MatFlat
                         e[i] /= r;
                     }
 
-                    if (computeVectors)
+                    if (u != null)
                     {
                         SvdMulInplace(m, u + ldu * i, r);
                     }
@@ -247,7 +245,7 @@ namespace MatFlat
                     e[i] = t;
                     stmp[i + 1] = stmp[i + 1] * r;
 
-                    if (computeVectors)
+                    if (vt != null)
                     {
                         SvdMulInplace(n, vt + ldvt * (i + 1), r);
                     }
@@ -350,7 +348,7 @@ namespace MatFlat
                                 e[l - 1] = cs * e[l - 1];
                             }
 
-                            if (computeVectors)
+                            if (vt != null)
                             {
                                 var vtColl = vt + ldvt * l;
                                 var vtColpm1 = vt + ldvt * (p - 1);
@@ -377,7 +375,7 @@ namespace MatFlat
                             f = -sn * e[j].Real;
                             e[j] = cs * e[j];
 
-                            if (computeVectors)
+                            if (u != null)
                             {
                                 var uColj = u + ldu * j;
                                 var uColkm1 = u + ldu * (k - 1);
@@ -436,7 +434,7 @@ namespace MatFlat
                             g = sn * stmp[j + 1].Real;
                             stmp[j + 1] = cs * stmp[j + 1];
 
-                            if (computeVectors)
+                            if (vt != null)
                             {
                                 for (var i = 0; i < n; i++)
                                 {
@@ -455,7 +453,7 @@ namespace MatFlat
                             g = sn * e[j + 1].Real;
                             e[j + 1] = cs * e[j + 1];
 
-                            if (computeVectors && j < m)
+                            if (u != null && j < m)
                             {
                                 for (var i = 0; i < m; i++)
                                 {
@@ -480,7 +478,7 @@ namespace MatFlat
                         {
                             stmp[k] = -stmp[k];
 
-                            if (computeVectors)
+                            if (vt != null)
                             {
                                 SvdFlipSign(n, vt + ldvt * k);
                             }
@@ -496,7 +494,7 @@ namespace MatFlat
 
                             (stmp[k], stmp[k + 1]) = (stmp[k + 1], stmp[k]);
 
-                            if (computeVectors && k < n)
+                            if (vt != null && k < n)
                             {
                                 var vtColk = vt + ldvt * k;
                                 var vtColkp1 = vt + ldvt * (k + 1);
@@ -506,7 +504,7 @@ namespace MatFlat
                                 }
                             }
 
-                            if (computeVectors && k < m)
+                            if (u != null && k < m)
                             {
                                 var uColk = u + ldu * k;
                                 var uColkp1 = u + ldu * (k + 1);
@@ -526,7 +524,7 @@ namespace MatFlat
                 }
             }
 
-            if (computeVectors)
+            if (vt != null)
             {
                 for (var j = 0; j < n; j++)
                 {
