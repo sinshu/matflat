@@ -38,11 +38,6 @@ namespace MatFlat
 
             const int maxiter = 1000;
 
-            for (var ccc = 0; ccc < n; ccc++)
-            {
-                new Span<Complex>(vt + ccc * ldvt, n).Clear();
-            }
-
             // Reduce A to bidiagonal form, storing the diagonal elements in s and the super-diagonal elements in e.
             var nct = Math.Min(m - 1, n);
             var nrt = Math.Max(0, Math.Min(n - 2, m));
@@ -137,6 +132,7 @@ namespace MatFlat
                     {
                         // Place the transformation in V for subsequent back multiplication.
                         var vtColk = vt + ldvt * k;
+                        vtColk[k] = Complex.Zero;
                         var copyLength = sizeof(Complex) * (n - kp1);
                         Buffer.MemoryCopy(e + kp1, vtColk + kp1, copyLength, copyLength);
                     }
@@ -201,7 +197,7 @@ namespace MatFlat
                 for (var k = n - 1; k >= 0; k--)
                 {
                     var kp1 = k + 1;
-                    var vtColl = vt + ldvt * k;
+                    var vtColk = vt + ldvt * k;
 
                     if (k < nrt)
                     {
@@ -210,14 +206,14 @@ namespace MatFlat
                             for (var j = kp1; j < n; j++)
                             {
                                 var vtColj = vt + ldvt * j;
-                                var t = -SvdDot(n - kp1, vtColl + kp1, vtColj + kp1) / vtColl[kp1];
-                                SvdMulAdd(n - k, vtColl + k, t, vtColj + k);
+                                var t = -SvdDot(n - kp1, vtColk + kp1, vtColj + kp1) / vtColk[kp1];
+                                SvdMulAdd(n - k, vtColk + k, t, vtColj + k);
                             }
                         }
                     }
 
-                    new Span<Complex>(vtColl, n).Clear();
-                    vtColl[k] = Complex.One;
+                    new Span<Complex>(vtColk, n).Clear();
+                    vtColk[k] = Complex.One;
                 }
             }
 
