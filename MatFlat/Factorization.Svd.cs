@@ -187,7 +187,7 @@ namespace MatFlat
             }
 
             // Set up the final bidiagonal matrix or order m.
-            var m = Math.Min(columnsA, rowsA + 1);
+            var p = Math.Min(columnsA, rowsA + 1);
             var nctp1 = nct + 1;
             var nrtp1 = nrt + 1;
             if (nct < columnsA)
@@ -195,17 +195,17 @@ namespace MatFlat
                 stemp[nctp1 - 1] = a[((nctp1 - 1) * lda) + (nctp1 - 1)];
             }
 
-            if (rowsA < m)
+            if (rowsA < p)
             {
-                stemp[m - 1] = 0.0;
+                stemp[p - 1] = 0.0;
             }
 
-            if (nrtp1 < m)
+            if (nrtp1 < p)
             {
-                e[nrtp1 - 1] = a[((m - 1) * lda) + (nrtp1 - 1)];
+                e[nrtp1 - 1] = a[((p - 1) * lda) + (nrtp1 - 1)];
             }
 
-            e[m - 1] = 0.0;
+            e[p - 1] = 0.0;
 
             // If required, generate "u".
             if (computeVectors)
@@ -301,7 +301,7 @@ namespace MatFlat
             }
 
             // Transform "s" and "e" so that they are double
-            for (i = 0; i < m; i++)
+            for (i = 0; i < p; i++)
             {
                 double r;
                 if (stemp[i] != 0.0)
@@ -309,7 +309,7 @@ namespace MatFlat
                     t = stemp[i];
                     r = stemp[i] / t;
                     stemp[i] = t;
-                    if (i < m - 1)
+                    if (i < p - 1)
                     {
                         e[i] = e[i] / r;
                     }
@@ -325,7 +325,7 @@ namespace MatFlat
                 }
 
                 // Exit
-                if (i == m - 1)
+                if (i == p - 1)
                 {
                     break;
                 }
@@ -352,10 +352,10 @@ namespace MatFlat
             }
 
             // Main iteration loop for the singular values.
-            var mn = m;
+            var mn = p;
             var iter = 0;
 
-            while (m > 0)
+            while (p > 0)
             {
                 // Quit if all the singular values have been found.
                 // If too many iterations have been performed throw exception.
@@ -372,7 +372,7 @@ namespace MatFlat
                 // case = 4: if e[m-1] is negligible (convergence).
                 double ztest;
                 double test;
-                for (l = m - 2; l >= 0; l--)
+                for (l = p - 2; l >= 0; l--)
                 {
                     test = Math.Abs(stemp[l]) + Math.Abs(stemp[l + 1]);
                     ztest = test + Math.Abs(e[l]);
@@ -384,17 +384,17 @@ namespace MatFlat
                 }
 
                 int kase;
-                if (l == m - 2)
+                if (l == p - 2)
                 {
                     kase = 4;
                 }
                 else
                 {
                     int ls;
-                    for (ls = m - 1; ls > l; ls--)
+                    for (ls = p - 1; ls > l; ls--)
                     {
                         test = 0.0;
-                        if (ls != m - 1)
+                        if (ls != p - 1)
                         {
                             test = test + Math.Abs(e[ls]);
                         }
@@ -416,7 +416,7 @@ namespace MatFlat
                     {
                         kase = 3;
                     }
-                    else if (ls == m - 1)
+                    else if (ls == p - 1)
                     {
                         kase = 1;
                     }
@@ -430,7 +430,7 @@ namespace MatFlat
                 l = l + 1;
 
                 // Perform the task indicated by case.
-                int k;
+                int k2;
                 double f;
                 double cs;
                 double sn;
@@ -438,20 +438,20 @@ namespace MatFlat
                 {
                     // Deflate negligible s[m].
                     case 1:
-                        f = e[m - 2];
-                        e[m - 2] = 0.0;
+                        f = e[p - 2];
+                        e[p - 2] = 0.0;
                         double t1;
-                        for (var kk = l; kk < m - 1; kk++)
+                        for (var kk = l; kk < p - 1; kk++)
                         {
-                            k = m - 2 - kk + l;
-                            t1 = stemp[k];
+                            k2 = p - 2 - kk + l;
+                            t1 = stemp[k2];
 
                             Drotg(ref t1, ref f, out cs, out sn);
-                            stemp[k] = t1;
-                            if (k != l)
+                            stemp[k2] = t1;
+                            if (k2 != l)
                             {
-                                f = -sn * e[k - 1];
-                                e[k - 1] = cs * e[k - 1];
+                                f = -sn * e[k2 - 1];
+                                e[k2 - 1] = cs * e[k2 - 1];
                             }
 
                             if (computeVectors)
@@ -459,9 +459,9 @@ namespace MatFlat
                                 // Rotate
                                 for (i = 0; i < columnsA; i++)
                                 {
-                                    var z = (cs * v[(k * ldvt) + i]) + (sn * v[((m - 1) * ldvt) + i]);
-                                    v[((m - 1) * ldvt) + i] = (cs * v[((m - 1) * ldvt) + i]) - (sn * v[(k * ldvt) + i]);
-                                    v[(k * ldvt) + i] = z;
+                                    var z = (cs * v[(k2 * ldvt) + i]) + (sn * v[((p - 1) * ldvt) + i]);
+                                    v[((p - 1) * ldvt) + i] = (cs * v[((p - 1) * ldvt) + i]) - (sn * v[(k2 * ldvt) + i]);
+                                    v[(k2 * ldvt) + i] = z;
                                 }
                             }
                         }
@@ -472,21 +472,21 @@ namespace MatFlat
                     case 2:
                         f = e[l - 1];
                         e[l - 1] = 0.0;
-                        for (k = l; k < m; k++)
+                        for (k2 = l; k2 < p; k2++)
                         {
-                            t1 = stemp[k];
+                            t1 = stemp[k2];
                             Drotg(ref t1, ref f, out cs, out sn);
-                            stemp[k] = t1;
-                            f = -sn * e[k];
-                            e[k] = cs * e[k];
+                            stemp[k2] = t1;
+                            f = -sn * e[k2];
+                            e[k2] = cs * e[k2];
                             if (computeVectors)
                             {
                                 // Rotate
                                 for (i = 0; i < rowsA; i++)
                                 {
-                                    var z = (cs * u[(k * ldu) + i]) + (sn * u[((l - 1) * ldu) + i]);
-                                    u[((l - 1) * ldu) + i] = (cs * u[((l - 1) * ldu) + i]) - (sn * u[(k * ldu) + i]);
-                                    u[(k * ldu) + i] = z;
+                                    var z = (cs * u[(k2 * ldu) + i]) + (sn * u[((l - 1) * ldu) + i]);
+                                    u[((l - 1) * ldu) + i] = (cs * u[((l - 1) * ldu) + i]) - (sn * u[(k2 * ldu) + i]);
+                                    u[(k2 * ldu) + i] = z;
                                 }
                             }
                         }
@@ -498,14 +498,14 @@ namespace MatFlat
 
                         // calculate the shift.
                         var scale = 0.0;
-                        scale = Math.Max(scale, Math.Abs(stemp[m - 1]));
-                        scale = Math.Max(scale, Math.Abs(stemp[m - 2]));
-                        scale = Math.Max(scale, Math.Abs(e[m - 2]));
+                        scale = Math.Max(scale, Math.Abs(stemp[p - 1]));
+                        scale = Math.Max(scale, Math.Abs(stemp[p - 2]));
+                        scale = Math.Max(scale, Math.Abs(e[p - 2]));
                         scale = Math.Max(scale, Math.Abs(stemp[l]));
                         scale = Math.Max(scale, Math.Abs(e[l]));
-                        var sm = stemp[m - 1] / scale;
-                        var smm1 = stemp[m - 2] / scale;
-                        var emm1 = e[m - 2] / scale;
+                        var sm = stemp[p - 1] / scale;
+                        var smm1 = stemp[p - 2] / scale;
+                        var emm1 = e[p - 2] / scale;
                         var sl = stemp[l] / scale;
                         var el = e[l] / scale;
                         var b = (((smm1 + sm) * (smm1 - sm)) + (emm1 * emm1)) / 2.0;
@@ -526,46 +526,46 @@ namespace MatFlat
                         var g = sl * el;
 
                         // Chase zeros
-                        for (k = l; k < m - 1; k++)
+                        for (k2 = l; k2 < p - 1; k2++)
                         {
                             Drotg(ref f, ref g, out cs, out sn);
-                            if (k != l)
+                            if (k2 != l)
                             {
-                                e[k - 1] = f;
+                                e[k2 - 1] = f;
                             }
 
-                            f = (cs * stemp[k]) + (sn * e[k]);
-                            e[k] = (cs * e[k]) - (sn * stemp[k]);
-                            g = sn * stemp[k + 1];
-                            stemp[k + 1] = cs * stemp[k + 1];
+                            f = (cs * stemp[k2]) + (sn * e[k2]);
+                            e[k2] = (cs * e[k2]) - (sn * stemp[k2]);
+                            g = sn * stemp[k2 + 1];
+                            stemp[k2 + 1] = cs * stemp[k2 + 1];
                             if (computeVectors)
                             {
                                 for (i = 0; i < columnsA; i++)
                                 {
-                                    var z = (cs * v[(k * ldvt) + i]) + (sn * v[((k + 1) * ldvt) + i]);
-                                    v[((k + 1) * ldvt) + i] = (cs * v[((k + 1) * ldvt) + i]) - (sn * v[(k * ldvt) + i]);
-                                    v[(k * ldvt) + i] = z;
+                                    var z = (cs * v[(k2 * ldvt) + i]) + (sn * v[((k2 + 1) * ldvt) + i]);
+                                    v[((k2 + 1) * ldvt) + i] = (cs * v[((k2 + 1) * ldvt) + i]) - (sn * v[(k2 * ldvt) + i]);
+                                    v[(k2 * ldvt) + i] = z;
                                 }
                             }
 
                             Drotg(ref f, ref g, out cs, out sn);
-                            stemp[k] = f;
-                            f = (cs * e[k]) + (sn * stemp[k + 1]);
-                            stemp[k + 1] = -(sn * e[k]) + (cs * stemp[k + 1]);
-                            g = sn * e[k + 1];
-                            e[k + 1] = cs * e[k + 1];
-                            if (computeVectors && k < rowsA)
+                            stemp[k2] = f;
+                            f = (cs * e[k2]) + (sn * stemp[k2 + 1]);
+                            stemp[k2 + 1] = -(sn * e[k2]) + (cs * stemp[k2 + 1]);
+                            g = sn * e[k2 + 1];
+                            e[k2 + 1] = cs * e[k2 + 1];
+                            if (computeVectors && k2 < rowsA)
                             {
                                 for (i = 0; i < rowsA; i++)
                                 {
-                                    var z = (cs * u[(k * ldu) + i]) + (sn * u[((k + 1) * ldu) + i]);
-                                    u[((k + 1) * ldu) + i] = (cs * u[((k + 1) * ldu) + i]) - (sn * u[(k * ldu) + i]);
-                                    u[(k * ldu) + i] = z;
+                                    var z = (cs * u[(k2 * ldu) + i]) + (sn * u[((k2 + 1) * ldu) + i]);
+                                    u[((k2 + 1) * ldu) + i] = (cs * u[((k2 + 1) * ldu) + i]) - (sn * u[(k2 * ldu) + i]);
+                                    u[(k2 * ldu) + i] = z;
                                 }
                             }
                         }
 
-                        e[m - 2] = f;
+                        e[p - 2] = f;
                         iter = iter + 1;
                         break;
 
@@ -619,7 +619,7 @@ namespace MatFlat
                         }
 
                         iter = 0;
-                        m = m - 1;
+                        p = p - 1;
                         break;
                 }
             }
