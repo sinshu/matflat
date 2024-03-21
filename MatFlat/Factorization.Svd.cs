@@ -36,8 +36,7 @@ namespace MatFlat
 
             var ncu = m;
 
-            // Reduce matrix to bidiagonal form, storing the diagonal elements
-            // in "s" and the super-diagonal elements in "e".
+            // Reduce A to bidiagonal form, storing the diagonal elements in s and the super-diagonal elements in e.
             var nct = Math.Min(m - 1, n);
             var nrt = Math.Max(0, Math.Min(n - 2, m));
             var kmax = Math.Max(nct, nrt);
