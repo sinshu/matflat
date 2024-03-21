@@ -191,90 +191,63 @@ namespace MatFlat
                 }
             }
 
-            // If it is required, generate v.
-            if (computeVectors)
+            // If required, generate V.
+            if (vt != null)
             {
                 for (var k = n - 1; k >= 0; k--)
                 {
                     var kp1 = k + 1;
-                    if (k < nrt)
-                    {
-                        if (e[k] != 0.0)
-                        {
-                            for (j2 = kp1; j2 < n; j2++)
-                            {
-                                t2 = 0.0;
-                                for (i2 = kp1; i2 < n; i2++)
-                                {
-                                    t2 += vt[(j2 * ldvt) + i2] * vt[(k * ldvt) + i2];
-                                }
+                    var vtColk = vt + ldvt * k;
 
-                                t2 = -t2 / vt[(k * ldvt) + kp1];
-                                for (var ii = k; ii < n; ii++)
-                                {
-                                    vt[(j2 * ldvt) + ii] += t2 * vt[(k * ldvt) + ii];
-                                }
-                            }
+                    if (k < nrt && e[k] != 0.0)
+                    {
+                        for (var j = kp1; j < n; j++)
+                        {
+                            var vtColj = vt + ldvt * j;
+                            var t = -SvdDot(n - kp1, vtColk + kp1, vtColj + kp1) / vtColk[kp1];
+                            SvdMulAdd(n - k, vtColk + k, t, vtColj + k);
                         }
                     }
 
-                    for (i2 = 0; i2 < n; i2++)
-                    {
-                        vt[(k * ldvt) + i2] = 0.0;
-                    }
-
-                    vt[(k * ldvt) + k] = 1.0;
+                    new Span<double>(vtColk, n).Clear();
+                    vtColk[k] = 1.0;
                 }
             }
 
-            // Transform "s" and "e" so that they are double
-            for (i2 = 0; i2 < p; i2++)
+            for (var i = 0; i < p; i++)
             {
-                double r;
-                if (stmp[i2] != 0.0)
+                if (stmp[i] != 0.0)
                 {
-                    t2 = stmp[i2];
-                    r = stmp[i2] / t2;
-                    stmp[i2] = t2;
-                    if (i2 < p - 1)
+                    var t = stmp[i];
+                    var r = stmp[i] / t;
+                    stmp[i] = t;
+                    if (i < p - 1)
                     {
-                        e[i2] = e[i2] / r;
+                        e[i] /= r;
                     }
 
-                    if (computeVectors)
+                    if (u != null)
                     {
-                        // A part of column "i" of matrix U from row 0 to end multiply by r
-                        for (j2 = 0; j2 < m; j2++)
-                        {
-                            u[(i2 * ldu) + j2] = u[(i2 * ldu) + j2] * r;
-                        }
+                        SvdMulInplace(m, u + ldu * i, r);
                     }
                 }
 
-                // Exit
-                if (i2 == p - 1)
+                if (i == p - 1)
                 {
                     break;
                 }
 
-                if (e[i2] == 0.0)
+                if (e[i] != 0.0)
                 {
-                    continue;
-                }
+                    var t = e[i];
+                    var r = t / e[i];
+                    e[i] = t;
+                    stmp[i + 1] = stmp[i + 1] * r;
 
-                t2 = e[i2];
-                r = t2 / e[i2];
-                e[i2] = t2;
-                stmp[i2 + 1] = stmp[i2 + 1] * r;
-                if (!computeVectors)
-                {
-                    continue;
-                }
-
-                // A part of column "i+1" of matrix VT from row 0 to end multiply by r
-                for (j2 = 0; j2 < n; j2++)
-                {
-                    vt[((i2 + 1) * ldvt) + j2] = vt[((i2 + 1) * ldvt) + j2] * r;
+                    if (vt != null)
+                    {
+                        SvdMulInplace(n, vt + ldvt * (i + 1), r);
+                    }
                 }
             }
 
@@ -751,16 +724,13 @@ namespace MatFlat
                     var kp1 = k + 1;
                     var vtColk = vt + ldvt * k;
 
-                    if (k < nrt)
+                    if (k < nrt && e[k] != Complex.Zero)
                     {
-                        if (e[k] != Complex.Zero)
+                        for (var j = kp1; j < n; j++)
                         {
-                            for (var j = kp1; j < n; j++)
-                            {
-                                var vtColj = vt + ldvt * j;
-                                var t = -SvdDot(n - kp1, vtColk + kp1, vtColj + kp1) / vtColk[kp1];
-                                SvdMulAdd(n - k, vtColk + k, t, vtColj + k);
-                            }
+                            var vtColj = vt + ldvt * j;
+                            var t = -SvdDot(n - kp1, vtColk + kp1, vtColj + kp1) / vtColk[kp1];
+                            SvdMulAdd(n - k, vtColk + k, t, vtColj + k);
                         }
                     }
 
@@ -1185,6 +1155,30 @@ namespace MatFlat
             {
                 x[0] /= y;
                 x[1] /= y;
+                x += 2;
+                n -= 2;
+            }
+        }
+
+        private static unsafe void SvdMulInplace(int n, double* x, double y)
+        {
+            switch (n & 1)
+            {
+                case 0:
+                    break;
+                case 1:
+                    x[0] *= y;
+                    x++;
+                    n--;
+                    break;
+                default:
+                    throw new LinearAlgebraException("An unexpected error occurred.");
+            }
+
+            while (n > 0)
+            {
+                x[0] *= y;
+                x[1] *= y;
                 x += 2;
                 n -= 2;
             }
