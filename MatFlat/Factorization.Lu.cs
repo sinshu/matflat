@@ -249,7 +249,7 @@ namespace MatFlat
                 for (var i = 0; i < m; i++)
                 {
                     // Most of the time is spent in the following dot product.
-                    var s = Internals.Dot(Math.Min(i, j), a + i, lda, work);
+                    var s = (float)Internals.Dot(Math.Min(i, j), a + i, lda, work);
                     colj[i] = work[i] -= s;
                 }
 

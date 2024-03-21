@@ -100,7 +100,7 @@ namespace MatFlat
             }
         }
 
-        internal static unsafe float Dot(int n, float* x, int incx, float* y)
+        internal static unsafe double Dot(int n, float* x, int incx, float* y)
         {
             double sum;
             switch (n & 1)
@@ -126,7 +126,7 @@ namespace MatFlat
                 n -= 2;
             }
 
-            return (float)sum;
+            return sum;
         }
 
         internal static unsafe double Dot(int n, double* x, int incx, double* y)
