@@ -555,8 +555,6 @@ namespace MatFlat
 
         private static unsafe void SvdCore(int m, int n, Complex* a, int lda, Complex* s, Complex* u, int ldu, Complex* vt, int ldvt, Complex* work, Complex* e, Complex* stmp)
         {
-            const int maxiter = 1000;
-
             // Reduce A to bidiagonal form, storing the diagonal elements in s and the super-diagonal elements in e.
             var nct = Math.Min(m - 1, n);
             var nrt = Math.Max(0, Math.Min(n - 2, m));
@@ -570,16 +568,16 @@ namespace MatFlat
                 {
                     // Compute the transformation for the k-th column and place the k-th diagonal in s[k].
                     // Compute 2-norm of k-th column.
-                    stmp[k] = SvdNorm(m - k, aColk + k);
+                    stmp[k] = Internals.Norm(m - k, aColk + k);
 
                     if (stmp[k] != Complex.Zero)
                     {
                         if (aColk[k] != Complex.Zero)
                         {
-                            stmp[k] = ChangeArgument(stmp[k], aColk[k]);
+                            stmp[k] = Internals.ChangeArgument(stmp[k], aColk[k]);
                         }
 
-                        SvdDivInplace(m - k, aColk + k, stmp[k]);
+                        Internals.DivInplace(m - k, aColk + k, stmp[k]);
 
                         aColk[k] += 1.0;
                     }
@@ -594,8 +592,8 @@ namespace MatFlat
                     if (k < nct && stmp[k] != Complex.Zero)
                     {
                         // Apply the transformation.
-                        var t = -SvdDot(m - k, aColk + k, aColj + k) / aColk[k];
-                        SvdMulAdd(m - k, aColk + k, t, aColj + k);
+                        var t = -Internals.DotConj(m - k, aColk + k, aColj + k) / aColk[k];
+                        Internals.MulAdd(m - k, aColk + k, t, aColj + k);
                     }
 
                     // Place the k-th row of A into e for the subsequent calculation of the row transformation.
@@ -614,16 +612,16 @@ namespace MatFlat
                 {
                     // Compute the k-th row transformation and place the k-th super-diagonal in e[k].
                     // Compute 2-norm.
-                    e[k] = SvdNorm(n - kp1, e + kp1);
+                    e[k] = Internals.Norm(n - kp1, e + kp1);
 
                     if (e[k] != Complex.Zero)
                     {
                         if (e[kp1] != Complex.Zero)
                         {
-                            e[k] = ChangeArgument(e[k], e[kp1]);
+                            e[k] = Internals.ChangeArgument(e[k], e[kp1]);
                         }
 
-                        SvdDivInplace(n - kp1, e + kp1, e[k]);
+                        Internals.DivInplace(n - kp1, e + kp1, e[k]);
 
                         e[kp1] += Complex.One;
                     }
@@ -638,13 +636,13 @@ namespace MatFlat
                         for (var j = kp1; j < n; j++)
                         {
                             var aColj = a + lda * j;
-                            SvdMulAdd(m - kp1, aColj + kp1, e[j], work + kp1);
+                            Internals.MulAdd(m - kp1, aColj + kp1, e[j], work + kp1);
                         }
 
                         for (var j = kp1; j < n; j++)
                         {
                             var aColj = a + lda * j;
-                            SvdMulAdd(m - kp1, work + kp1, (-e[j] / e[kp1]).Conjugate(), aColj + kp1);
+                            Internals.MulAdd(m - kp1, work + kp1, (-e[j] / e[kp1]).Conjugate(), aColj + kp1);
                         }
                     }
 
@@ -695,11 +693,11 @@ namespace MatFlat
                         for (var j = k + 1; j < m; j++)
                         {
                             var uColj = u + ldu * j;
-                            var t = -SvdDot(m - k, uColk + k, uColj + k) / uColk[k];
-                            SvdMulAdd(m - k, uColk + k, t, uColj + k);
+                            var t = -Internals.DotConj(m - k, uColk + k, uColj + k) / uColk[k];
+                            Internals.MulAdd(m - k, uColk + k, t, uColj + k);
                         }
 
-                        SvdFlipSign(m - k, uColk + k);
+                        Internals.FlipSign(m - k, uColk + k);
 
                         uColk[k] += Complex.One;
                         new Span<Complex>(uColk, k).Clear();
@@ -725,8 +723,8 @@ namespace MatFlat
                         for (var j = kp1; j < n; j++)
                         {
                             var vtColj = vt + ldvt * j;
-                            var t = -SvdDot(n - kp1, vtColk + kp1, vtColj + kp1) / vtColk[kp1];
-                            SvdMulAdd(n - k, vtColk + k, t, vtColj + k);
+                            var t = -Internals.DotConj(n - kp1, vtColk + kp1, vtColj + kp1) / vtColk[kp1];
+                            Internals.MulAdd(n - k, vtColk + k, t, vtColj + k);
                         }
                     }
 
@@ -749,7 +747,7 @@ namespace MatFlat
 
                     if (u != null)
                     {
-                        SvdMulInplace(m, u + ldu * i, r);
+                        Internals.MulInplace(m, u + ldu * i, r);
                     }
                 }
 
@@ -767,7 +765,7 @@ namespace MatFlat
 
                     if (vt != null)
                     {
-                        SvdMulInplace(n, vt + ldvt * (i + 1), r);
+                        Internals.MulInplace(n, vt + ldvt * (i + 1), r);
                     }
                 }
             }
@@ -780,9 +778,9 @@ namespace MatFlat
             {
                 // Quit if all the singular values have been found.
                 // If too many iterations have been performed throw exception.
-                if (iter >= maxiter)
+                if (iter >= 1000)
                 {
-                    throw new Exception();
+                    throw new MatFlatException("SVD failed. The solution did not converge.");
                 }
 
                 // Here is where a test for too many iterations would go.
@@ -860,7 +858,7 @@ namespace MatFlat
                         {
                             var l = p - 2 - j + k;
                             var t = stmp[l].Real;
-                            Drotg(ref t, ref f, out cs, out sn);
+                            Internals.Drotg(ref t, ref f, out cs, out sn);
                             stmp[l] = t;
                             if (l != k)
                             {
@@ -890,7 +888,7 @@ namespace MatFlat
                         for (var j = k; j < p; j++)
                         {
                             var t = stmp[j].Real;
-                            Drotg(ref t, ref f, out cs, out sn);
+                            Internals.Drotg(ref t, ref f, out cs, out sn);
                             stmp[j] = t;
                             f = -sn * e[j].Real;
                             e[j] = cs * e[j];
@@ -943,7 +941,7 @@ namespace MatFlat
                         // Chase zeros.
                         for (var j = k; j < p - 1; j++)
                         {
-                            Drotg(ref f, ref g, out cs, out sn);
+                            Internals.Drotg(ref f, ref g, out cs, out sn);
                             if (j != k)
                             {
                                 e[j - 1] = f;
@@ -966,7 +964,7 @@ namespace MatFlat
                                 }
                             }
 
-                            Drotg(ref f, ref g, out cs, out sn);
+                            Internals.Drotg(ref f, ref g, out cs, out sn);
                             stmp[j] = f;
                             f = cs * e[j].Real + sn * stmp[j + 1].Real;
                             stmp[j + 1] = -(sn * e[j]) + (cs * stmp[j + 1]);
@@ -1000,7 +998,7 @@ namespace MatFlat
 
                             if (vt != null)
                             {
-                                SvdFlipSign(n, vt + ldvt * k);
+                                Internals.FlipSign(n, vt + ldvt * k);
                             }
                         }
 
@@ -1070,318 +1068,6 @@ namespace MatFlat
             }
 
             new Span<Complex>(stmp, Math.Min(m, n)).CopyTo(new Span<Complex>(s, Math.Min(m, n)));
-        }
-
-        private static unsafe double SvdNorm(int n, double* x)
-        {
-            double sum;
-            switch (n & 1)
-            {
-                case 0:
-                    sum = 0.0;
-                    break;
-                case 1:
-                    sum = x[0] * x[0];
-                    x++;
-                    n--;
-                    break;
-                default:
-                    throw new MatrixFactorizationException("An unexpected error occurred.");
-            }
-
-            while (n > 0)
-            {
-                sum += x[0] * x[0] + x[1] * x[1];
-                x += 2;
-                n -= 2;
-            }
-
-            return Math.Sqrt(sum);
-        }
-
-        private static unsafe double SvdNorm(int n, Complex* x)
-        {
-            double sum;
-            switch (n & 1)
-            {
-                case 0:
-                    sum = 0.0;
-                    break;
-                case 1:
-                    sum = x[0].Real * x[0].Real + x[0].Imaginary * x[0].Imaginary;
-                    x++;
-                    n--;
-                    break;
-                default:
-                    throw new MatrixFactorizationException("An unexpected error occurred.");
-            }
-
-            while (n > 0)
-            {
-                sum += x[0].Real * x[0].Real + x[0].Imaginary * x[0].Imaginary + x[1].Real * x[1].Real + x[1].Imaginary * x[1].Imaginary;
-                x += 2;
-                n -= 2;
-            }
-
-            return Math.Sqrt(sum);
-        }
-
-        private static Complex ChangeArgument(Complex abs, Complex arg)
-        {
-            var num = abs.Real * abs.Real + abs.Imaginary * abs.Imaginary;
-            var den = arg.Real * arg.Real + arg.Imaginary * arg.Imaginary;
-            return Math.Sqrt(num / den) * arg;
-        }
-
-        private static unsafe void SvdDivInplace<T>(int n, T* x, T y) where T : unmanaged, INumberBase<T>
-        {
-            switch (n & 1)
-            {
-                case 0:
-                    break;
-                case 1:
-                    x[0] /= y;
-                    x++;
-                    n--;
-                    break;
-                default:
-                    throw new MatrixFactorizationException("An unexpected error occurred.");
-            }
-
-            while (n > 0)
-            {
-                x[0] /= y;
-                x[1] /= y;
-                x += 2;
-                n -= 2;
-            }
-        }
-
-        private static unsafe void SvdMulInplace(int n, double* x, double y)
-        {
-            switch (n & 1)
-            {
-                case 0:
-                    break;
-                case 1:
-                    x[0] *= y;
-                    x++;
-                    n--;
-                    break;
-                default:
-                    throw new MatrixFactorizationException("An unexpected error occurred.");
-            }
-
-            while (n > 0)
-            {
-                x[0] *= y;
-                x[1] *= y;
-                x += 2;
-                n -= 2;
-            }
-        }
-
-        private static unsafe void SvdMulInplace(int n, Complex* x, Complex y)
-        {
-            switch (n & 1)
-            {
-                case 0:
-                    break;
-                case 1:
-                    x[0] *= y;
-                    x++;
-                    n--;
-                    break;
-                default:
-                    throw new MatrixFactorizationException("An unexpected error occurred.");
-            }
-
-            while (n > 0)
-            {
-                x[0] *= y;
-                x[1] *= y;
-                x += 2;
-                n -= 2;
-            }
-        }
-
-        private static unsafe void SvdDivInplace<T>(ReadOnlySpan<T> x, T y) where T : unmanaged, INumberBase<T>
-        {
-            fixed (T* px = x)
-            {
-                SvdDivInplace(x.Length, px, y);
-            }
-        }
-
-        private static unsafe double SvdDot(int n, double* x, double* y)
-        {
-            double sum;
-            switch (n & 1)
-            {
-                case 0:
-                    sum = 0.0;
-                    break;
-                case 1:
-                    sum = x[0] * y[0];
-                    x++;
-                    y++;
-                    n--;
-                    break;
-                default:
-                    throw new MatrixFactorizationException("An unexpected error occurred.");
-            }
-
-            while (n > 0)
-            {
-                sum += x[0] * y[0] + x[1] * y[1];
-                x += 2;
-                y += 2;
-                n -= 2;
-            }
-
-            return sum;
-        }
-
-        private static unsafe Complex SvdDot(int n, Complex* x, Complex* y)
-        {
-            Complex sum;
-            switch (n & 1)
-            {
-                case 0:
-                    sum = Complex.Zero;
-                    break;
-                case 1:
-                    sum = SvdComplexMul(x[0], y[0]);
-                    x++;
-                    y++;
-                    n--;
-                    break;
-                default:
-                    throw new MatrixFactorizationException("An unexpected error occurred.");
-            }
-
-            while (n > 0)
-            {
-                sum += SvdComplexMul(x[0], y[0]) + SvdComplexMul(x[1], y[1]);
-                x += 2;
-                y += 2;
-                n -= 2;
-            }
-
-            return sum;
-        }
-
-        private static unsafe void SvdMulAdd<T>(int n, T* x, T y, T* dst) where T : unmanaged, INumberBase<T>
-        {
-            switch (n & 1)
-            {
-                case 0:
-                    break;
-                case 1:
-                    dst[0] += x[0] * y;
-                    x++;
-                    dst++;
-                    n--;
-                    break;
-                default:
-                    throw new MatrixFactorizationException("An unexpected error occurred.");
-            }
-
-            while (n > 0)
-            {
-                dst[0] += x[0] * y;
-                dst[1] += x[1] * y;
-                x += 2;
-                dst += 2;
-                n -= 2;
-            }
-        }
-
-        private static unsafe void SvdFlipSign<T>(int n, T* x) where T : unmanaged, INumberBase<T>
-        {
-            switch (n & 1)
-            {
-                case 0:
-                    break;
-                case 1:
-                    x[0] = -x[0];
-                    x++;
-                    n--;
-                    break;
-                default:
-                    throw new MatrixFactorizationException("An unexpected error occurred.");
-            }
-
-            while (n > 0)
-            {
-                x[0] = -x[0];
-                x[1] = -x[1];
-                x += 2;
-                n -= 2;
-            }
-        }
-
-        static void Drotg(ref double da, ref double db, out double c, out double s)
-        {
-            double r, z;
-
-            var roe = db;
-            var absda = Math.Abs(da);
-            var absdb = Math.Abs(db);
-            if (absda > absdb)
-            {
-                roe = da;
-            }
-
-            var scale = absda + absdb;
-            if (scale == 0.0)
-            {
-                c = 1.0;
-                s = 0.0;
-                r = 0.0;
-                z = 0.0;
-            }
-            else
-            {
-                var sda = da / scale;
-                var sdb = db / scale;
-                r = scale * Math.Sqrt((sda * sda) + (sdb * sdb));
-                if (roe < 0.0)
-                {
-                    r = -r;
-                }
-
-                c = da / r;
-                s = db / r;
-                z = 1.0;
-                if (absda > absdb)
-                {
-                    z = s;
-                }
-
-                if (absdb >= absda && c != 0.0)
-                {
-                    z = 1.0 / c;
-                }
-            }
-
-            da = r;
-            db = z;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static Complex SvdComplexMul(Complex x, Complex y)
-        {
-            var a = x.Real;
-            var b = -x.Imaginary;
-            var c = y.Real;
-            var d = y.Imaginary;
-            return new Complex(a * c - b * d, a * d + b * c);
-        }
-
-        private static double SvdFastMagnitude(Complex x)
-        {
-            return Math.Max(Math.Abs(x.Real), Math.Abs(x.Imaginary));
         }
     }
 }

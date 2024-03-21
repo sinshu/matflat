@@ -28,6 +28,14 @@ namespace MatFlat
             return new Complex(a * c - b * d, a * d + b * c);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static Complex ChangeArgument(Complex abs, Complex arg)
+        {
+            var num = abs.Real * abs.Real + abs.Imaginary * abs.Imaginary;
+            var den = arg.Real * arg.Real + arg.Imaginary * arg.Imaginary;
+            return Math.Sqrt(num / den) * arg;
+        }
+
         internal static unsafe void MulAdd<T>(int n, T* x, T y, T* dst) where T : unmanaged, INumberBase<T>
         {
             switch (n & 1)
