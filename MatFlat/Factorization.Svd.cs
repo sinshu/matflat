@@ -26,14 +26,9 @@ namespace MatFlat
             }
         }
 
-        private static unsafe void SvdCore(int m, int n, double* a, int lda, double* s, double* u, int ldu, double* v, int ldvt, double* work, double* e, double* stmp)
+        private static unsafe void SvdCore(int m, int n, double* a, int lda, double* s, double* u, int ldu, double* vt, int ldvt, double* work, double* e, double* stmp)
         {
             var computeVectors = true;
-
-            for (var ccc = 0; ccc < n; ccc++)
-            {
-                new Span<double>(v + ccc * ldvt, n).Clear();
-            }
 
             int i2, j2;
 
@@ -59,125 +54,88 @@ namespace MatFlat
 
                     if (stmp[k] != 0.0)
                     {
-                        if (a[(k * lda) + k] != 0.0)
+                        if (aColk[k] != 0.0)
                         {
-                            stmp[k] = Math.Abs(stmp[k]) * (a[(k * lda) + k] / Math.Abs(a[(k * lda) + k]));
+                            stmp[k] = Math.Abs(stmp[k]) * (aColk[k] / Math.Abs(aColk[k]));
                         }
 
-                        // A part of column "l" of Matrix A from row "l" to end multiply by 1.0 / s[l]
-                        for (i2 = k; i2 < m; i2++)
-                        {
-                            a[(k * lda) + i2] = a[(k * lda) + i2] * (1.0 / stmp[k]);
-                        }
+                        SvdDivInplace(m - k, aColk + k, stmp[k]);
 
-                        a[(k * lda) + k] = 1.0 + a[(k * lda) + k];
+                        aColk[k] += 1.0;
                     }
 
                     stmp[k] = -stmp[k];
                 }
 
-                for (j2 = kp1; j2 < n; j2++)
+                for (var j = kp1; j < n; j++)
                 {
-                    if (k < nct)
+                    var aColj = a + lda * j;
+
+                    if (k < nct && stmp[k] != 0.0)
                     {
-                        if (stmp[k] != 0.0)
+                        // Apply the transformation.
+                        var t = -SvdDot(m - k, aColk + k, aColj + k) / aColk[k];
+                        SvdMulAdd(m - k, aColk + k, t, aColj + k);
+                    }
+
+                    // Place the k-th row of A into e for the subsequent calculation of the row transformation.
+                    e[j] = aColj[k];
+                }
+
+                if (u != null && k < nct)
+                {
+                    // Place the transformation in U for subsequent back multiplication.
+                    var uColk = u + ldu * k;
+                    var copyLength = sizeof(double) * (m - k);
+                    Buffer.MemoryCopy(aColk + k, uColk + k, copyLength, copyLength);
+                }
+
+                if (k < nrt)
+                {
+                    // Compute the k-th row transformation and place the k-th super-diagonal in e[k].
+                    // Compute 2-norm.
+                    e[k] = SvdNorm(n - kp1, e + kp1);
+
+                    if (e[k] != 0.0)
+                    {
+                        if (e[kp1] != 0.0)
                         {
-                            // Apply the transformation.
-                            t2 = 0.0;
-                            for (i2 = k; i2 < m; i2++)
-                            {
-                                t2 += a[(j2 * lda) + i2] * a[(k * lda) + i2];
-                            }
+                            e[k] = Math.Abs(e[k]) * (e[kp1] / Math.Abs(e[kp1]));
+                        }
 
-                            t2 = -t2 / a[(k * lda) + k];
+                        SvdDivInplace(n - kp1, e + kp1, e[k]);
 
-                            for (var ii = k; ii < m; ii++)
-                            {
-                                a[(j2 * lda) + ii] += t2 * a[(k * lda) + ii];
-                            }
+                        e[kp1] += 1.0;
+                    }
+
+                    e[k] = -e[k];
+
+                    if (kp1 < m && e[k] != 0.0)
+                    {
+                        // Apply the transformation.
+                        new Span<double>(work + kp1, m - kp1).Clear();
+
+                        for (var j = kp1; j < n; j++)
+                        {
+                            var aColj = a + lda * j;
+                            SvdMulAdd(m - kp1, aColj + kp1, e[j], work + kp1);
+                        }
+
+                        for (var j = kp1; j < n; j++)
+                        {
+                            var aColj = a + lda * j;
+                            SvdMulAdd(m - kp1, work + kp1, -e[j] / e[kp1], aColj + kp1);
                         }
                     }
 
-                    // Place the l-th row of matrix into "e" for the
-                    // subsequent calculation of the row transformation.
-                    e[j2] = a[(j2 * lda) + k];
-                }
-
-                if (computeVectors && k < nct)
-                {
-                    // Place the transformation in "u" for subsequent back multiplication.
-                    for (i2 = k; i2 < m; i2++)
+                    if (vt != null)
                     {
-                        u[(k * ldu) + i2] = a[(k * lda) + i2];
+                        // Place the transformation in V for subsequent back multiplication.
+                        var vtColk = vt + ldvt * k;
+                        vtColk[k] = 0.0;
+                        var copyLength = sizeof(double) * (n - kp1);
+                        Buffer.MemoryCopy(e + kp1, vtColk + kp1, copyLength, copyLength);
                     }
-                }
-
-                if (k >= nrt)
-                {
-                    continue;
-                }
-
-                // Compute the l-th row transformation and place the l-th super-diagonal in e(l).
-                var enorm = 0.0;
-                for (i2 = kp1; i2 < n; i2++)
-                {
-                    enorm += e[i2] * e[i2];
-                }
-
-                e[k] = Math.Sqrt(enorm);
-                if (e[k] != 0.0)
-                {
-                    if (e[kp1] != 0.0)
-                    {
-                        e[k] = Math.Abs(e[k]) * (e[kp1] / Math.Abs(e[kp1]));
-                    }
-
-                    // Scale vector "e" from "lp1" by 1.0 / e[l]
-                    for (i2 = kp1; i2 < n; i2++)
-                    {
-                        e[i2] = e[i2] * (1.0 / e[k]);
-                    }
-
-                    e[kp1] = 1.0 + e[kp1];
-                }
-
-                e[k] = -e[k];
-
-                if (kp1 < m && e[k] != 0.0)
-                {
-                    // Apply the transformation.
-                    for (i2 = kp1; i2 < m; i2++)
-                    {
-                        work[i2] = 0.0;
-                    }
-
-                    for (j2 = kp1; j2 < n; j2++)
-                    {
-                        for (var ii = kp1; ii < m; ii++)
-                        {
-                            work[ii] += e[j2] * a[(j2 * lda) + ii];
-                        }
-                    }
-
-                    for (j2 = kp1; j2 < n; j2++)
-                    {
-                        var ww = -e[j2] / e[kp1];
-                        for (var ii = kp1; ii < m; ii++)
-                        {
-                            a[(j2 * lda) + ii] += ww * work[ii];
-                        }
-                    }
-                }
-
-                if (!computeVectors)
-                {
-                    continue;
-                }
-
-                // Place the transformation in v for subsequent back multiplication.
-                for (i2 = kp1; i2 < n; i2++)
-                {
-                    v[(k * ldvt) + i2] = e[i2];
                 }
             }
 
@@ -274,13 +232,13 @@ namespace MatFlat
                                 t2 = 0.0;
                                 for (i2 = kp1; i2 < n; i2++)
                                 {
-                                    t2 += v[(j2 * ldvt) + i2] * v[(k * ldvt) + i2];
+                                    t2 += vt[(j2 * ldvt) + i2] * vt[(k * ldvt) + i2];
                                 }
 
-                                t2 = -t2 / v[(k * ldvt) + kp1];
+                                t2 = -t2 / vt[(k * ldvt) + kp1];
                                 for (var ii = k; ii < n; ii++)
                                 {
-                                    v[(j2 * ldvt) + ii] += t2 * v[(k * ldvt) + ii];
+                                    vt[(j2 * ldvt) + ii] += t2 * vt[(k * ldvt) + ii];
                                 }
                             }
                         }
@@ -288,10 +246,10 @@ namespace MatFlat
 
                     for (i2 = 0; i2 < n; i2++)
                     {
-                        v[(k * ldvt) + i2] = 0.0;
+                        vt[(k * ldvt) + i2] = 0.0;
                     }
 
-                    v[(k * ldvt) + k] = 1.0;
+                    vt[(k * ldvt) + k] = 1.0;
                 }
             }
 
@@ -342,7 +300,7 @@ namespace MatFlat
                 // A part of column "i+1" of matrix VT from row 0 to end multiply by r
                 for (j2 = 0; j2 < n; j2++)
                 {
-                    v[((i2 + 1) * ldvt) + j2] = v[((i2 + 1) * ldvt) + j2] * r;
+                    vt[((i2 + 1) * ldvt) + j2] = vt[((i2 + 1) * ldvt) + j2] * r;
                 }
             }
 
@@ -455,9 +413,9 @@ namespace MatFlat
                                 // Rotate
                                 for (i2 = 0; i2 < n; i2++)
                                 {
-                                    var z = (cs * v[(k2 * ldvt) + i2]) + (sn * v[((p - 1) * ldvt) + i2]);
-                                    v[((p - 1) * ldvt) + i2] = (cs * v[((p - 1) * ldvt) + i2]) - (sn * v[(k2 * ldvt) + i2]);
-                                    v[(k2 * ldvt) + i2] = z;
+                                    var z = (cs * vt[(k2 * ldvt) + i2]) + (sn * vt[((p - 1) * ldvt) + i2]);
+                                    vt[((p - 1) * ldvt) + i2] = (cs * vt[((p - 1) * ldvt) + i2]) - (sn * vt[(k2 * ldvt) + i2]);
+                                    vt[(k2 * ldvt) + i2] = z;
                                 }
                             }
                         }
@@ -538,9 +496,9 @@ namespace MatFlat
                             {
                                 for (i2 = 0; i2 < n; i2++)
                                 {
-                                    var z = (cs * v[(k2 * ldvt) + i2]) + (sn * v[((k2 + 1) * ldvt) + i2]);
-                                    v[((k2 + 1) * ldvt) + i2] = (cs * v[((k2 + 1) * ldvt) + i2]) - (sn * v[(k2 * ldvt) + i2]);
-                                    v[(k2 * ldvt) + i2] = z;
+                                    var z = (cs * vt[(k2 * ldvt) + i2]) + (sn * vt[((k2 + 1) * ldvt) + i2]);
+                                    vt[((k2 + 1) * ldvt) + i2] = (cs * vt[((k2 + 1) * ldvt) + i2]) - (sn * vt[(k2 * ldvt) + i2]);
+                                    vt[(k2 * ldvt) + i2] = z;
                                 }
                             }
 
@@ -577,7 +535,7 @@ namespace MatFlat
                                 // A part of column "l" of matrix VT from row 0 to end multiply by -1
                                 for (i2 = 0; i2 < n; i2++)
                                 {
-                                    v[(k * ldvt) + i2] = v[(k * ldvt) + i2] * -1.0;
+                                    vt[(k * ldvt) + i2] = vt[(k * ldvt) + i2] * -1.0;
                                 }
                             }
                         }
@@ -598,7 +556,7 @@ namespace MatFlat
                                 // Swap columns l, l + 1
                                 for (i2 = 0; i2 < n; i2++)
                                 {
-                                    (v[(k * ldvt) + i2], v[((k + 1) * ldvt) + i2]) = (v[((k + 1) * ldvt) + i2], v[(k * ldvt) + i2]);
+                                    (vt[(k * ldvt) + i2], vt[((k + 1) * ldvt) + i2]) = (vt[((k + 1) * ldvt) + i2], vt[(k * ldvt) + i2]);
                                 }
                             }
 
@@ -627,7 +585,7 @@ namespace MatFlat
                 {
                     for (j2 = 0; j2 < i2; j2++)
                     {
-                        (v[(j2 * ldvt) + i2], v[(i2 * ldvt) + j2]) = (v[(i2 * ldvt) + j2], v[(j2 * ldvt) + i2]);
+                        (vt[(j2 * ldvt) + i2], vt[(i2 * ldvt) + j2]) = (vt[(i2 * ldvt) + j2], vt[(j2 * ldvt) + i2]);
                     }
                 }
             }
@@ -728,6 +686,7 @@ namespace MatFlat
                     }
 
                     e[k] = new Complex(-e[k].Real, e[k].Imaginary);
+
                     if (kp1 < m && e[k] != Complex.Zero)
                     {
                         // Apply the transformation.
@@ -1286,6 +1245,35 @@ namespace MatFlat
             {
                 SvdDivInplace(x.Length, px, y);
             }
+        }
+
+        private static unsafe double SvdDot(int n, double* x, double* y)
+        {
+            double sum;
+            switch (n & 1)
+            {
+                case 0:
+                    sum = 0.0;
+                    break;
+                case 1:
+                    sum = x[0] * y[0];
+                    x++;
+                    y++;
+                    n--;
+                    break;
+                default:
+                    throw new LinearAlgebraException("An unexpected error occurred.");
+            }
+
+            while (n > 0)
+            {
+                sum += x[0] * y[0] + x[1] * y[1];
+                x += 2;
+                y += 2;
+                n -= 2;
+            }
+
+            return sum;
         }
 
         private static unsafe Complex SvdDot(int n, Complex* x, Complex* y)
