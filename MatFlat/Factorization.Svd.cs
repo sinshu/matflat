@@ -326,7 +326,6 @@ namespace MatFlat
                 k++;
 
                 // Perform the task indicated by case.
-                int k2;
                 double f;
                 double cs;
                 double sn;
@@ -336,28 +335,27 @@ namespace MatFlat
                     case 1:
                         f = e[p - 2];
                         e[p - 2] = 0.0;
-                        double t1;
-                        for (var kk = k; kk < p - 1; kk++)
+                        for (var j = k; j < p - 1; j++)
                         {
-                            k2 = p - 2 - kk + k;
-                            t1 = stmp[k2];
-
-                            Drotg(ref t1, ref f, out cs, out sn);
-                            stmp[k2] = t1;
-                            if (k2 != k)
+                            var l = p - 2 - j + k;
+                            var t = stmp[l];
+                            Drotg(ref t, ref f, out cs, out sn);
+                            stmp[l] = t;
+                            if (l != k)
                             {
-                                f = -sn * e[k2 - 1];
-                                e[k2 - 1] = cs * e[k2 - 1];
+                                f = -sn * e[l - 1];
+                                e[l - 1] *= cs;
                             }
 
-                            if (computeVectors)
+                            if (vt != null)
                             {
-                                // Rotate
-                                for (i2 = 0; i2 < n; i2++)
+                                var vtColl = vt + ldvt * l;
+                                var vtColpm1 = vt + ldvt * (p - 1);
+                                for (var i = 0; i < n; i++)
                                 {
-                                    var z = (cs * vt[(k2 * ldvt) + i2]) + (sn * vt[((p - 1) * ldvt) + i2]);
-                                    vt[((p - 1) * ldvt) + i2] = (cs * vt[((p - 1) * ldvt) + i2]) - (sn * vt[(k2 * ldvt) + i2]);
-                                    vt[(k2 * ldvt) + i2] = z;
+                                    var z = cs * vtColl[i] + sn * vtColpm1[i];
+                                    vtColpm1[i] = cs * vtColpm1[i] - sn * vtColl[i];
+                                    vtColl[i] = z;
                                 }
                             }
                         }
@@ -368,11 +366,11 @@ namespace MatFlat
                     case 2:
                         f = e[k - 1];
                         e[k - 1] = 0.0;
-                        for (k2 = k; k2 < p; k2++)
+                        for (var k2 = k; k2 < p; k2++)
                         {
-                            t1 = stmp[k2];
-                            Drotg(ref t1, ref f, out cs, out sn);
-                            stmp[k2] = t1;
+                            var t = stmp[k2];
+                            Drotg(ref t, ref f, out cs, out sn);
+                            stmp[k2] = t;
                             f = -sn * e[k2];
                             e[k2] = cs * e[k2];
                             if (computeVectors)
@@ -422,7 +420,7 @@ namespace MatFlat
                         var g = sl * el;
 
                         // Chase zeros
-                        for (k2 = k; k2 < p - 1; k2++)
+                        for (var k2 = k; k2 < p - 1; k2++)
                         {
                             Drotg(ref f, ref g, out cs, out sn);
                             if (k2 != k)
@@ -864,7 +862,7 @@ namespace MatFlat
                             if (l != k)
                             {
                                 f = -sn * e[l - 1].Real;
-                                e[l - 1] = cs * e[l - 1];
+                                e[l - 1] *= cs;
                             }
 
                             if (vt != null)
