@@ -26,7 +26,7 @@ namespace MatFlat
             }
         }
 
-        private static unsafe void SvdCore(int m, int n, double* a, int lda, double* s, double* u, int ldu, double* v, int ldvt, double* work, double* e, double* stemp)
+        private static unsafe void SvdCore(int m, int n, double* a, int lda, double* s, double* u, int ldu, double* v, int ldvt, double* work, double* e, double* stmp)
         {
             var computeVectors = true;
 
@@ -53,40 +53,34 @@ namespace MatFlat
 
                 if (k < nct)
                 {
-                    // Compute the transformation for the l-th column and
-                    // place the l-th diagonal in vector s[l].
-                    var sum = 0.0;
-                    for (var i1 = k; i1 < m; i1++)
-                    {
-                        sum += a[(k * lda) + i1] * a[(k * lda) + i1];
-                    }
+                    // Compute the transformation for the k-th column and place the k-th diagonal in s[k].
+                    // Compute 2-norm of k-th column.
+                    stmp[k] = SvdNorm(m - k, aColk + k);
 
-                    stemp[k] = Math.Sqrt(sum);
-
-                    if (stemp[k] != 0.0)
+                    if (stmp[k] != 0.0)
                     {
                         if (a[(k * lda) + k] != 0.0)
                         {
-                            stemp[k] = Math.Abs(stemp[k]) * (a[(k * lda) + k] / Math.Abs(a[(k * lda) + k]));
+                            stmp[k] = Math.Abs(stmp[k]) * (a[(k * lda) + k] / Math.Abs(a[(k * lda) + k]));
                         }
 
                         // A part of column "l" of Matrix A from row "l" to end multiply by 1.0 / s[l]
                         for (i2 = k; i2 < m; i2++)
                         {
-                            a[(k * lda) + i2] = a[(k * lda) + i2] * (1.0 / stemp[k]);
+                            a[(k * lda) + i2] = a[(k * lda) + i2] * (1.0 / stmp[k]);
                         }
 
                         a[(k * lda) + k] = 1.0 + a[(k * lda) + k];
                     }
 
-                    stemp[k] = -stemp[k];
+                    stmp[k] = -stmp[k];
                 }
 
                 for (j2 = kp1; j2 < n; j2++)
                 {
                     if (k < nct)
                     {
-                        if (stemp[k] != 0.0)
+                        if (stmp[k] != 0.0)
                         {
                             // Apply the transformation.
                             t2 = 0.0;
@@ -193,12 +187,12 @@ namespace MatFlat
             var nrtp1 = nrt + 1;
             if (nct < n)
             {
-                stemp[nctp1 - 1] = a[((nctp1 - 1) * lda) + (nctp1 - 1)];
+                stmp[nctp1 - 1] = a[((nctp1 - 1) * lda) + (nctp1 - 1)];
             }
 
             if (m < p)
             {
-                stemp[p - 1] = 0.0;
+                stmp[p - 1] = 0.0;
             }
 
             if (nrtp1 < p)
@@ -223,7 +217,7 @@ namespace MatFlat
 
                 for (var k = nct - 1; k >= 0; k--)
                 {
-                    if (stemp[k] != 0.0)
+                    if (stmp[k] != 0.0)
                     {
                         for (j2 = k + 1; j2 < ncu; j2++)
                         {
@@ -305,11 +299,11 @@ namespace MatFlat
             for (i2 = 0; i2 < p; i2++)
             {
                 double r;
-                if (stemp[i2] != 0.0)
+                if (stmp[i2] != 0.0)
                 {
-                    t2 = stemp[i2];
-                    r = stemp[i2] / t2;
-                    stemp[i2] = t2;
+                    t2 = stmp[i2];
+                    r = stmp[i2] / t2;
+                    stmp[i2] = t2;
                     if (i2 < p - 1)
                     {
                         e[i2] = e[i2] / r;
@@ -339,7 +333,7 @@ namespace MatFlat
                 t2 = e[i2];
                 r = t2 / e[i2];
                 e[i2] = t2;
-                stemp[i2 + 1] = stemp[i2 + 1] * r;
+                stmp[i2 + 1] = stmp[i2 + 1] * r;
                 if (!computeVectors)
                 {
                     continue;
@@ -376,7 +370,7 @@ namespace MatFlat
                 int k;
                 for (k = p - 2; k >= 0; k--)
                 {
-                    test = Math.Abs(stemp[k]) + Math.Abs(stemp[k + 1]);
+                    test = Math.Abs(stmp[k]) + Math.Abs(stmp[k + 1]);
                     ztest = test + Math.Abs(e[k]);
                     if (ztest.AlmostEqualRelative(test, 15))
                     {
@@ -406,10 +400,10 @@ namespace MatFlat
                             test = test + Math.Abs(e[ls - 1]);
                         }
 
-                        ztest = test + Math.Abs(stemp[ls]);
+                        ztest = test + Math.Abs(stmp[ls]);
                         if (ztest.AlmostEqualRelative(test, 15))
                         {
-                            stemp[ls] = 0.0;
+                            stmp[ls] = 0.0;
                             break;
                         }
                     }
@@ -446,10 +440,10 @@ namespace MatFlat
                         for (var kk = k; kk < p - 1; kk++)
                         {
                             k2 = p - 2 - kk + k;
-                            t1 = stemp[k2];
+                            t1 = stmp[k2];
 
                             Drotg(ref t1, ref f, out cs, out sn);
-                            stemp[k2] = t1;
+                            stmp[k2] = t1;
                             if (k2 != k)
                             {
                                 f = -sn * e[k2 - 1];
@@ -476,9 +470,9 @@ namespace MatFlat
                         e[k - 1] = 0.0;
                         for (k2 = k; k2 < p; k2++)
                         {
-                            t1 = stemp[k2];
+                            t1 = stmp[k2];
                             Drotg(ref t1, ref f, out cs, out sn);
-                            stemp[k2] = t1;
+                            stmp[k2] = t1;
                             f = -sn * e[k2];
                             e[k2] = cs * e[k2];
                             if (computeVectors)
@@ -500,15 +494,15 @@ namespace MatFlat
 
                         // calculate the shift.
                         var scale = 0.0;
-                        scale = Math.Max(scale, Math.Abs(stemp[p - 1]));
-                        scale = Math.Max(scale, Math.Abs(stemp[p - 2]));
+                        scale = Math.Max(scale, Math.Abs(stmp[p - 1]));
+                        scale = Math.Max(scale, Math.Abs(stmp[p - 2]));
                         scale = Math.Max(scale, Math.Abs(e[p - 2]));
-                        scale = Math.Max(scale, Math.Abs(stemp[k]));
+                        scale = Math.Max(scale, Math.Abs(stmp[k]));
                         scale = Math.Max(scale, Math.Abs(e[k]));
-                        var sm = stemp[p - 1] / scale;
-                        var smm1 = stemp[p - 2] / scale;
+                        var sm = stmp[p - 1] / scale;
+                        var smm1 = stmp[p - 2] / scale;
                         var emm1 = e[p - 2] / scale;
-                        var sl = stemp[k] / scale;
+                        var sl = stmp[k] / scale;
                         var el = e[k] / scale;
                         var b = (((smm1 + sm) * (smm1 - sm)) + (emm1 * emm1)) / 2.0;
                         var c = (sm * emm1) * (sm * emm1);
@@ -536,10 +530,10 @@ namespace MatFlat
                                 e[k2 - 1] = f;
                             }
 
-                            f = (cs * stemp[k2]) + (sn * e[k2]);
-                            e[k2] = (cs * e[k2]) - (sn * stemp[k2]);
-                            g = sn * stemp[k2 + 1];
-                            stemp[k2 + 1] = cs * stemp[k2 + 1];
+                            f = (cs * stmp[k2]) + (sn * e[k2]);
+                            e[k2] = (cs * e[k2]) - (sn * stmp[k2]);
+                            g = sn * stmp[k2 + 1];
+                            stmp[k2 + 1] = cs * stmp[k2 + 1];
                             if (computeVectors)
                             {
                                 for (i2 = 0; i2 < n; i2++)
@@ -551,9 +545,9 @@ namespace MatFlat
                             }
 
                             Drotg(ref f, ref g, out cs, out sn);
-                            stemp[k2] = f;
-                            f = (cs * e[k2]) + (sn * stemp[k2 + 1]);
-                            stemp[k2 + 1] = -(sn * e[k2]) + (cs * stemp[k2 + 1]);
+                            stmp[k2] = f;
+                            f = (cs * e[k2]) + (sn * stmp[k2 + 1]);
+                            stmp[k2 + 1] = -(sn * e[k2]) + (cs * stmp[k2 + 1]);
                             g = sn * e[k2 + 1];
                             e[k2 + 1] = cs * e[k2 + 1];
                             if (computeVectors && k2 < m)
@@ -575,9 +569,9 @@ namespace MatFlat
                     case 4:
 
                         // Make the singular value  positive
-                        if (stemp[k] < 0.0)
+                        if (stmp[k] < 0.0)
                         {
-                            stemp[k] = -stemp[k];
+                            stmp[k] = -stmp[k];
                             if (computeVectors)
                             {
                                 // A part of column "l" of matrix VT from row 0 to end multiply by -1
@@ -591,14 +585,14 @@ namespace MatFlat
                         // Order the singular value.
                         while (k != mn - 1)
                         {
-                            if (stemp[k] >= stemp[k + 1])
+                            if (stmp[k] >= stmp[k + 1])
                             {
                                 break;
                             }
 
-                            t2 = stemp[k];
-                            stemp[k] = stemp[k + 1];
-                            stemp[k + 1] = t2;
+                            t2 = stmp[k];
+                            stmp[k] = stmp[k + 1];
+                            stmp[k + 1] = t2;
                             if (computeVectors && k < n)
                             {
                                 // Swap columns l, l + 1
@@ -641,7 +635,7 @@ namespace MatFlat
             // Copy stemp to s with size adjustment. We are using ported copy of linpack's svd code and it uses
             // a singular vector of length rows+1 when rows < columns. The last element is not used and needs to be removed.
             // We should port lapack's svd routine to remove this problem.
-            Buffer.MemoryCopy(stemp, s, Math.Min(m, n) * sizeof(double), Math.Min(m, n) * sizeof(double));
+            Buffer.MemoryCopy(stmp, s, Math.Min(m, n) * sizeof(double), Math.Min(m, n) * sizeof(double));
         }
 
         public static unsafe void Svd(int rowsA, int columnsA, Complex* a, int lda, Complex* s, Complex* u, int ldu, Complex* vt, int ldvt)
@@ -1177,6 +1171,33 @@ namespace MatFlat
             new Span<Complex>(stmp, Math.Min(m, n)).CopyTo(new Span<Complex>(s, Math.Min(m, n)));
         }
 
+        private static unsafe double SvdNorm(int n, double* x)
+        {
+            double sum;
+            switch (n & 1)
+            {
+                case 0:
+                    sum = 0.0;
+                    break;
+                case 1:
+                    sum = x[0] * x[0];
+                    x++;
+                    n--;
+                    break;
+                default:
+                    throw new LinearAlgebraException("An unexpected error occurred.");
+            }
+
+            while (n > 0)
+            {
+                sum += x[0] * x[0] + x[1] * x[1];
+                x += 2;
+                n -= 2;
+            }
+
+            return Math.Sqrt(sum);
+        }
+
         private static unsafe double SvdNorm(int n, Complex* x)
         {
             double sum;
@@ -1202,14 +1223,6 @@ namespace MatFlat
             }
 
             return Math.Sqrt(sum);
-        }
-
-        private static unsafe double SvdNorm(ReadOnlySpan<Complex> x)
-        {
-            fixed (Complex* px = x)
-            {
-                return SvdNorm(x.Length, px);
-            }
         }
 
         private static Complex ChangeArgument(Complex abs, Complex arg)
