@@ -34,7 +34,9 @@ Currently the following methods are implemented:
 
 ## Performance
 
-The following is a performance comparison with the managed implementation in Math.NET Numerics. The execution times of various matrix decompositions for square matrices were measured. The matrix sizes range from 5x5 to 200x200.
+The following is a performance comparison with the managed implementation in Math.NET Numerics.
+The execution times of various `double` matrix decompositions for square matrices were measured.
+The matrix sizes range from 5x5 to 200x200.
 
 ### Measurement condition
 

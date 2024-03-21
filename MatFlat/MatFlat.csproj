@@ -6,6 +6,17 @@
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Version>0.1.0</Version>
+    <Authors>Nobuaki Tanaka</Authors>
+    <Description>Matrix decomposition implementations in pure C#</Description>
+    <PackageProjectUrl>https://github.com/sinshu/matflat</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/sinshu/matflat</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>math;numerics;linear;algebra;matrix</PackageTags>
+    <PackageReleaseNotes>https://github.com/sinshu/matflat/blob/main/CHANGELOG.md</PackageReleaseNotes>
+    <Title>MatFlat</Title>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
