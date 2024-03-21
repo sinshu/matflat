@@ -361,7 +361,7 @@ namespace MatFlat
                 var p = j;
                 for (var i = j + 1; i < m; i++)
                 {
-                    if (Internals.FastMagnitude(work[i]) > Internals.FastMagnitude(work[p]))
+                    if (work[i].FastMagnitude() > work[p].FastMagnitude())
                     {
                         p = i;
                     }

@@ -35,7 +35,7 @@ namespace MatFlatTest
             var actualA = a.ToArray();
             fixed (float* pa = actualA)
             {
-                Factorization.CholeskySingle(n, pa, lda);
+                Factorization.Cholesky(n, pa, lda);
             }
 
             Assert.That(actualA, Is.EqualTo(expectedA).Within(1.0E-5));
@@ -71,7 +71,7 @@ namespace MatFlatTest
             {
                 try
                 {
-                    Factorization.CholeskySingle(n, pa, lda);
+                    Factorization.Cholesky(n, pa, lda);
                     if (!decomposable)
                     {
                         Assert.Fail();
@@ -118,7 +118,7 @@ namespace MatFlatTest
             var actualA = a.ToArray();
             fixed (double* pa = actualA)
             {
-                Factorization.CholeskyDouble(n, pa, lda);
+                Factorization.Cholesky(n, pa, lda);
             }
 
             Assert.That(actualA, Is.EqualTo(expectedA).Within(1.0E-12));
@@ -154,7 +154,7 @@ namespace MatFlatTest
             {
                 try
                 {
-                    Factorization.CholeskyDouble(n, pa, lda);
+                    Factorization.Cholesky(n, pa, lda);
                     if (!decomposable)
                     {
                         Assert.Fail();
@@ -201,7 +201,7 @@ namespace MatFlatTest
             var actualA = a.ToArray();
             fixed (Complex* pa = actualA)
             {
-                Factorization.CholeskyComplex(n, pa, lda);
+                Factorization.Cholesky(n, pa, lda);
             }
 
             Assert.That(actualA.Select(x => x.Real), Is.EqualTo(expectedA.Select(x => x.Real)).Within(1.0E-12));
@@ -238,7 +238,7 @@ namespace MatFlatTest
             {
                 try
                 {
-                    Factorization.CholeskyComplex(n, pa, lda);
+                    Factorization.Cholesky(n, pa, lda);
                     if (!decomposable)
                     {
                         Assert.Fail();

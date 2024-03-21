@@ -13,6 +13,12 @@ namespace MatFlat
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static double FastMagnitude(this Complex x)
+        {
+            return Math.Abs(x.Real) + Math.Abs(x.Imaginary);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static Complex MulConj(Complex x, Complex y)
         {
             var a = x.Real;
@@ -181,6 +187,96 @@ namespace MatFlat
             return sum;
         }
 
+        internal static unsafe double Dot(int n, float* x, float* y, int inc)
+        {
+            double sum;
+            switch (n & 1)
+            {
+                case 0:
+                    sum = 0;
+                    break;
+                case 1:
+                    sum = (double)x[0] * (double)y[0];
+                    x += inc;
+                    y += inc;
+                    n--;
+                    break;
+                default:
+                    throw new LinearAlgebraException("An unexpected error occurred.");
+            }
+
+            var inc2 = 2 * inc;
+            while (n > 0)
+            {
+                sum += (double)x[0] * (double)y[0] + (double)x[inc] * (double)y[inc];
+                x += inc2;
+                y += inc2;
+                n -= 2;
+            }
+
+            return sum;
+        }
+
+        internal static unsafe double Dot(int n, double* x, double* y, int inc)
+        {
+            double sum;
+            switch (n & 1)
+            {
+                case 0:
+                    sum = 0;
+                    break;
+                case 1:
+                    sum = x[0] * y[0];
+                    x += inc;
+                    y += inc;
+                    n--;
+                    break;
+                default:
+                    throw new LinearAlgebraException("An unexpected error occurred.");
+            }
+
+            var inc2 = 2 * inc;
+            while (n > 0)
+            {
+                sum += x[0] * y[0] + x[inc] * y[inc];
+                x += inc2;
+                y += inc2;
+                n -= 2;
+            }
+
+            return sum;
+        }
+
+        internal static unsafe Complex Dot(int n, Complex* x, Complex* y, int inc)
+        {
+            Complex sum;
+            switch (n & 1)
+            {
+                case 0:
+                    sum = Complex.Zero;
+                    break;
+                case 1:
+                    sum = MulConj(x[0], y[0]);
+                    x += inc;
+                    y += inc;
+                    n--;
+                    break;
+                default:
+                    throw new LinearAlgebraException("An unexpected error occurred.");
+            }
+
+            var inc2 = 2 * inc;
+            while (n > 0)
+            {
+                sum += MulConj(x[0], y[0]) + MulConj(x[inc], y[inc]);
+                x += inc2;
+                y += inc2;
+                n -= 2;
+            }
+
+            return sum;
+        }
+
         internal static unsafe void SwapRows<T>(int n, T* x, T* y, int inc) where T : unmanaged, INumberBase<T>
         {
             while (n > 0)
@@ -190,11 +286,6 @@ namespace MatFlat
                 y += inc;
                 n--;
             }
-        }
-
-        internal static double FastMagnitude(Complex x)
-        {
-            return Math.Abs(x.Real) + Math.Abs(x.Imaginary);
         }
     }
 }

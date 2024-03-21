@@ -31,7 +31,7 @@ namespace MatFlat
         /// <exception cref="LinearAlgebraException">
         /// The matrix is not positive definite.
         /// </exception>
-        public static unsafe void CholeskySingle(int n, float* a, int lda)
+        public static unsafe void Cholesky(int n, float* a, int lda)
         {
             if (n <= 0)
             {
@@ -58,7 +58,7 @@ namespace MatFlat
 
                 for (var k = 0; k < j; k++)
                 {
-                    var t = (colj[k] - CholDot(k, a + j, a + k, lda)) / colk[k];
+                    var t = (colj[k] - Internals.Dot(k, a + j, a + k, lda)) / colk[k];
                     colk[j] = (float)t;
                     s += t * t;
 
@@ -80,11 +80,9 @@ namespace MatFlat
             }
 
             colj = a + lda;
-
             for (var j = 1; j < n; j++)
             {
                 new Span<float>(colj, j).Clear();
-
                 colj += lda;
             }
         }
@@ -114,7 +112,7 @@ namespace MatFlat
         /// <exception cref="LinearAlgebraException">
         /// The matrix is not positive definite.
         /// </exception>
-        public static unsafe void CholeskyDouble(int n, double* a, int lda)
+        public static unsafe void Cholesky(int n, double* a, int lda)
         {
             if (n <= 0)
             {
@@ -141,7 +139,7 @@ namespace MatFlat
 
                 for (var k = 0; k < j; k++)
                 {
-                    var t = (colj[k] - CholDot(k, a + j, a + k, lda)) / colk[k];
+                    var t = (colj[k] - Internals.Dot(k, a + j, a + k, lda)) / colk[k];
                     colk[j] = t;
                     s += t * t;
 
@@ -163,11 +161,9 @@ namespace MatFlat
             }
 
             colj = a + lda;
-
             for (var j = 1; j < n; j++)
             {
                 new Span<double>(colj, j).Clear();
-
                 colj += lda;
             }
         }
@@ -197,7 +193,7 @@ namespace MatFlat
         /// <exception cref="LinearAlgebraException">
         /// The matrix is not positive definite.
         /// </exception>
-        public static unsafe void CholeskyComplex(int n, Complex* a, int lda)
+        public static unsafe void Cholesky(int n, Complex* a, int lda)
         {
             if (n <= 0)
             {
@@ -224,7 +220,7 @@ namespace MatFlat
 
                 for (var k = 0; k < j; k++)
                 {
-                    var t = (colj[k] - CholDot(k, a + j, a + k, lda)) / colk[k];
+                    var t = (colj[k] - Internals.Dot(k, a + j, a + k, lda)) / colk[k];
                     colk[j] = new Complex(t.Real, -t.Imaginary);
                     s += t.Real * t.Real + t.Imaginary * t.Imaginary;
 
@@ -246,113 +242,11 @@ namespace MatFlat
             }
 
             colj = a + lda;
-
             for (var j = 1; j < n; j++)
             {
                 new Span<Complex>(colj, j).Clear();
-
                 colj += lda;
             }
-        }
-
-        private static unsafe double CholDot(int n, float* x, float* y, int inc)
-        {
-            double sum;
-            switch (n & 1)
-            {
-                case 0:
-                    sum = 0;
-                    break;
-                case 1:
-                    sum = (double)x[0] * (double)y[0];
-                    x += inc;
-                    y += inc;
-                    n--;
-                    break;
-                default:
-                    throw new LinearAlgebraException("An unexpected error occurred.");
-            }
-
-            var inc2 = 2 * inc;
-            while (n > 0)
-            {
-                sum += (double)x[0] * (double)y[0] + (double)x[inc] * (double)y[inc];
-                x += inc2;
-                y += inc2;
-                n -= 2;
-            }
-
-            return sum;
-        }
-
-        private static unsafe double CholDot(int n, double* x, double* y, int inc)
-        {
-            double sum;
-            switch (n & 1)
-            {
-                case 0:
-                    sum = 0;
-                    break;
-                case 1:
-                    sum = x[0] * y[0];
-                    x += inc;
-                    y += inc;
-                    n--;
-                    break;
-                default:
-                    throw new LinearAlgebraException("An unexpected error occurred.");
-            }
-
-            var inc2 = 2 * inc;
-            while (n > 0)
-            {
-                sum += x[0] * y[0] + x[inc] * y[inc];
-                x += inc2;
-                y += inc2;
-                n -= 2;
-            }
-
-            return sum;
-        }
-
-        private static unsafe Complex CholDot(int n, Complex* x, Complex* y, int inc)
-        {
-            Complex sum;
-            switch (n & 1)
-            {
-                case 0:
-                    sum = Complex.Zero;
-                    break;
-                case 1:
-                    sum = CholMul(x[0], y[0]);
-                    x += inc;
-                    y += inc;
-                    n--;
-                    break;
-                default:
-                    throw new LinearAlgebraException("An unexpected error occurred.");
-            }
-
-            var inc2 = 2 * inc;
-            while (n > 0)
-            {
-                sum += CholMul(x[0], y[0]) + CholMul(x[inc], y[inc]);
-                x += inc2;
-                y += inc2;
-                n -= 2;
-            }
-
-            return sum;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static Complex CholMul(Complex x, Complex y)
-        {
-            var a = x.Real;
-            var b = -x.Imaginary;
-            var c = y.Real;
-            var d = y.Imaginary;
-            return new Complex(a * c - b * d, a * d + b * c);
         }
     }
 }

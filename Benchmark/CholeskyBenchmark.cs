@@ -39,7 +39,7 @@ namespace Benchmark
 
             fixed (double* pa = a)
             {
-                global::MatFlat.Factorization.CholeskyDouble(Order, pa, Order);
+                global::MatFlat.Factorization.Cholesky(Order, pa, Order);
             }
         }
 
