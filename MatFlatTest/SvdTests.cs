@@ -195,6 +195,176 @@ namespace MatFlatTest
         [TestCase(16, 8, 32, 32, 16)]
         [TestCase(8, 16, 8, 8, 16)]
         [TestCase(8, 16, 16, 16, 32)]
+        public unsafe void SvdDouble_VectorOption(int m, int n, int lda, int ldu, int ldvt)
+        {
+            var original = Matrix.RandomDouble(42, m, n, lda);
+
+            var a = original.ToArray();
+            var s = new double[Math.Min(m, n)];
+            var u = Matrix.RandomDouble(0, m, m, ldu);
+            var uCopy = u.ToArray();
+            var vt = Matrix.RandomDouble(0, n, n, ldvt);
+            var vtCopy = vt.ToArray();
+            var smat = new double[m * n];
+            var us = new double[m * n];
+            var reconstructed = new double[m * n];
+            var identity1 = new double[m * m];
+            var identity2 = new double[n * n];
+            fixed (double* pa = a)
+            fixed (double* ps = s)
+            fixed (double* pu = u)
+            fixed (double* pvt = vt)
+            fixed (double* psmat = smat)
+            fixed (double* pus = us)
+            fixed (double* preconstructed = reconstructed)
+            fixed (double* pidentity1 = identity1)
+            fixed (double* pidentity2 = identity2)
+            {
+                Factorization.Svd(m, n, pa, lda, ps, null, 0, null, 0);
+                for (var i = 0; i < s.Length; i++)
+                {
+                    Matrix.Set(m, n, smat, m, i, i, s[i]);
+                }
+
+                original.CopyTo(a, 0);
+                Factorization.Svd(m, n, pa, lda, ps, pu, ldu, null, 0);
+
+                original.CopyTo(a, 0);
+                Factorization.Svd(m, n, pa, lda, ps, null, 0, pvt, ldvt);
+
+                Blas.Dgemm(
+                    Order.ColMajor,
+                    Transpose.NoTrans, Transpose.NoTrans,
+                    m, n, m,
+                    1.0,
+                    pu, ldu,
+                    psmat, m,
+                    0.0,
+                    pus, m);
+                Blas.Dgemm(
+                    Order.ColMajor,
+                    Transpose.NoTrans, Transpose.NoTrans,
+                    m, n, n,
+                    1.0,
+                    pus, m,
+                    pvt, ldvt,
+                    0.0,
+                    preconstructed, m);
+                Blas.Dgemm(
+                    Order.ColMajor,
+                    Transpose.Trans, Transpose.NoTrans,
+                    m, m, m,
+                    1.0,
+                    pu, ldu,
+                    pu, ldu,
+                    0.0,
+                    pidentity1, m);
+                Blas.Dgemm(
+                    Order.ColMajor,
+                    Transpose.Trans, Transpose.NoTrans,
+                    n, n, n,
+                    1.0,
+                    pvt, ldvt,
+                    pvt, ldvt,
+                    0.0,
+                    pidentity2, n);
+            }
+
+            for (var row = 0; row < m; row++)
+            {
+                for (var col = 0; col < n; col++)
+                {
+                    var actual = Matrix.Get(m, n, reconstructed, m, row, col);
+                    var expected = Matrix.Get(m, n, original, lda, row, col);
+                    Assert.That(actual, Is.EqualTo(expected).Within(1.0E-12));
+                }
+            }
+
+            for (var row = 0; row < m; row++)
+            {
+                for (var col = 0; col < m; col++)
+                {
+                    var value = identity1[col * m + row];
+                    if (row == col)
+                    {
+                        Assert.That(value, Is.EqualTo(1.0).Within(1.0E-12));
+                    }
+                    else
+                    {
+                        Assert.That(value, Is.EqualTo(0.0).Within(1.0E-12));
+                    }
+                }
+            }
+
+            for (var row = 0; row < n; row++)
+            {
+                for (var col = 0; col < n; col++)
+                {
+                    var value = identity2[col * n + row];
+                    if (row == col)
+                    {
+                        Assert.That(value, Is.EqualTo(1.0).Within(1.0E-12));
+                    }
+                    else
+                    {
+                        Assert.That(value, Is.EqualTo(0.0).Within(1.0E-12));
+                    }
+                }
+            }
+
+            for (var i = 0; i < a.Length; i++)
+            {
+                var row = i % lda;
+                var col = i / lda;
+                if (row >= m)
+                {
+                    Assert.That(a[i], Is.EqualTo(original[i]).Within(0));
+                }
+            }
+
+            for (var i = 0; i < u.Length; i++)
+            {
+                var row = i % ldu;
+                var col = i / ldu;
+                if (row >= m)
+                {
+                    Assert.That(u[i], Is.EqualTo(uCopy[i]).Within(0));
+                }
+            }
+
+            for (var i = 0; i < vt.Length; i++)
+            {
+                var row = i % ldvt;
+                var col = i / ldvt;
+                if (row >= n)
+                {
+                    Assert.That(vt[i], Is.EqualTo(vtCopy[i]).Within(0));
+                }
+            }
+        }
+
+        [TestCase(1, 1, 1, 1, 1)]
+        [TestCase(1, 1, 3, 2, 4)]
+        [TestCase(2, 2, 2, 2, 2)]
+        [TestCase(2, 2, 5, 3, 4)]
+        [TestCase(3, 3, 3, 3, 3)]
+        [TestCase(3, 3, 5, 4, 6)]
+        [TestCase(3, 1, 3, 3, 1)]
+        [TestCase(3, 1, 4, 5, 2)]
+        [TestCase(1, 3, 1, 1, 3)]
+        [TestCase(1, 3, 4, 2, 5)]
+        [TestCase(4, 3, 4, 4, 3)]
+        [TestCase(4, 3, 6, 5, 4)]
+        [TestCase(3, 4, 3, 3, 4)]
+        [TestCase(3, 4, 5, 4, 7)]
+        [TestCase(11, 23, 11, 11, 23)]
+        [TestCase(11, 23, 17, 19, 31)]
+        [TestCase(23, 11, 23, 23, 11)]
+        [TestCase(23, 11, 31, 29, 17)]
+        [TestCase(16, 8, 16, 16, 8)]
+        [TestCase(16, 8, 32, 32, 16)]
+        [TestCase(8, 16, 8, 8, 16)]
+        [TestCase(8, 16, 16, 16, 32)]
         public unsafe void SvdDouble_Singular(int m, int n, int lda, int ldu, int ldvt)
         {
             var original = Matrix.RandomDouble(42, m, n, lda);
@@ -208,6 +378,154 @@ namespace MatFlatTest
                     }
                 }
             }
+
+            var a = original.ToArray();
+            var s = new double[Math.Min(m, n)];
+            var u = Matrix.RandomDouble(0, m, m, ldu);
+            var uCopy = u.ToArray();
+            var vt = Matrix.RandomDouble(0, n, n, ldvt);
+            var vtCopy = vt.ToArray();
+            var smat = new double[m * n];
+            var us = new double[m * n];
+            var reconstructed = new double[m * n];
+            var identity1 = new double[m * m];
+            var identity2 = new double[n * n];
+            fixed (double* pa = a)
+            fixed (double* ps = s)
+            fixed (double* pu = u)
+            fixed (double* pvt = vt)
+            fixed (double* psmat = smat)
+            fixed (double* pus = us)
+            fixed (double* preconstructed = reconstructed)
+            fixed (double* pidentity1 = identity1)
+            fixed (double* pidentity2 = identity2)
+            {
+                Factorization.Svd(m, n, pa, lda, ps, pu, ldu, pvt, ldvt);
+                for (var i = 0; i < s.Length; i++)
+                {
+                    Matrix.Set(m, n, smat, m, i, i, s[i]);
+                }
+
+                Blas.Dgemm(
+                    Order.ColMajor,
+                    Transpose.NoTrans, Transpose.NoTrans,
+                    m, n, m,
+                    1.0,
+                    pu, ldu,
+                    psmat, m,
+                    0.0,
+                    pus, m);
+                Blas.Dgemm(
+                    Order.ColMajor,
+                    Transpose.NoTrans, Transpose.NoTrans,
+                    m, n, n,
+                    1.0,
+                    pus, m,
+                    pvt, ldvt,
+                    0.0,
+                    preconstructed, m);
+                Blas.Dgemm(
+                    Order.ColMajor,
+                    Transpose.Trans, Transpose.NoTrans,
+                    m, m, m,
+                    1.0,
+                    pu, ldu,
+                    pu, ldu,
+                    0.0,
+                    pidentity1, m);
+                Blas.Dgemm(
+                    Order.ColMajor,
+                    Transpose.Trans, Transpose.NoTrans,
+                    n, n, n,
+                    1.0,
+                    pvt, ldvt,
+                    pvt, ldvt,
+                    0.0,
+                    pidentity2, n);
+            }
+
+            for (var row = 0; row < m; row++)
+            {
+                for (var col = 0; col < n; col++)
+                {
+                    var actual = Matrix.Get(m, n, reconstructed, m, row, col);
+                    var expected = Matrix.Get(m, n, original, lda, row, col);
+                    Assert.That(actual, Is.EqualTo(expected).Within(1.0E-12));
+                }
+            }
+
+            for (var row = 0; row < m; row++)
+            {
+                for (var col = 0; col < m; col++)
+                {
+                    var value = identity1[col * m + row];
+                    if (row == col)
+                    {
+                        Assert.That(value, Is.EqualTo(1.0).Within(1.0E-12));
+                    }
+                    else
+                    {
+                        Assert.That(value, Is.EqualTo(0.0).Within(1.0E-12));
+                    }
+                }
+            }
+
+            for (var row = 0; row < n; row++)
+            {
+                for (var col = 0; col < n; col++)
+                {
+                    var value = identity2[col * n + row];
+                    if (row == col)
+                    {
+                        Assert.That(value, Is.EqualTo(1.0).Within(1.0E-12));
+                    }
+                    else
+                    {
+                        Assert.That(value, Is.EqualTo(0.0).Within(1.0E-12));
+                    }
+                }
+            }
+
+            for (var i = 0; i < a.Length; i++)
+            {
+                var row = i % lda;
+                var col = i / lda;
+                if (row >= m)
+                {
+                    Assert.That(a[i], Is.EqualTo(original[i]).Within(0));
+                }
+            }
+
+            for (var i = 0; i < u.Length; i++)
+            {
+                var row = i % ldu;
+                var col = i / ldu;
+                if (row >= m)
+                {
+                    Assert.That(u[i], Is.EqualTo(uCopy[i]).Within(0));
+                }
+            }
+
+            for (var i = 0; i < vt.Length; i++)
+            {
+                var row = i % ldvt;
+                var col = i / ldvt;
+                if (row >= n)
+                {
+                    Assert.That(vt[i], Is.EqualTo(vtCopy[i]).Within(0));
+                }
+            }
+        }
+
+        [Test]
+        public unsafe void SvdDouble_Zero()
+        {
+            var n = 3;
+            var m = 3;
+            var lda = 3;
+            var ldu = 3;
+            var ldvt = 3;
+            var original = new double[m * n];
 
             var a = original.ToArray();
             var s = new double[Math.Min(m, n)];
@@ -879,6 +1197,7 @@ namespace MatFlatTest
             }
         }
 
+        [Test]
         public unsafe void SvdComplex_Zero()
         {
             var n = 3;
