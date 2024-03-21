@@ -6,7 +6,44 @@ namespace MatFlat
 {
     public static partial class Factorization
     {
-
+        /// <summary>
+        /// computes the singular value decomposition (SVD) of a general M-by-N matrix A.
+        /// </summary>
+        /// <param name="m">
+        /// The number of rows of the matrix A.
+        /// </param>
+        /// <param name="n">
+        /// The number of columns of the matrix A.
+        /// </param>
+        /// <param name="a">
+        /// <para>
+        /// On entry, the M-by-N matrix to be factored.
+        /// </para>
+        /// <para>
+        /// On exit, the contents of A are destroyed.
+        /// </para>
+        /// </param>
+        /// <param name="lda">
+        /// The leading dimension of the array A.
+        /// </param>
+        /// <param name="s">
+        /// On exit, the singular values are stored.
+        /// </param>
+        /// <param name="u">
+        /// On exit, U contains the M-by-M orthogonal matrix corresponding to the left singular vectors.
+        /// </param>
+        /// <param name="ldu">
+        /// The leading dimension of the array U.
+        /// </param>
+        /// <param name="vt">
+        /// On exit, VT contains the N-by-N orthogonal matrix corresponding to the right singular vectors.
+        /// </param>
+        /// <param name="ldvt">
+        /// The leading dimension of the array VT.
+        /// </param>
+        /// <exception cref="MatFlatException">
+        /// The solution did not converge.
+        /// </exception>
         public static unsafe void Svd(int m, int n, double* a, int lda, double* s, double* u, int ldu, double* vt, int ldvt)
         {
             if (m <= 0)
@@ -68,6 +105,44 @@ namespace MatFlat
             }
         }
 
+        /// <summary>
+        /// computes the singular value decomposition (SVD) of a general M-by-N matrix A.
+        /// </summary>
+        /// <param name="m">
+        /// The number of rows of the matrix A.
+        /// </param>
+        /// <param name="n">
+        /// The number of columns of the matrix A.
+        /// </param>
+        /// <param name="a">
+        /// <para>
+        /// On entry, the M-by-N matrix to be factored.
+        /// </para>
+        /// <para>
+        /// On exit, the contents of A are destroyed.
+        /// </para>
+        /// </param>
+        /// <param name="lda">
+        /// The leading dimension of the array A.
+        /// </param>
+        /// <param name="s">
+        /// On exit, the singular values are stored.
+        /// </param>
+        /// <param name="u">
+        /// On exit, U contains the M-by-M orthogonal matrix corresponding to the left singular vectors.
+        /// </param>
+        /// <param name="ldu">
+        /// The leading dimension of the array U.
+        /// </param>
+        /// <param name="vt">
+        /// On exit, VT contains the N-by-N orthogonal matrix corresponding to the right singular vectors.
+        /// </param>
+        /// <param name="ldvt">
+        /// The leading dimension of the array VT.
+        /// </param>
+        /// <exception cref="MatFlatException">
+        /// The solution did not converge.
+        /// </exception>
         public static unsafe void Svd(int m, int n, Complex* a, int lda, double* s, Complex* u, int ldu, Complex* vt, int ldvt)
         {
             if (m <= 0)
