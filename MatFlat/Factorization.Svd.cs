@@ -522,27 +522,21 @@ namespace MatFlat
 
             if (vt != null)
             {
+                var vtColj = vt;
                 for (var j = 0; j < n; j++)
                 {
-                    var vtColj = vt + ldvt * j;
-
+                    var vtColi = vt;
                     for (var i = 0; i < j; i++)
                     {
-                        {
-                            var vtColi = vt + ldvt * i;
-                            var t1 = vtColj[i];
-                            var t2 = vtColi[j];
-                            vtColj[i] = t2;
-                            vtColi[j] = t1;
-                        }
+                        (vtColj[i], vtColi[j]) = (vtColi[j], vtColj[i]);
+                        vtColi += ldvt;
                     }
+                    vtColj += ldvt;
                 }
             }
 
-            // Copy stemp to s with size adjustment. We are using ported copy of linpack's svd code and it uses
-            // a singular vector of length rows+1 when rows < columns. The last element is not used and needs to be removed.
-            // We should port lapack's svd routine to remove this problem.
-            Buffer.MemoryCopy(stmp, s, Math.Min(m, n) * sizeof(double), Math.Min(m, n) * sizeof(double));
+            var copySize = sizeof(double) * Math.Min(m, n);
+            Buffer.MemoryCopy(stmp, s, copySize, copySize);
         }
 
         public static unsafe void Svd(int rowsA, int columnsA, Complex* a, int lda, Complex* s, Complex* u, int ldu, Complex* vt, int ldvt)
@@ -1052,10 +1046,10 @@ namespace MatFlat
 
             if (vt != null)
             {
+                var vtColj = vt;
                 for (var j = 0; j < n; j++)
                 {
-                    var vtColj = vt + ldvt * j;
-
+                    var vtColi = vt;
                     for (var i = 0; i <= j; i++)
                     {
                         if (i == j)
@@ -1064,13 +1058,14 @@ namespace MatFlat
                         }
                         else
                         {
-                            var vtColi = vt + ldvt * i;
                             var t1 = vtColj[i];
                             var t2 = vtColi[j];
                             vtColj[i] = t2.Conjugate();
                             vtColi[j] = t1.Conjugate();
                         }
+                        vtColi += ldvt;
                     }
+                    vtColj += ldvt;
                 }
             }
 
