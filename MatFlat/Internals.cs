@@ -545,6 +545,54 @@ namespace MatFlat
             }
         }
 
+        internal static void Drotg(ref float da, ref float db, out float c, out float s)
+        {
+            double r, z;
+
+            var roe = db;
+            var absda = Math.Abs(da);
+            var absdb = Math.Abs(db);
+            if (absda > absdb)
+            {
+                roe = da;
+            }
+
+            var scale = absda + absdb;
+            if (scale == 0.0)
+            {
+                c = 1.0F;
+                s = 0.0F;
+                r = 0.0;
+                z = 0.0;
+            }
+            else
+            {
+                var sda = da / scale;
+                var sdb = db / scale;
+                r = scale * Math.Sqrt((sda * sda) + (sdb * sdb));
+                if (roe < 0.0F)
+                {
+                    r = -r;
+                }
+
+                c = (float)(da / r);
+                s = (float)(db / r);
+                z = 1.0;
+                if (absda > absdb)
+                {
+                    z = s;
+                }
+
+                if (absdb >= absda && c != 0.0)
+                {
+                    z = 1.0 / c;
+                }
+            }
+
+            da = (float)r;
+            db = (float)z;
+        }
+
         internal static void Drotg(ref double da, ref double db, out double c, out double s)
         {
             double r, z;
