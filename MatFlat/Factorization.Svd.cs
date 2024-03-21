@@ -1,28 +1,131 @@
 ﻿using System;
 using System.Buffers;
 using System.Numerics;
-using System.Runtime.CompilerServices;
 
 namespace MatFlat
 {
     public static partial class Factorization
     {
-        public static bool AlmostEqualRelative(this double a, double b, double maximumError)
+
+        public static unsafe void Svd(int m, int n, double* a, int lda, double* s, double* u, int ldu, double* vt, int ldvt)
         {
-            return Math.Abs(a - b) < 1.0E-15;
+            if (m <= 0)
+            {
+                throw new ArgumentException("The number of rows must be greater than or equal to one.", nameof(m));
+            }
+
+            if (n <= 0)
+            {
+                throw new ArgumentException("The number of columns must be greater than or equal to one.", nameof(n));
+            }
+
+            if (a == null)
+            {
+                throw new ArgumentNullException(nameof(a));
+            }
+
+            if (lda < m)
+            {
+                throw new ArgumentException("The leading dimension must be greater than or equal to the number of rows.", nameof(lda));
+            }
+
+            if (s == null)
+            {
+                throw new ArgumentNullException(nameof(s));
+            }
+
+            if (u != null)
+            {
+                if (ldu < m)
+                {
+                    throw new ArgumentException("The leading dimension must be greater than or equal to the number of rows.", nameof(ldu));
+                }
+            }
+
+            if (vt != null)
+            {
+                if (ldvt < n)
+                {
+                    throw new ArgumentException("The leading dimension must be greater than or equal to the number of rows.", nameof(ldvt));
+                }
+            }
+
+            var bufferLength = m + n + Math.Min(m + 1, n);
+            var buffer = ArrayPool<double>.Shared.Rent(bufferLength);
+            try
+            {
+                fixed (double* p = buffer)
+                {
+                    var work = p;
+                    var e = work + m;
+                    var stmp = e + n;
+                    SvdCore(m, n, a, lda, s, u, ldu, vt, ldvt, work, e, stmp);
+                }
+            }
+            finally
+            {
+                ArrayPool<double>.Shared.Return(buffer);
+            }
         }
 
-        public static unsafe void Svd(int rowsA, int columnsA, double* a, int lda, double* s, double* u, int ldu, double* vt, int ldvt)
+        public static unsafe void Svd(int m, int n, Complex* a, int lda, double* s, Complex* u, int ldu, Complex* vt, int ldvt)
         {
-            var work = new double[rowsA];
-            var e = new double[columnsA];
-            var stmp = new double[Math.Min(rowsA + 1, columnsA)];
-
-            fixed (double* pwork = work)
-            fixed (double* pe = e)
-            fixed (double* pstmp = stmp)
+            if (m <= 0)
             {
-                SvdCore(rowsA, columnsA, a, lda, s, u, ldu, vt, ldvt, pwork, pe, pstmp);
+                throw new ArgumentException("The number of rows must be greater than or equal to one.", nameof(m));
+            }
+
+            if (n <= 0)
+            {
+                throw new ArgumentException("The number of columns must be greater than or equal to one.", nameof(n));
+            }
+
+            if (a == null)
+            {
+                throw new ArgumentNullException(nameof(a));
+            }
+
+            if (lda < m)
+            {
+                throw new ArgumentException("The leading dimension must be greater than or equal to the number of rows.", nameof(lda));
+            }
+
+            if (s == null)
+            {
+                throw new ArgumentNullException(nameof(s));
+            }
+
+            if (u != null)
+            {
+                if (ldu < m)
+                {
+                    throw new ArgumentException("The leading dimension must be greater than or equal to the number of rows.", nameof(ldu));
+                }
+            }
+
+            if (vt != null)
+            {
+                if (ldvt < n)
+                {
+                    throw new ArgumentException("The leading dimension must be greater than or equal to the number of rows.", nameof(ldvt));
+                }
+            }
+
+            var bufferLength = m + n + Math.Min(m + 1, n);
+            var buffer = ArrayPool<Complex>.Shared.Rent(bufferLength);
+            try
+            {
+                fixed (Complex* p = buffer)
+                {
+                    var work = p;
+                    var e = work + m;
+                    var stmp = e + n;
+                    SvdCore(m, n, a, lda, s, u, ldu, vt, ldvt, work, e, stmp);
+                }
+            }
+            finally
+            {
+                ArrayPool<Complex>.Shared.Return(buffer);
             }
         }
 
@@ -539,21 +642,7 @@ namespace MatFlat
             Buffer.MemoryCopy(stmp, s, copySize, copySize);
         }
 
-        public static unsafe void Svd(int rowsA, int columnsA, Complex* a, int lda, Complex* s, Complex* u, int ldu, Complex* vt, int ldvt)
-        {
-            var work = new Complex[rowsA];
-            var e = new Complex[columnsA];
-            var stmp = new Complex[Math.Min(rowsA + 1, columnsA)];
-
-            fixed (Complex* pwork = work)
-            fixed (Complex* pe = e)
-            fixed (Complex* pstmp = stmp)
-            {
-                SvdCore(rowsA, columnsA, a, lda, s, u, ldu, vt, ldvt, pwork, pe, pstmp);
-            }
-        }
-
-        private static unsafe void SvdCore(int m, int n, Complex* a, int lda, Complex* s, Complex* u, int ldu, Complex* vt, int ldvt, Complex* work, Complex* e, Complex* stmp)
+        private static unsafe void SvdCore(int m, int n, Complex* a, int lda, double* s, Complex* u, int ldu, Complex* vt, int ldvt, Complex* work, Complex* e, Complex* stmp)
         {
             // Reduce A to bidiagonal form, storing the diagonal elements in s and the super-diagonal elements in e.
             var nct = Math.Min(m - 1, n);
@@ -1067,7 +1156,11 @@ namespace MatFlat
                 }
             }
 
-            new Span<Complex>(stmp, Math.Min(m, n)).CopyTo(new Span<Complex>(s, Math.Min(m, n)));
+            var count = Math.Min(m, n);
+            for (var i = 0; i < count; i++)
+            {
+                s[i] = stmp[i].Real;
+            }
         }
     }
 }

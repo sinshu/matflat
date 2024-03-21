@@ -374,7 +374,7 @@ namespace MatFlatTest
             var original = Matrix.RandomComplex(42, m, n, lda);
 
             var a = original.ToArray();
-            var s = new Complex[Math.Min(m, n)];
+            var s = new double[Math.Min(m, n)];
             var u = Matrix.RandomComplex(0, m, m, ldu);
             var uCopy = u.ToArray();
             var vt = Matrix.RandomComplex(0, n, n, ldvt);
@@ -385,7 +385,7 @@ namespace MatFlatTest
             var identity1 = new Complex[m * m];
             var identity2 = new Complex[n * n];
             fixed (Complex* pa = a)
-            fixed (Complex* ps = s)
+            fixed (double* ps = s)
             fixed (Complex* pu = u)
             fixed (Complex* pvt = vt)
             fixed (Complex* psmat = smat)
@@ -546,7 +546,7 @@ namespace MatFlatTest
             var original = Matrix.RandomComplex(42, m, n, lda);
 
             var a = original.ToArray();
-            var s = new Complex[Math.Min(m, n)];
+            var s = new double[Math.Min(m, n)];
             var u = Matrix.RandomComplex(0, m, m, ldu);
             var uCopy = u.ToArray();
             var vt = Matrix.RandomComplex(0, n, n, ldvt);
@@ -557,7 +557,7 @@ namespace MatFlatTest
             var identity1 = new Complex[m * m];
             var identity2 = new Complex[n * n];
             fixed (Complex* pa = a)
-            fixed (Complex* ps = s)
+            fixed (double* ps = s)
             fixed (Complex* pu = u)
             fixed (Complex* pvt = vt)
             fixed (Complex* psmat = smat)
@@ -734,7 +734,7 @@ namespace MatFlatTest
             }
 
             var a = original.ToArray();
-            var s = new Complex[Math.Min(m, n)];
+            var s = new double[Math.Min(m, n)];
             var u = Matrix.RandomComplex(0, m, m, ldu);
             var uCopy = u.ToArray();
             var vt = Matrix.RandomComplex(0, n, n, ldvt);
@@ -745,7 +745,7 @@ namespace MatFlatTest
             var identity1 = new Complex[m * m];
             var identity2 = new Complex[n * n];
             fixed (Complex* pa = a)
-            fixed (Complex* ps = s)
+            fixed (double* ps = s)
             fixed (Complex* pu = u)
             fixed (Complex* pvt = vt)
             fixed (Complex* psmat = smat)
@@ -889,7 +889,7 @@ namespace MatFlatTest
             var original = new Complex[m * n];
 
             var a = original.ToArray();
-            var s = new Complex[Math.Min(m, n)];
+            var s = new double[Math.Min(m, n)];
             var u = Matrix.RandomComplex(0, m, m, ldu);
             var uCopy = u.ToArray();
             var vt = Matrix.RandomComplex(0, n, n, ldvt);
@@ -900,7 +900,7 @@ namespace MatFlatTest
             var identity1 = new Complex[m * m];
             var identity2 = new Complex[n * n];
             fixed (Complex* pa = a)
-            fixed (Complex* ps = s)
+            fixed (double* ps = s)
             fixed (Complex* pu = u)
             fixed (Complex* pvt = vt)
             fixed (Complex* psmat = smat)
