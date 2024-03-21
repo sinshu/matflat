@@ -252,9 +252,9 @@ namespace MatFlat
             }
 
             // Main iteration loop for the singular values.
-            var mn = p;
+            var pp = p - 1;
             var iter = 0;
-
+            var eps = Math.Pow(2.0, -52.0);
             while (p > 0)
             {
                 // Quit if all the singular values have been found.
@@ -264,20 +264,18 @@ namespace MatFlat
                     throw new Exception();
                 }
 
-                // This section of the program inspects for negligible elements in the s and e arrays,
-                // on completion the variables case and l are set as follows:
-                // case = 1: if mS[m] and e[l-1] are negligible and l < m
-                // case = 2: if mS[l] is negligible and l < m
-                // case = 3: if e[l-1] is negligible, l < m, and mS[l, ..., mS[m] are not negligible (qr step).
-                // case = 4: if e[m-1] is negligible (convergence).
-                double ztest;
-                double test;
+                // Here is where a test for too many iterations would go.
+                // This section of the program inspects for
+                // negligible elements in the s and e arrays.  On
+                // completion the variables kase and k are set as follows.
+                // kase = 1     if s(p) and e[k-1] are negligible and k<p
+                // kase = 2     if s(k) is negligible and k<p
+                // kase = 3     if e[k-1] is negligible, k<p, and s(k), ..., s(p) are not negligible (qr step).
+                // kase = 4     if e(p-1) is negligible (convergence).
                 int k;
                 for (k = p - 2; k >= 0; k--)
                 {
-                    test = Math.Abs(stmp[k]) + Math.Abs(stmp[k + 1]);
-                    ztest = test + Math.Abs(e[k]);
-                    if (ztest.AlmostEqualRelative(test, 15))
+                    if (Math.Abs(e[k]) <= eps * (Math.Abs(stmp[k]) + Math.Abs(stmp[k + 1])))
                     {
                         e[k] = 0.0;
                         break;
@@ -291,44 +289,41 @@ namespace MatFlat
                 }
                 else
                 {
-                    int ls;
-                    for (ls = p - 1; ls > k; ls--)
+                    int ks;
+                    for (ks = p - 1; ks > k; ks--)
                     {
-                        test = 0.0;
-                        if (ls != p - 1)
+                        var t = 0.0;
+                        if (ks != p - 1)
                         {
-                            test = test + Math.Abs(e[ls]);
+                            t += Math.Abs(e[ks]);
                         }
-
-                        if (ls != k + 1)
+                        if (ks != k + 1)
                         {
-                            test = test + Math.Abs(e[ls - 1]);
+                            t += Math.Abs(e[ks - 1]);
                         }
-
-                        ztest = test + Math.Abs(stmp[ls]);
-                        if (ztest.AlmostEqualRelative(test, 15))
+                        if (Math.Abs(stmp[ks]) <= eps * t)
                         {
-                            stmp[ls] = 0.0;
+                            stmp[ks] = 0.0;
                             break;
                         }
                     }
 
-                    if (ls == k)
+                    if (ks == k)
                     {
                         kase = 3;
                     }
-                    else if (ls == p - 1)
+                    else if (ks == p - 1)
                     {
                         kase = 1;
                     }
                     else
                     {
                         kase = 2;
-                        k = ls;
+                        k = ks;
                     }
                 }
 
-                k = k + 1;
+                k++;
 
                 // Perform the task indicated by case.
                 int k2;
@@ -488,7 +483,7 @@ namespace MatFlat
                         }
 
                         // Order the singular value.
-                        while (k != mn - 1)
+                        while (k < pp)
                         {
                             if (stmp[k] >= stmp[k + 1])
                             {
