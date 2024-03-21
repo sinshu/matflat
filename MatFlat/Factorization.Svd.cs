@@ -28,14 +28,6 @@ namespace MatFlat
 
         private static unsafe void SvdCore(int m, int n, double* a, int lda, double* s, double* u, int ldu, double* vt, int ldvt, double* work, double* e, double* stmp)
         {
-            var computeVectors = true;
-
-            int i2, j2;
-
-            double t2;
-
-            var ncu = m;
-
             // Reduce A to bidiagonal form, storing the diagonal elements in s and the super-diagonal elements in e.
             var nct = Math.Min(m - 1, n);
             var nrt = Math.Max(0, Math.Min(n - 2, m));
@@ -528,14 +520,21 @@ namespace MatFlat
                 }
             }
 
-            if (computeVectors)
+            if (vt != null)
             {
-                // Finally transpose "v" to get "vt" matrix
-                for (i2 = 0; i2 < n; i2++)
+                for (var j = 0; j < n; j++)
                 {
-                    for (j2 = 0; j2 < i2; j2++)
+                    var vtColj = vt + ldvt * j;
+
+                    for (var i = 0; i < j; i++)
                     {
-                        (vt[(j2 * ldvt) + i2], vt[(i2 * ldvt) + j2]) = (vt[(i2 * ldvt) + j2], vt[(j2 * ldvt) + i2]);
+                        {
+                            var vtColi = vt + ldvt * i;
+                            var t1 = vtColj[i];
+                            var t2 = vtColi[j];
+                            vtColj[i] = t2;
+                            vtColi[j] = t1;
+                        }
                     }
                 }
             }
