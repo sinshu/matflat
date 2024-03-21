@@ -471,19 +471,19 @@ namespace MatFlat
 
                         break;
 
-                    // Convergence
+                    // Convergence.
                     case 4:
 
-                        // Make the singular value  positive
+                        // Make the singular value positive.
                         if (stmp[k] < 0.0)
                         {
                             stmp[k] = -stmp[k];
-                            if (computeVectors)
+
+                            if (vt != null)
                             {
-                                // A part of column "l" of matrix VT from row 0 to end multiply by -1
-                                for (i2 = 0; i2 < n; i2++)
+                                if (vt != null)
                                 {
-                                    vt[(k * ldvt) + i2] = vt[(k * ldvt) + i2] * -1.0;
+                                    SvdFlipSign(n, vt + ldvt * k);
                                 }
                             }
                         }
@@ -496,32 +496,34 @@ namespace MatFlat
                                 break;
                             }
 
-                            t2 = stmp[k];
-                            stmp[k] = stmp[k + 1];
-                            stmp[k + 1] = t2;
-                            if (computeVectors && k < n)
+                            (stmp[k], stmp[k + 1]) = (stmp[k + 1], stmp[k]);
+
+                            if (vt != null && k < n)
                             {
-                                // Swap columns l, l + 1
-                                for (i2 = 0; i2 < n; i2++)
+                                var vtColk = vt + ldvt * k;
+                                var vtColkp1 = vt + ldvt * (k + 1);
+                                for (var i = 0; i < n; i++)
                                 {
-                                    (vt[(k * ldvt) + i2], vt[((k + 1) * ldvt) + i2]) = (vt[((k + 1) * ldvt) + i2], vt[(k * ldvt) + i2]);
+                                    (vtColk[i], vtColkp1[i]) = (vtColkp1[i], vtColk[i]);
                                 }
                             }
 
-                            if (computeVectors && k < m)
+                            if (u != null && k < m)
                             {
-                                // Swap columns l, l + 1
-                                for (i2 = 0; i2 < m; i2++)
+                                var uColk = u + ldu * k;
+                                var uColkp1 = u + ldu * (k + 1);
+                                for (var i = 0; i < m; i++)
                                 {
-                                    (u[(k * ldu) + i2], u[((k + 1) * ldu) + i2]) = (u[((k + 1) * ldu) + i2], u[(k * ldu) + i2]);
+                                    (uColk[i], uColkp1[i]) = (uColkp1[i], uColk[i]);
                                 }
                             }
 
-                            k = k + 1;
+                            k++;
                         }
 
                         iter = 0;
-                        p = p - 1;
+                        p--;
+
                         break;
                 }
             }
@@ -1043,7 +1045,7 @@ namespace MatFlat
                         }
 
                         iter = 0;
-                        p = p - 1;
+                        p--;
 
                         break;
                 }
