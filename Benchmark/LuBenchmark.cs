@@ -46,7 +46,7 @@ namespace Benchmark
             fixed (double* pa = a)
             fixed (int* ppiv = matFlatPiv)
             {
-                global::MatFlat.Factorization.LuDouble(Order, Order, pa, Order, ppiv);
+                global::MatFlat.Factorization.Lu(Order, Order, pa, Order, ppiv);
             }
         }
 

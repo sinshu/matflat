@@ -39,7 +39,7 @@ namespace MatFlat
         /// The size of the array must be <paramref name="m"/>.
         /// </para>
         /// </param>
-        public static unsafe void LuSingle(int m, int n, float* a, int lda, int* piv)
+        public static unsafe void Lu(int m, int n, float* a, int lda, int* piv)
         {
             if (m <= 0)
             {
@@ -66,64 +66,17 @@ namespace MatFlat
                 throw new ArgumentNullException(nameof(piv));
             }
 
-            // Initialize the pivot matrix to the identity permutation.
-            for (var i = 0; i < m; i++)
-            {
-                piv[i] = i;
-            }
-
-            var buffer = ArrayPool<float>.Shared.Rent(m);
+            var work = ArrayPool<float>.Shared.Rent(m);
             try
             {
-                fixed (float* luColj = buffer)
+                fixed (float* pwork = work)
                 {
-                    var colj = a;
-
-                    // Outer loop.
-                    for (var j = 0; j < n; j++)
-                    {
-                        // Make a copy of the j-th column to localize references.
-                        var copySize = sizeof(float) * m;
-                        Buffer.MemoryCopy(colj, luColj, copySize, copySize);
-
-                        // Apply previous transformations.
-                        for (var i = 0; i < m; i++)
-                        {
-                            // Most of the time is spent in the following dot product.
-                            var s = LuDot(Math.Min(i, j), a + i, lda, luColj);
-                            colj[i] = luColj[i] -= s;
-                        }
-
-                        // Find pivot and exchange if necessary.
-                        var p = j;
-                        for (var i = j + 1; i < m; i++)
-                        {
-                            if (Math.Abs(luColj[i]) > Math.Abs(luColj[p]))
-                            {
-                                p = i;
-                            }
-                        }
-
-                        if (p != j)
-                        {
-                            LuSwapRows(n, a + p, a + j, lda);
-                            piv[j] = p;
-                        }
-
-                        // Compute multipliers.
-                        var diag = colj[j];
-                        if (j < m && diag != 0.0F)
-                        {
-                            LuDivInplace(m - j - 1, colj + j + 1, diag);
-                        }
-
-                        colj += lda;
-                    }
+                    LuCore(m, n, a, lda, piv, pwork);
                 }
             }
             finally
             {
-                ArrayPool<float>.Shared.Return(buffer);
+                ArrayPool<float>.Shared.Return(work);
             }
         }
 
@@ -160,7 +113,7 @@ namespace MatFlat
         /// The size of the array must be <paramref name="m"/>.
         /// </para>
         /// </param>
-        public static unsafe void LuDouble(int m, int n, double* a, int lda, int* piv)
+        public static unsafe void Lu(int m, int n, double* a, int lda, int* piv)
         {
             if (m <= 0)
             {
@@ -187,64 +140,17 @@ namespace MatFlat
                 throw new ArgumentNullException(nameof(piv));
             }
 
-            // Initialize the pivot matrix to the identity permutation.
-            for (var i = 0; i < m; i++)
-            {
-                piv[i] = i;
-            }
-
-            var buffer = ArrayPool<double>.Shared.Rent(m);
+            var work = ArrayPool<double>.Shared.Rent(m);
             try
             {
-                fixed (double* luColj = buffer)
+                fixed (double* pwork = work)
                 {
-                    var colj = a;
-
-                    // Outer loop.
-                    for (var j = 0; j < n; j++)
-                    {
-                        // Make a copy of the j-th column to localize references.
-                        var copySize = sizeof(double) * m;
-                        Buffer.MemoryCopy(colj, luColj, copySize, copySize);
-
-                        // Apply previous transformations.
-                        for (var i = 0; i < m; i++)
-                        {
-                            // Most of the time is spent in the following dot product.
-                            var s = LuDot(Math.Min(i, j), a + i, lda, luColj);
-                            colj[i] = luColj[i] -= s;
-                        }
-
-                        // Find pivot and exchange if necessary.
-                        var p = j;
-                        for (var i = j + 1; i < m; i++)
-                        {
-                            if (Math.Abs(luColj[i]) > Math.Abs(luColj[p]))
-                            {
-                                p = i;
-                            }
-                        }
-
-                        if (p != j)
-                        {
-                            LuSwapRows(n, a + p, a + j, lda);
-                            piv[j] = p;
-                        }
-
-                        // Compute multipliers.
-                        var diag = colj[j];
-                        if (j < m && diag != 0.0)
-                        {
-                            LuDivInplace(m - j - 1, colj + j + 1, diag);
-                        }
-
-                        colj += lda;
-                    }
+                    LuCore(m, n, a, lda, piv, pwork);
                 }
             }
             finally
             {
-                ArrayPool<double>.Shared.Return(buffer);
+                ArrayPool<double>.Shared.Return(work);
             }
         }
 
@@ -281,7 +187,7 @@ namespace MatFlat
         /// The size of the array must be <paramref name="m"/>.
         /// </para>
         /// </param>
-        public static unsafe void LuComplex(int m, int n, Complex* a, int lda, int* piv)
+        public static unsafe void Lu(int m, int n, Complex* a, int lda, int* piv)
         {
             if (m <= 0)
             {
@@ -308,134 +214,174 @@ namespace MatFlat
                 throw new ArgumentNullException(nameof(piv));
             }
 
+            var work = ArrayPool<Complex>.Shared.Rent(m);
+            try
+            {
+                fixed (Complex* pwork = work)
+                {
+                    LuCore(m, n, a, lda, piv, pwork);
+                }
+            }
+            finally
+            {
+                ArrayPool<Complex>.Shared.Return(work);
+            }
+        }
+
+        private static unsafe void LuCore(int m, int n, float* a, int lda, int* piv, float* work)
+        {
             // Initialize the pivot matrix to the identity permutation.
             for (var i = 0; i < m; i++)
             {
                 piv[i] = i;
             }
 
-            var buffer = ArrayPool<Complex>.Shared.Rent(m);
-            try
+            var colj = a;
+
+            // Outer loop.
+            for (var j = 0; j < n; j++)
             {
-                fixed (Complex* luColj = buffer)
+                // Make a copy of the j-th column to localize references.
+                var copySize = sizeof(float) * m;
+                Buffer.MemoryCopy(colj, work, copySize, copySize);
+
+                // Apply previous transformations.
+                for (var i = 0; i < m; i++)
                 {
-                    var colj = a;
+                    // Most of the time is spent in the following dot product.
+                    var s = Internals.Dot(Math.Min(i, j), a + i, lda, work);
+                    colj[i] = work[i] -= s;
+                }
 
-                    // Outer loop.
-                    for (var j = 0; j < n; j++)
+                // Find pivot and exchange if necessary.
+                var p = j;
+                for (var i = j + 1; i < m; i++)
+                {
+                    if (Math.Abs(work[i]) > Math.Abs(work[p]))
                     {
-                        // Make a copy of the j-th column to localize references.
-                        var copySize = sizeof(Complex) * m;
-                        Buffer.MemoryCopy(colj, luColj, copySize, copySize);
-
-                        // Apply previous transformations.
-                        for (var i = 0; i < m; i++)
-                        {
-                            // Most of the time is spent in the following dot product.
-                            var s = LuDot(Math.Min(i, j), a + i, lda, luColj);
-                            colj[i] = luColj[i] -= s;
-                        }
-
-                        // Find pivot and exchange if necessary.
-                        var p = j;
-                        for (var i = j + 1; i < m; i++)
-                        {
-                            if (LuFastMagnitude(luColj[i]) > LuFastMagnitude(luColj[p]))
-                            {
-                                p = i;
-                            }
-                        }
-
-                        if (p != j)
-                        {
-                            LuSwapRows(n, a + p, a + j, lda);
-                            piv[j] = p;
-                        }
-
-                        // Compute multipliers.
-                        var diag = colj[j];
-                        if (j < m && diag != Complex.Zero)
-                        {
-                            LuDivInplace(m - j - 1, colj + j + 1, diag);
-                        }
-
-                        colj += lda;
+                        p = i;
                     }
                 }
-            }
-            finally
-            {
-                ArrayPool<Complex>.Shared.Return(buffer);
-            }
-        }
 
-        private static unsafe T LuDot<T>(int n, T* x, int incx, T* y) where T : unmanaged, INumberBase<T>
-        {
-            T sum;
-            switch (n & 1)
-            {
-                case 0:
-                    sum = T.Zero;
-                    break;
-                case 1:
-                    sum = x[0] * y[0];
-                    x += incx;
-                    y++;
-                    n--;
-                    break;
-                default:
-                    throw new LinearAlgebraException("An unexpected error occurred.");
-            }
+                if (p != j)
+                {
+                    Internals.SwapRows(n, a + p, a + j, lda);
+                    piv[j] = p;
+                }
 
-            while (n > 0)
-            {
-                sum += x[0] * y[0] + x[incx] * y[1];
-                x += 2 * incx;
-                y += 2;
-                n -= 2;
-            }
+                // Compute multipliers.
+                var diag = colj[j];
+                if (j < m && diag != 0.0F)
+                {
+                    Internals.DivInplace(m - j - 1, colj + j + 1, diag);
+                }
 
-            return sum;
-        }
-
-        private static unsafe void LuSwapRows<T>(int n, T* x, T* y, int inc) where T : unmanaged, INumberBase<T>
-        {
-            while (n > 0)
-            {
-                (*x, *y) = (*y, *x);
-                x += inc;
-                y += inc;
-                n--;
+                colj += lda;
             }
         }
 
-        private static unsafe void LuDivInplace<T>(int n, T* x, T y) where T : unmanaged, INumberBase<T>
+        private static unsafe void LuCore(int m, int n, double* a, int lda, int* piv, double* work)
         {
-            switch (n & 1)
+            // Initialize the pivot matrix to the identity permutation.
+            for (var i = 0; i < m; i++)
             {
-                case 0:
-                    break;
-                case 1:
-                    x[0] /= y;
-                    x++;
-                    n--;
-                    break;
-                default:
-                    throw new LinearAlgebraException("An unexpected error occurred.");
+                piv[i] = i;
             }
 
-            while (n > 0)
+            var colj = a;
+
+            // Outer loop.
+            for (var j = 0; j < n; j++)
             {
-                x[0] /= y;
-                x[1] /= y;
-                x += 2;
-                n -= 2;
+                // Make a copy of the j-th column to localize references.
+                var copySize = sizeof(double) * m;
+                Buffer.MemoryCopy(colj, work, copySize, copySize);
+
+                // Apply previous transformations.
+                for (var i = 0; i < m; i++)
+                {
+                    // Most of the time is spent in the following dot product.
+                    var s = Internals.Dot(Math.Min(i, j), a + i, lda, work);
+                    colj[i] = work[i] -= s;
+                }
+
+                // Find pivot and exchange if necessary.
+                var p = j;
+                for (var i = j + 1; i < m; i++)
+                {
+                    if (Math.Abs(work[i]) > Math.Abs(work[p]))
+                    {
+                        p = i;
+                    }
+                }
+
+                if (p != j)
+                {
+                    Internals.SwapRows(n, a + p, a + j, lda);
+                    piv[j] = p;
+                }
+
+                // Compute multipliers.
+                var diag = colj[j];
+                if (j < m && diag != 0.0)
+                {
+                    Internals.DivInplace(m - j - 1, colj + j + 1, diag);
+                }
+
+                colj += lda;
             }
         }
 
-        private static double LuFastMagnitude(Complex x)
+        private static unsafe void LuCore(int m, int n, Complex* a, int lda, int* piv, Complex* work)
         {
-            return Math.Abs(x.Real) + Math.Abs(x.Imaginary);
+            // Initialize the pivot matrix to the identity permutation.
+            for (var i = 0; i < m; i++)
+            {
+                piv[i] = i;
+            }
+
+            var colj = a;
+
+            // Outer loop.
+            for (var j = 0; j < n; j++)
+            {
+                // Make a copy of the j-th column to localize references.
+                var copySize = sizeof(Complex) * m;
+                Buffer.MemoryCopy(colj, work, copySize, copySize);
+
+                // Apply previous transformations.
+                for (var i = 0; i < m; i++)
+                {
+                    // Most of the time is spent in the following dot product.
+                    var s = Internals.Dot(Math.Min(i, j), a + i, lda, work);
+                    colj[i] = work[i] -= s;
+                }
+
+                // Find pivot and exchange if necessary.
+                var p = j;
+                for (var i = j + 1; i < m; i++)
+                {
+                    if (Internals.FastMagnitude(work[i]) > Internals.FastMagnitude(work[p]))
+                    {
+                        p = i;
+                    }
+                }
+
+                if (p != j)
+                {
+                    Internals.SwapRows(n, a + p, a + j, lda);
+                    piv[j] = p;
+                }
+
+                // Compute multipliers.
+                var diag = colj[j];
+                if (j < m && diag != Complex.Zero)
+                {
+                    Internals.DivInplace(m - j - 1, colj + j + 1, diag);
+                }
+
+                colj += lda;
+            }
         }
     }
 }
