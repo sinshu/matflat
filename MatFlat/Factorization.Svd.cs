@@ -41,7 +41,7 @@ namespace MatFlat
                 {
                     // Compute the transformation for the k-th column and place the k-th diagonal in s[k].
                     // Compute 2-norm of k-th column.
-                    stmp[k] = SvdNorm(m - k, aColk + k);
+                    stmp[k] = Internals.Norm(m - k, aColk + k);
 
                     if (stmp[k] != 0.0)
                     {
@@ -50,7 +50,7 @@ namespace MatFlat
                             stmp[k] = Math.Abs(stmp[k]) * (aColk[k] / Math.Abs(aColk[k]));
                         }
 
-                        SvdDivInplace(m - k, aColk + k, stmp[k]);
+                        Internals.DivInplace(m - k, aColk + k, stmp[k]);
 
                         aColk[k] += 1.0;
                     }
@@ -65,8 +65,8 @@ namespace MatFlat
                     if (k < nct && stmp[k] != 0.0)
                     {
                         // Apply the transformation.
-                        var t = -SvdDot(m - k, aColk + k, aColj + k) / aColk[k];
-                        SvdMulAdd(m - k, aColk + k, t, aColj + k);
+                        var t = -Internals.Dot(m - k, aColk + k, aColj + k) / aColk[k];
+                        Internals.MulAdd(m - k, aColk + k, t, aColj + k);
                     }
 
                     // Place the k-th row of A into e for the subsequent calculation of the row transformation.
@@ -85,7 +85,7 @@ namespace MatFlat
                 {
                     // Compute the k-th row transformation and place the k-th super-diagonal in e[k].
                     // Compute 2-norm.
-                    e[k] = SvdNorm(n - kp1, e + kp1);
+                    e[k] = Internals.Norm(n - kp1, e + kp1);
 
                     if (e[k] != 0.0)
                     {
@@ -94,7 +94,7 @@ namespace MatFlat
                             e[k] = Math.Abs(e[k]) * (e[kp1] / Math.Abs(e[kp1]));
                         }
 
-                        SvdDivInplace(n - kp1, e + kp1, e[k]);
+                        Internals.DivInplace(n - kp1, e + kp1, e[k]);
 
                         e[kp1] += 1.0;
                     }
@@ -109,13 +109,13 @@ namespace MatFlat
                         for (var j = kp1; j < n; j++)
                         {
                             var aColj = a + lda * j;
-                            SvdMulAdd(m - kp1, aColj + kp1, e[j], work + kp1);
+                            Internals.MulAdd(m - kp1, aColj + kp1, e[j], work + kp1);
                         }
 
                         for (var j = kp1; j < n; j++)
                         {
                             var aColj = a + lda * j;
-                            SvdMulAdd(m - kp1, work + kp1, -e[j] / e[kp1], aColj + kp1);
+                            Internals.MulAdd(m - kp1, work + kp1, -e[j] / e[kp1], aColj + kp1);
                         }
                     }
 
@@ -166,11 +166,11 @@ namespace MatFlat
                         for (var j = k + 1; j < m; j++)
                         {
                             var uColj = u + ldu * j;
-                            var t = -SvdDot(m - k, uColk + k, uColj + k) / uColk[k];
-                            SvdMulAdd(m - k, uColk + k, t, uColj + k);
+                            var t = -Internals.Dot(m - k, uColk + k, uColj + k) / uColk[k];
+                            Internals.MulAdd(m - k, uColk + k, t, uColj + k);
                         }
 
-                        SvdFlipSign(m - k, uColk + k);
+                        Internals.FlipSign(m - k, uColk + k);
 
                         uColk[k] += 1.0;
                         new Span<double>(uColk, k).Clear();
@@ -196,8 +196,8 @@ namespace MatFlat
                         for (var j = kp1; j < n; j++)
                         {
                             var vtColj = vt + ldvt * j;
-                            var t = -SvdDot(n - kp1, vtColk + kp1, vtColj + kp1) / vtColk[kp1];
-                            SvdMulAdd(n - k, vtColk + k, t, vtColj + k);
+                            var t = -Internals.Dot(n - kp1, vtColk + kp1, vtColj + kp1) / vtColk[kp1];
+                            Internals.MulAdd(n - k, vtColk + k, t, vtColj + k);
                         }
                     }
 
@@ -220,7 +220,7 @@ namespace MatFlat
 
                     if (u != null)
                     {
-                        SvdMulInplace(m, u + ldu * i, r);
+                        Internals.MulInplace(m, u + ldu * i, r);
                     }
                 }
 
@@ -238,7 +238,7 @@ namespace MatFlat
 
                     if (vt != null)
                     {
-                        SvdMulInplace(n, vt + ldvt * (i + 1), r);
+                        Internals.MulInplace(n, vt + ldvt * (i + 1), r);
                     }
                 }
             }
@@ -253,7 +253,7 @@ namespace MatFlat
                 // If too many iterations have been performed throw exception.
                 if (iter >= 1000)
                 {
-                    throw new Exception();
+                    throw new MatFlatException("SVD failed. The solution did not converge.");
                 }
 
                 // Here is where a test for too many iterations would go.
@@ -331,7 +331,7 @@ namespace MatFlat
                         {
                             var l = p - 2 - j + k;
                             var t = stmp[l];
-                            Drotg(ref t, ref f, out cs, out sn);
+                            Internals.Drotg(ref t, ref f, out cs, out sn);
                             stmp[l] = t;
                             if (l != k)
                             {
@@ -361,7 +361,7 @@ namespace MatFlat
                         for (var j = k; j < p; j++)
                         {
                             var t = stmp[j];
-                            Drotg(ref t, ref f, out cs, out sn);
+                            Internals.Drotg(ref t, ref f, out cs, out sn);
                             stmp[j] = t;
                             f = -sn * e[j];
                             e[j] = cs * e[j];
@@ -415,7 +415,7 @@ namespace MatFlat
                         // Chase zeros.
                         for (var j = k; j < p - 1; j++)
                         {
-                            Drotg(ref f, ref g, out cs, out sn);
+                            Internals.Drotg(ref f, ref g, out cs, out sn);
                             if (j != k)
                             {
                                 e[j - 1] = f;
@@ -438,7 +438,7 @@ namespace MatFlat
                                 }
                             }
 
-                            Drotg(ref f, ref g, out cs, out sn);
+                            Internals.Drotg(ref f, ref g, out cs, out sn);
                             stmp[j] = f;
                             f = (cs * e[j]) + (sn * stmp[j + 1]);
                             stmp[j + 1] = -(sn * e[j]) + (cs * stmp[j + 1]);
@@ -475,7 +475,7 @@ namespace MatFlat
                             {
                                 if (vt != null)
                                 {
-                                    SvdFlipSign(n, vt + ldvt * k);
+                                    Internals.FlipSign(n, vt + ldvt * k);
                                 }
                             }
                         }
