@@ -41,7 +41,7 @@ namespace MatFlat
         /// <param name="ldvt">
         /// The leading dimension of the array VT.
         /// </param>
-        /// <exception cref="MatFlatException">
+        /// <exception cref="MatrixFactorizationException">
         /// The solution did not converge.
         /// </exception>
         public static unsafe void Svd(int m, int n, double* a, int lda, double* s, double* u, int ldu, double* vt, int ldvt)
@@ -140,7 +140,7 @@ namespace MatFlat
         /// <param name="ldvt">
         /// The leading dimension of the array VT.
         /// </param>
-        /// <exception cref="MatFlatException">
+        /// <exception cref="MatrixFactorizationException">
         /// The solution did not converge.
         /// </exception>
         public static unsafe void Svd(int m, int n, Complex* a, int lda, double* s, Complex* u, int ldu, Complex* vt, int ldvt)
@@ -431,7 +431,7 @@ namespace MatFlat
                 // If too many iterations have been performed throw exception.
                 if (iter >= 1000)
                 {
-                    throw new MatFlatException("SVD failed. The solution did not converge.");
+                    throw new MatrixFactorizationException("SVD failed. The solution did not converge.");
                 }
 
                 // Here is where a test for too many iterations would go.
@@ -944,7 +944,7 @@ namespace MatFlat
                 // If too many iterations have been performed throw exception.
                 if (iter >= 1000)
                 {
-                    throw new MatFlatException("SVD failed. The solution did not converge.");
+                    throw new MatrixFactorizationException("SVD failed. The solution did not converge.");
                 }
 
                 // Here is where a test for too many iterations would go.
