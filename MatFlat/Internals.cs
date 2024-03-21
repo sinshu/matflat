@@ -19,7 +19,7 @@ namespace MatFlat
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static Complex MulConj(Complex x, Complex y)
+        internal static Complex MulConj(Complex x, Complex y)
         {
             var a = x.Real;
             var b = -x.Imaginary;
@@ -28,7 +28,59 @@ namespace MatFlat
             return new Complex(a * c - b * d, a * d + b * c);
         }
 
-        internal static unsafe void DivInplace(int n, float* x, float y)
+        internal static unsafe void MulAdd<T>(int n, T* x, T y, T* dst) where T : unmanaged, INumberBase<T>
+        {
+            switch (n & 1)
+            {
+                case 0:
+                    break;
+                case 1:
+                    dst[0] += x[0] * y;
+                    x++;
+                    dst++;
+                    n--;
+                    break;
+                default:
+                    throw new MatFlatException("An unexpected error occurred.");
+            }
+
+            while (n > 0)
+            {
+                dst[0] += x[0] * y;
+                dst[1] += x[1] * y;
+                x += 2;
+                dst += 2;
+                n -= 2;
+            }
+        }
+
+        internal static unsafe void MulConjAdd(int n, Complex x, Complex* y, Complex* dst)
+        {
+            switch (n & 1)
+            {
+                case 0:
+                    break;
+                case 1:
+                    dst[0] += MulConj(x, y[0]);
+                    y++;
+                    dst++;
+                    n--;
+                    break;
+                default:
+                    throw new MatrixFactorizationException("An unexpected error occurred.");
+            }
+
+            while (n > 0)
+            {
+                dst[0] += MulConj(x, y[0]);
+                dst[1] += MulConj(x, y[1]);
+                y += 2;
+                dst += 2;
+                n -= 2;
+            }
+        }
+
+        internal static unsafe void DivInplace<T>(int n, T* x, T y) where T : unmanaged, INumberBase<T>
         {
             switch (n & 1)
             {
@@ -52,15 +104,18 @@ namespace MatFlat
             }
         }
 
-        internal static unsafe void DivInplace(int n, double* x, double y)
+        internal static unsafe double Dot(int n, float* x, float* y)
         {
+            double sum;
             switch (n & 1)
             {
                 case 0:
+                    sum = 0.0;
                     break;
                 case 1:
-                    x[0] /= y;
+                    sum = (double)x[0] * (double)y[0];
                     x++;
+                    y++;
                     n--;
                     break;
                 default:
@@ -69,22 +124,27 @@ namespace MatFlat
 
             while (n > 0)
             {
-                x[0] /= y;
-                x[1] /= y;
+                sum += (double)x[0] * (double)y[0] + (double)x[1] * (double)y[1];
                 x += 2;
+                y += 2;
                 n -= 2;
             }
+
+            return sum;
         }
 
-        internal static unsafe void DivInplace(int n, Complex* x, Complex y)
+        internal static unsafe double Dot(int n, double* x, double* y)
         {
+            double sum;
             switch (n & 1)
             {
                 case 0:
+                    sum = 0.0;
                     break;
                 case 1:
-                    x[0] /= y;
+                    sum = x[0] * y[0];
                     x++;
+                    y++;
                     n--;
                     break;
                 default:
@@ -93,11 +153,42 @@ namespace MatFlat
 
             while (n > 0)
             {
-                x[0] /= y;
-                x[1] /= y;
+                sum += x[0] * y[0] + x[1] * y[1];
                 x += 2;
+                y += 2;
                 n -= 2;
             }
+
+            return sum;
+        }
+
+        internal static unsafe Complex Dot(int n, Complex* x, Complex* y)
+        {
+            Complex sum;
+            switch (n & 1)
+            {
+                case 0:
+                    sum = Complex.Zero;
+                    break;
+                case 1:
+                    sum = x[0] * y[0];
+                    x++;
+                    y++;
+                    n--;
+                    break;
+                default:
+                    throw new MatFlatException("An unexpected error occurred.");
+            }
+
+            while (n > 0)
+            {
+                sum += x[0] * y[0] + x[1] * y[1];
+                x += 2;
+                y += 2;
+                n -= 2;
+            }
+
+            return sum;
         }
 
         internal static unsafe double Dot(int n, float* x, int incx, float* y)
@@ -247,7 +338,36 @@ namespace MatFlat
             return sum;
         }
 
-        internal static unsafe Complex Dot(int n, Complex* x, Complex* y, int inc)
+        internal static unsafe Complex DotConj(int n, Complex* x, Complex* y)
+        {
+            Complex sum;
+            switch (n & 1)
+            {
+                case 0:
+                    sum = Complex.Zero;
+                    break;
+                case 1:
+                    sum = MulConj(x[0], y[0]);
+                    x++;
+                    y++;
+                    n--;
+                    break;
+                default:
+                    throw new MatFlatException("An unexpected error occurred.");
+            }
+
+            while (n > 0)
+            {
+                sum += MulConj(x[0], y[0]) + MulConj(x[1], y[1]);
+                x += 2;
+                y += 2;
+                n -= 2;
+            }
+
+            return sum;
+        }
+
+        internal static unsafe Complex DotConj(int n, Complex* x, Complex* y, int inc)
         {
             Complex sum;
             switch (n & 1)
@@ -275,6 +395,87 @@ namespace MatFlat
             }
 
             return sum;
+        }
+
+        internal static unsafe double Norm(int n, float* x)
+        {
+            double sum;
+            switch (n & 1)
+            {
+                case 0:
+                    sum = 0.0;
+                    break;
+                case 1:
+                    sum = (double)x[0] * (double)x[0];
+                    x++;
+                    n--;
+                    break;
+                default:
+                    throw new MatFlatException("An unexpected error occurred.");
+            }
+
+            while (n > 0)
+            {
+                sum += (double)x[0] * (double)x[0] + (double)x[1] * (double)x[1];
+                x += 2;
+                n -= 2;
+            }
+
+            return Math.Sqrt(sum);
+        }
+
+        internal static unsafe double Norm(int n, double* x)
+        {
+            double sum;
+            switch (n & 1)
+            {
+                case 0:
+                    sum = 0.0;
+                    break;
+                case 1:
+                    sum = x[0] * x[0];
+                    x++;
+                    n--;
+                    break;
+                default:
+                    throw new MatFlatException("An unexpected error occurred.");
+            }
+
+            while (n > 0)
+            {
+                sum += x[0] * x[0] + x[1] * x[1];
+                x += 2;
+                n -= 2;
+            }
+
+            return Math.Sqrt(sum);
+        }
+
+        internal static unsafe double Norm(int n, Complex* x)
+        {
+            double sum;
+            switch (n & 1)
+            {
+                case 0:
+                    sum = 0.0;
+                    break;
+                case 1:
+                    sum = x[0].Real * x[0].Real + x[0].Imaginary * x[0].Imaginary;
+                    x++;
+                    n--;
+                    break;
+                default:
+                    throw new MatFlatException("An unexpected error occurred.");
+            }
+
+            while (n > 0)
+            {
+                sum += x[0].Real * x[0].Real + x[0].Imaginary * x[0].Imaginary + x[1].Real * x[1].Real + x[1].Imaginary * x[1].Imaginary;
+                x += 2;
+                n -= 2;
+            }
+
+            return Math.Sqrt(sum);
         }
 
         internal static unsafe void SwapRows<T>(int n, T* x, T* y, int inc) where T : unmanaged, INumberBase<T>

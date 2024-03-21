@@ -52,9 +52,9 @@ namespace Benchmark
             fixed (double* pq = q)
             fixed (double* pr = r)
             {
-                global::MatFlat.Factorization.QrDouble(Order, Order, pa, Order, prdiag);
-                global::MatFlat.Factorization.QrOrthogonalFactorDouble(Order, Order, pa, Order, pq, Order);
-                global::MatFlat.Factorization.QrUpperTriangularFactorDouble(Order, Order, pa, Order, pr, Order, prdiag);
+                global::MatFlat.Factorization.Qr(Order, Order, pa, Order, prdiag);
+                global::MatFlat.Factorization.QrOrthogonalFactor(Order, Order, pa, Order, pq, Order);
+                global::MatFlat.Factorization.QrUpperTriangularFactor(Order, Order, pa, Order, pr, Order, prdiag);
             }
         }
 

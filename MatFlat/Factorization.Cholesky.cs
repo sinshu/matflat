@@ -220,7 +220,7 @@ namespace MatFlat
 
                 for (var k = 0; k < j; k++)
                 {
-                    var t = (colj[k] - Internals.Dot(k, a + j, a + k, lda)) / colk[k];
+                    var t = (colj[k] - Internals.DotConj(k, a + j, a + k, lda)) / colk[k];
                     colk[j] = new Complex(t.Real, -t.Imaginary);
                     s += t.Real * t.Real + t.Imaginary * t.Imaginary;
 

@@ -30,7 +30,7 @@ namespace MatFlat
         /// <param name="rdiag">
         /// On exit, the diagonal elements of R are stored.
         /// </param>
-        public static unsafe void QrSingle(int m, int n, float* a, int lda, float* rdiag)
+        public static unsafe void Qr(int m, int n, float* a, int lda, float* rdiag)
         {
             if (m <= 0)
             {
@@ -66,11 +66,11 @@ namespace MatFlat
 
             for (var k = 0; k < n; k++)
             {
-                var norm = QrNorm(m - k, colk + k);
+                var norm = (float)Internals.Norm(m - k, colk + k);
 
-                if (norm != 0.0)
+                if (norm != 0.0F)
                 {
-                    QrDivInplace(m - k, colk + k, norm);
+                    Internals.DivInplace(m - k, colk + k, norm);
 
                     colk[k] += 1.0F;
 
@@ -78,8 +78,8 @@ namespace MatFlat
                     for (var j = k + 1; j < n; j++)
                     {
                         var colj = a + lda * j;
-                        var s = -QrDot(m - k, colk + k, colj + k) / colk[k];
-                        QrMulAdd(m - k, colk + k, s, colj + k);
+                        var s = -(float)(Internals.Dot(m - k, colk + k, colj + k) / colk[k]);
+                        Internals.MulAdd(m - k, colk + k, s, colj + k);
                     }
                 }
 
@@ -113,7 +113,7 @@ namespace MatFlat
         /// <param name="rdiag">
         /// On exit, the diagonal elements of R are stored.
         /// </param>
-        public static unsafe void QrDouble(int m, int n, double* a, int lda, double* rdiag)
+        public static unsafe void Qr(int m, int n, double* a, int lda, double* rdiag)
         {
             if (m <= 0)
             {
@@ -149,11 +149,11 @@ namespace MatFlat
 
             for (var k = 0; k < n; k++)
             {
-                var norm = QrNorm(m - k, colk + k);
+                var norm = Internals.Norm(m - k, colk + k);
 
                 if (norm != 0.0)
                 {
-                    QrDivInplace(m - k, colk + k, norm);
+                    Internals.DivInplace(m - k, colk + k, norm);
 
                     colk[k] += 1.0;
 
@@ -161,8 +161,8 @@ namespace MatFlat
                     for (var j = k + 1; j < n; j++)
                     {
                         var colj = a + lda * j;
-                        var s = -QrDot(m - k, colk + k, colj + k) / colk[k];
-                        QrMulAdd(m - k, colk + k, s, colj + k);
+                        var s = -Internals.Dot(m - k, colk + k, colj + k) / colk[k];
+                        Internals.MulAdd(m - k, colk + k, s, colj + k);
                     }
                 }
 
@@ -196,7 +196,7 @@ namespace MatFlat
         /// <param name="rdiag">
         /// On exit, the diagonal elements of R are stored.
         /// </param>
-        public static unsafe void QrComplex(int m, int n, Complex* a, int lda, double* rdiag)
+        public static unsafe void Qr(int m, int n, Complex* a, int lda, double* rdiag)
         {
             if (m <= 0)
             {
@@ -232,11 +232,11 @@ namespace MatFlat
 
             for (var k = 0; k < n; k++)
             {
-                var norm = QrNorm(m - k, colk + k);
+                var norm = Internals.Norm(m - k, colk + k);
 
                 if (norm != 0.0)
                 {
-                    QrDivInplace(m - k, colk + k, norm);
+                    Internals.DivInplace(m - k, colk + k, norm);
 
                     colk[k] += 1.0;
 
@@ -244,8 +244,8 @@ namespace MatFlat
                     for (var j = k + 1; j < n; j++)
                     {
                         var colj = a + lda * j;
-                        var s = -QrDot(m - k, colk + k, colj + k) / colk[k];
-                        QrMulAdd(m - k, colk + k, s, colj + k);
+                        var s = -Internals.DotConj(m - k, colk + k, colj + k) / colk[k];
+                        Internals.MulAdd(m - k, colk + k, s, colj + k);
                     }
                 }
 
@@ -265,7 +265,7 @@ namespace MatFlat
         /// The number of columns of the source matrix.
         /// </param>
         /// <param name="a">
-        /// The result of the QR decomposition obtained from <see cref="QrSingle(int, int, float*, int, float*)"/>.
+        /// The result of the QR decomposition obtained from <see cref="Qr(int, int, float*, int, float*)"/>.
         /// </param>
         /// <param name="lda">
         /// The leading dimension of the source array.
@@ -276,7 +276,7 @@ namespace MatFlat
         /// <param name="ldq">
         /// The leading dimension of the array Q.
         /// </param>
-        public static unsafe void QrOrthogonalFactorSingle(int m, int n, float* a, int lda, float* q, int ldq)
+        public static unsafe void QrOrthogonalFactor(int m, int n, float* a, int lda, float* q, int ldq)
         {
             if (m <= 0)
             {
@@ -327,8 +327,8 @@ namespace MatFlat
                     var qColj = q + ldq * j;
                     if (aColk[k] != 0)
                     {
-                        var s = -QrDot(m - k, aColk + k, qColj + k) / aColk[k];
-                        QrMulAdd(m - k, aColk + k, s, qColj + k);
+                        var s = -(float)(Internals.Dot(m - k, aColk + k, qColj + k) / aColk[k]);
+                        Internals.MulAdd(m - k, aColk + k, s, qColj + k);
                     }
                 }
             }
@@ -344,7 +344,7 @@ namespace MatFlat
         /// The number of columns of the source matrix.
         /// </param>
         /// <param name="a">
-        /// The result of the QR decomposition obtained from <see cref="QrDouble(int, int, double*, int, double*)"/>.
+        /// The result of the QR decomposition obtained from <see cref="Qr(int, int, double*, int, double*)"/>.
         /// </param>
         /// <param name="lda">
         /// The leading dimension of the source array.
@@ -355,7 +355,7 @@ namespace MatFlat
         /// <param name="ldq">
         /// The leading dimension of the array Q.
         /// </param>
-        public static unsafe void QrOrthogonalFactorDouble(int m, int n, double* a, int lda, double* q, int ldq)
+        public static unsafe void QrOrthogonalFactor(int m, int n, double* a, int lda, double* q, int ldq)
         {
             if (m <= 0)
             {
@@ -406,8 +406,8 @@ namespace MatFlat
                     var qColj = q + ldq * j;
                     if (aColk[k] != 0)
                     {
-                        var s = -QrDot(m - k, aColk + k, qColj + k) / aColk[k];
-                        QrMulAdd(m - k, aColk + k, s, qColj + k);
+                        var s = -Internals.Dot(m - k, aColk + k, qColj + k) / aColk[k];
+                        Internals.MulAdd(m - k, aColk + k, s, qColj + k);
                     }
                 }
             }
@@ -423,7 +423,7 @@ namespace MatFlat
         /// The number of columns of the source matrix.
         /// </param>
         /// <param name="a">
-        /// The result of the QR decomposition obtained from <see cref="QrComplex(int, int, Complex*, int, double*)"/>.
+        /// The result of the QR decomposition obtained from <see cref="Qr(int, int, Complex*, int, double*)"/>.
         /// </param>
         /// <param name="lda">
         /// The leading dimension of the source array.
@@ -434,7 +434,7 @@ namespace MatFlat
         /// <param name="ldq">
         /// The leading dimension of the array Q.
         /// </param>
-        public static unsafe void QrOrthogonalFactorComplex(int m, int n, Complex* a, int lda, Complex* q, int ldq)
+        public static unsafe void QrOrthogonalFactor(int m, int n, Complex* a, int lda, Complex* q, int ldq)
         {
             if (m <= 0)
             {
@@ -485,8 +485,8 @@ namespace MatFlat
                     var qColj = q + ldq * j;
                     if (aColk[k] != 0)
                     {
-                        var s = -QrDot2(m - k, aColk + k, qColj + k) / aColk[k];
-                        QrMulAdd2(m - k, aColk + k, s, qColj + k);
+                        var s = -Internals.DotConj(m - k, qColj + k, aColk + k) / aColk[k];
+                        Internals.MulConjAdd(m - k, s, aColk + k, qColj + k);
                     }
                 }
             }
@@ -502,7 +502,7 @@ namespace MatFlat
         /// The number of columns of the source matrix.
         /// </param>
         /// <param name="a">
-        /// The result of the QR decomposition obtained from <see cref="QrSingle(int, int, float*, int, float*)"/>.
+        /// The result of the QR decomposition obtained from <see cref="Qr(int, int, float*, int, float*)"/>.
         /// </param>
         /// <param name="lda">
         /// The leading dimension of the source array.
@@ -514,9 +514,9 @@ namespace MatFlat
         /// The leading dimension of the array R.
         /// </param>
         /// <param name="rdiag">
-        /// The diagonal elements of R obtained from <see cref="QrSingle(int, int, float*, int, float*)"/>.
+        /// The diagonal elements of R obtained from <see cref="Qr(int, int, float*, int, float*)"/>.
         /// </param>
-        public static unsafe void QrUpperTriangularFactorSingle(int m, int n, float* a, int lda, float* r, int ldr, float* rdiag)
+        public static unsafe void QrUpperTriangularFactor(int m, int n, float* a, int lda, float* r, int ldr, float* rdiag)
         {
             if (m <= 0)
             {
@@ -581,7 +581,7 @@ namespace MatFlat
         /// The number of columns of the source matrix.
         /// </param>
         /// <param name="a">
-        /// The result of the QR decomposition obtained from <see cref="QrDouble(int, int, double*, int, double*)"/>.
+        /// The result of the QR decomposition obtained from <see cref="Qr(int, int, double*, int, double*)"/>.
         /// </param>
         /// <param name="lda">
         /// The leading dimension of the source array.
@@ -593,9 +593,9 @@ namespace MatFlat
         /// The leading dimension of the array R.
         /// </param>
         /// <param name="rdiag">
-        /// The diagonal elements of R obtained from <see cref="QrDouble(int, int, double*, int, double*)"/>.
+        /// The diagonal elements of R obtained from <see cref="Qr(int, int, double*, int, double*)"/>.
         /// </param>
-        public static unsafe void QrUpperTriangularFactorDouble(int m, int n, double* a, int lda, double* r, int ldr, double* rdiag)
+        public static unsafe void QrUpperTriangularFactor(int m, int n, double* a, int lda, double* r, int ldr, double* rdiag)
         {
             if (m <= 0)
             {
@@ -661,7 +661,7 @@ namespace MatFlat
         /// The number of columns of the source matrix.
         /// </param>
         /// <param name="a">
-        /// The result of the QR decomposition obtained from <see cref="QrComplex(int, int, Complex*, int, double*)"/>.
+        /// The result of the QR decomposition obtained from <see cref="Qr(int, int, Complex*, int, double*)"/>.
         /// </param>
         /// <param name="lda">
         /// The leading dimension of the source array.
@@ -673,9 +673,9 @@ namespace MatFlat
         /// The leading dimension of the array R.
         /// </param>
         /// <param name="rdiag">
-        /// The diagonal elements of R obtained from <see cref="QrComplex(int, int, Complex*, int, double*)"/>.
+        /// The diagonal elements of R obtained from <see cref="Qr(int, int, Complex*, int, double*)"/>.
         /// </param>
-        public static unsafe void QrUpperTriangularFactorComplex(int m, int n, Complex* a, int lda, Complex* r, int ldr, double* rdiag)
+        public static unsafe void QrUpperTriangularFactor(int m, int n, Complex* a, int lda, Complex* r, int ldr, double* rdiag)
         {
             if (m <= 0)
             {
@@ -728,284 +728,6 @@ namespace MatFlat
                 aColi += lda;
                 rColi += ldr;
             }
-        }
-
-        private static unsafe float QrNorm(int n, float* x)
-        {
-            double sum;
-            switch (n & 1)
-            {
-                case 0:
-                    sum = 0.0;
-                    break;
-                case 1:
-                    sum = (double)x[0] * (double)x[0];
-                    x++;
-                    n--;
-                    break;
-                default:
-                    throw new MatrixFactorizationException("An unexpected error occurred.");
-            }
-
-            while (n > 0)
-            {
-                sum += (double)x[0] * (double)x[0] + (double)x[1] * (double)x[1];
-                x += 2;
-                n -= 2;
-            }
-
-            return (float)Math.Sqrt(sum);
-        }
-
-        private static unsafe double QrNorm(int n, double* x)
-        {
-            double sum;
-            switch (n & 1)
-            {
-                case 0:
-                    sum = 0.0;
-                    break;
-                case 1:
-                    sum = x[0] * x[0];
-                    x++;
-                    n--;
-                    break;
-                default:
-                    throw new MatrixFactorizationException("An unexpected error occurred.");
-            }
-
-            while (n > 0)
-            {
-                sum += x[0] * x[0] + x[1] * x[1];
-                x += 2;
-                n -= 2;
-            }
-
-            return Math.Sqrt(sum);
-        }
-
-        private static unsafe double QrNorm(int n, Complex* x)
-        {
-            double sum;
-            switch (n & 1)
-            {
-                case 0:
-                    sum = 0.0;
-                    break;
-                case 1:
-                    sum = x[0].Real * x[0].Real + x[0].Imaginary * x[0].Imaginary;
-                    x++;
-                    n--;
-                    break;
-                default:
-                    throw new MatrixFactorizationException("An unexpected error occurred.");
-            }
-
-            while (n > 0)
-            {
-                sum += x[0].Real * x[0].Real + x[0].Imaginary * x[0].Imaginary + x[1].Real * x[1].Real + x[1].Imaginary * x[1].Imaginary;
-                x += 2;
-                n -= 2;
-            }
-
-            return Math.Sqrt(sum);
-        }
-
-        private static unsafe void QrDivInplace<T>(int n, T* x, T y) where T : unmanaged, INumberBase<T>
-        {
-            switch (n & 1)
-            {
-                case 0:
-                    break;
-                case 1:
-                    x[0] /= y;
-                    x++;
-                    n--;
-                    break;
-                default:
-                    throw new MatrixFactorizationException("An unexpected error occurred.");
-            }
-
-            while (n > 0)
-            {
-                x[0] /= y;
-                x[1] /= y;
-                x += 2;
-                n -= 2;
-            }
-        }
-
-        private static unsafe void QrDivInplace(int n, Complex* x, double y)
-        {
-            switch (n & 1)
-            {
-                case 0:
-                    break;
-                case 1:
-                    x[0] /= y;
-                    x++;
-                    n--;
-                    break;
-                default:
-                    throw new MatrixFactorizationException("An unexpected error occurred.");
-            }
-
-            while (n > 0)
-            {
-                x[0] /= y;
-                x[1] /= y;
-                x += 2;
-                n -= 2;
-            }
-        }
-
-        private static unsafe T QrDot<T>(int n, T* x, T* y) where T : unmanaged, INumberBase<T>
-        {
-            T sum;
-            switch (n & 1)
-            {
-                case 0:
-                    sum = T.Zero;
-                    break;
-                case 1:
-                    sum = x[0] * y[0];
-                    x++;
-                    y++;
-                    n--;
-                    break;
-                default:
-                    throw new MatrixFactorizationException("An unexpected error occurred.");
-            }
-
-            while (n > 0)
-            {
-                sum += x[0] * y[0] + x[1] * y[1];
-                x += 2;
-                y += 2;
-                n -= 2;
-            }
-
-            return sum;
-        }
-
-        private static unsafe void QrMulAdd<T>(int n, T* x, T y, T* dst) where T : unmanaged, INumberBase<T>
-        {
-            switch (n & 1)
-            {
-                case 0:
-                    break;
-                case 1:
-                    dst[0] += x[0] * y;
-                    x++;
-                    dst++;
-                    n--;
-                    break;
-                default:
-                    throw new MatrixFactorizationException("An unexpected error occurred.");
-            }
-
-            while (n > 0)
-            {
-                dst[0] += x[0] * y;
-                dst[1] += x[1] * y;
-                x += 2;
-                dst += 2;
-                n -= 2;
-            }
-        }
-
-        private static unsafe Complex QrDot(int n, Complex* x, Complex* y)
-        {
-            Complex sum;
-            switch (n & 1)
-            {
-                case 0:
-                    sum = Complex.Zero;
-                    break;
-                case 1:
-                    sum = QrComplexMul(x[0], y[0]);
-                    x++;
-                    y++;
-                    n--;
-                    break;
-                default:
-                    throw new MatrixFactorizationException("An unexpected error occurred.");
-            }
-
-            while (n > 0)
-            {
-                sum += QrComplexMul(x[0], y[0]) + QrComplexMul(x[1], y[1]);
-                x += 2;
-                y += 2;
-                n -= 2;
-            }
-
-            return sum;
-        }
-
-        private static unsafe Complex QrDot2(int n, Complex* x, Complex* y)
-        {
-            Complex sum;
-            switch (n & 1)
-            {
-                case 0:
-                    sum = Complex.Zero;
-                    break;
-                case 1:
-                    sum = QrComplexMul(y[0], x[0]);
-                    x++;
-                    y++;
-                    n--;
-                    break;
-                default:
-                    throw new MatrixFactorizationException("An unexpected error occurred.");
-            }
-
-            while (n > 0)
-            {
-                sum += QrComplexMul(y[0], x[0]) + QrComplexMul(y[1], x[1]);
-                x += 2;
-                y += 2;
-                n -= 2;
-            }
-
-            return sum;
-        }
-
-        private static unsafe void QrMulAdd2(int n, Complex* x, Complex y, Complex* dst)
-        {
-            switch (n & 1)
-            {
-                case 0:
-                    break;
-                case 1:
-                    dst[0] += QrComplexMul(y, x[0]);
-                    x++;
-                    dst++;
-                    n--;
-                    break;
-                default:
-                    throw new MatrixFactorizationException("An unexpected error occurred.");
-            }
-
-            while (n > 0)
-            {
-                dst[0] += QrComplexMul(y, x[0]);
-                dst[1] += QrComplexMul(y, x[1]);
-                x += 2;
-                dst += 2;
-                n -= 2;
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static Complex QrComplexMul(Complex x, Complex y)
-        {
-            var a = x.Real;
-            var b = -x.Imaginary;
-            var c = y.Real;
-            var d = y.Imaginary;
-            return new Complex(a * c - b * d, a * d + b * c);
         }
     }
 }

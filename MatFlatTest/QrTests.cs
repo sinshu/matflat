@@ -42,9 +42,9 @@ namespace MatFlatTest
             fixed (float* preconstructed = reconstructed)
             fixed (float* pidentity = identity)
             {
-                Factorization.QrSingle(m, n, pa, lda, prdiag);
-                Factorization.QrOrthogonalFactorSingle(m, n, pa, lda, pq, ldq);
-                Factorization.QrUpperTriangularFactorSingle(m, n, pa, lda, pr, ldr, prdiag);
+                Factorization.Qr(m, n, pa, lda, prdiag);
+                Factorization.QrOrthogonalFactor(m, n, pa, lda, pq, ldq);
+                Factorization.QrUpperTriangularFactor(m, n, pa, lda, pr, ldr, prdiag);
                 Blas.Sgemm(
                     Order.ColMajor,
                     Transpose.NoTrans, Transpose.NoTrans,
@@ -147,9 +147,9 @@ namespace MatFlatTest
             fixed (float* preconstructed = reconstructed)
             fixed (float* pidentity = identity)
             {
-                Factorization.QrSingle(m, n, pa, lda, prdiag);
-                Factorization.QrOrthogonalFactorSingle(m, n, pa, lda, pq, ldq);
-                Factorization.QrUpperTriangularFactorSingle(m, n, pa, lda, pr, ldr, prdiag);
+                Factorization.Qr(m, n, pa, lda, prdiag);
+                Factorization.QrOrthogonalFactor(m, n, pa, lda, pq, ldq);
+                Factorization.QrUpperTriangularFactor(m, n, pa, lda, pr, ldr, prdiag);
                 Blas.Sgemm(
                     Order.ColMajor,
                     Transpose.NoTrans, Transpose.NoTrans,
@@ -230,9 +230,9 @@ namespace MatFlatTest
             fixed (double* preconstructed = reconstructed)
             fixed (double* pidentity = identity)
             {
-                Factorization.QrDouble(m, n, pa, lda, prdiag);
-                Factorization.QrOrthogonalFactorDouble(m, n, pa, lda, pq, ldq);
-                Factorization.QrUpperTriangularFactorDouble(m, n, pa, lda, pr, ldr, prdiag);
+                Factorization.Qr(m, n, pa, lda, prdiag);
+                Factorization.QrOrthogonalFactor(m, n, pa, lda, pq, ldq);
+                Factorization.QrUpperTriangularFactor(m, n, pa, lda, pr, ldr, prdiag);
                 Blas.Dgemm(
                     Order.ColMajor,
                     Transpose.NoTrans, Transpose.NoTrans,
@@ -335,9 +335,9 @@ namespace MatFlatTest
             fixed (double* preconstructed = reconstructed)
             fixed (double* pidentity = identity)
             {
-                Factorization.QrDouble(m, n, pa, lda, prdiag);
-                Factorization.QrOrthogonalFactorDouble(m, n, pa, lda, pq, ldq);
-                Factorization.QrUpperTriangularFactorDouble(m, n, pa, lda, pr, ldr, prdiag);
+                Factorization.Qr(m, n, pa, lda, prdiag);
+                Factorization.QrOrthogonalFactor(m, n, pa, lda, pq, ldq);
+                Factorization.QrUpperTriangularFactor(m, n, pa, lda, pr, ldr, prdiag);
                 Blas.Dgemm(
                     Order.ColMajor,
                     Transpose.NoTrans, Transpose.NoTrans,
@@ -420,9 +420,9 @@ namespace MatFlatTest
             {
                 var one = Complex.One;
                 var zero = Complex.Zero;
-                Factorization.QrComplex(m, n, pa, lda, prdiag);
-                Factorization.QrOrthogonalFactorComplex(m, n, pa, lda, pq, ldq);
-                Factorization.QrUpperTriangularFactorComplex(m, n, pa, lda, pr, ldr, prdiag);
+                Factorization.Qr(m, n, pa, lda, prdiag);
+                Factorization.QrOrthogonalFactor(m, n, pa, lda, pq, ldq);
+                Factorization.QrUpperTriangularFactor(m, n, pa, lda, pr, ldr, prdiag);
                 Blas.Zgemm(
                     Order.ColMajor,
                     Transpose.NoTrans, Transpose.NoTrans,
@@ -533,9 +533,9 @@ namespace MatFlatTest
             {
                 var one = Complex.One;
                 var zero = Complex.Zero;
-                Factorization.QrComplex(m, n, pa, lda, prdiag);
-                Factorization.QrOrthogonalFactorComplex(m, n, pa, lda, pq, ldq);
-                Factorization.QrUpperTriangularFactorComplex(m, n, pa, lda, pr, ldr, prdiag);
+                Factorization.Qr(m, n, pa, lda, prdiag);
+                Factorization.QrOrthogonalFactor(m, n, pa, lda, pq, ldq);
+                Factorization.QrUpperTriangularFactor(m, n, pa, lda, pr, ldr, prdiag);
                 Blas.Zgemm(
                     Order.ColMajor,
                     Transpose.NoTrans, Transpose.NoTrans,
