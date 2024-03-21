@@ -139,80 +139,55 @@ namespace MatFlat
                 }
             }
 
-            // Set up the final bidiagonal matrix or order m.
+            // Set up the final bidiagonal matrix or order p.
             var p = Math.Min(n, m + 1);
-            var nctp1 = nct + 1;
-            var nrtp1 = nrt + 1;
             if (nct < n)
             {
-                stmp[nctp1 - 1] = a[((nctp1 - 1) * lda) + (nctp1 - 1)];
+                stmp[nct] = a[(nct * lda) + nct];
             }
-
             if (m < p)
             {
                 stmp[p - 1] = 0.0;
             }
-
-            if (nrtp1 < p)
+            if (nrt + 1 < p)
             {
-                e[nrtp1 - 1] = a[((p - 1) * lda) + (nrtp1 - 1)];
+                e[nrt] = a[((p - 1) * lda) + nrt];
             }
 
             e[p - 1] = 0.0;
 
-            // If required, generate "u".
-            if (computeVectors)
+            // If required, generate U.
+            if (u != null)
             {
-                for (j2 = nctp1 - 1; j2 < ncu; j2++)
+                for (var j = nct; j < m; j++)
                 {
-                    for (i2 = 0; i2 < m; i2++)
-                    {
-                        u[(j2 * ldu) + i2] = 0.0;
-                    }
-
-                    u[(j2 * ldu) + j2] = 1.0;
+                    var uColj = u + ldu * j;
+                    new Span<double>(uColj, m).Clear();
+                    uColj[j] = 1.0;
                 }
 
                 for (var k = nct - 1; k >= 0; k--)
                 {
+                    var uColk = u + ldu * k;
+
                     if (stmp[k] != 0.0)
                     {
-                        for (j2 = k + 1; j2 < ncu; j2++)
+                        for (var j = k + 1; j < m; j++)
                         {
-                            t2 = 0.0;
-                            for (i2 = k; i2 < m; i2++)
-                            {
-                                t2 += u[(j2 * ldu) + i2] * u[(k * ldu) + i2];
-                            }
-
-                            t2 = -t2 / u[(k * ldu) + k];
-
-                            for (var ii = k; ii < m; ii++)
-                            {
-                                u[(j2 * ldu) + ii] += t2 * u[(k * ldu) + ii];
-                            }
+                            var uColj = u + ldu * j;
+                            var t = -SvdDot(m - k, uColk + k, uColj + k) / uColk[k];
+                            SvdMulAdd(m - k, uColk + k, t, uColj + k);
                         }
 
-                        // A part of column "l" of matrix A from row "l" to end multiply by -1.0
-                        for (i2 = k; i2 < m; i2++)
-                        {
-                            u[(k * ldu) + i2] = u[(k * ldu) + i2] * -1.0;
-                        }
+                        SvdFlipSign(m - k, uColk + k);
 
-                        u[(k * ldu) + k] = 1.0 + u[(k * ldu) + k];
-                        for (i2 = 0; i2 < k; i2++)
-                        {
-                            u[(k * ldu) + i2] = 0.0;
-                        }
+                        uColk[k] += 1.0;
+                        new Span<double>(uColk, k).Clear();
                     }
                     else
                     {
-                        for (i2 = 0; i2 < m; i2++)
-                        {
-                            u[(k * ldu) + i2] = 0.0;
-                        }
-
-                        u[(k * ldu) + k] = 1.0;
+                        new Span<double>(uColk, m).Clear();
+                        uColk[k] = 1.0;
                     }
                 }
             }
@@ -730,6 +705,7 @@ namespace MatFlat
             {
                 e[nrt] = a[((p - 1) * lda) + nrt];
             }
+
             e[p - 1] = Complex.Zero;
 
             // If required, generate U.
