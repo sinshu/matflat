@@ -7,6 +7,9 @@ namespace Benchmark
     {
         static void Main(string[] args)
         {
+            BenchmarkRunner.Run<LuBenchmark>();
+            BenchmarkRunner.Run<CholeskyBenchmark>();
+            BenchmarkRunner.Run<QrBenchmark>();
             BenchmarkRunner.Run<SvdBenchmark>();
         }
     }

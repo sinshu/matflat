@@ -5,7 +5,7 @@ using BenchmarkDotNet.Attributes;
 namespace Benchmark
 {
     [MemoryDiagnoser]
-    [ShortRunJob]
+    //[ShortRunJob]
     public unsafe class QrBenchmark
     {
         private double[] values;
@@ -58,7 +58,7 @@ namespace Benchmark
             }
         }
 
-        [Benchmark]
+        //[Benchmark]
         public void OpenBlas()
         {
             values.CopyTo(a, 0);

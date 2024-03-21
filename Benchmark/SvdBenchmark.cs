@@ -5,7 +5,7 @@ using BenchmarkDotNet.Attributes;
 namespace Benchmark
 {
     [MemoryDiagnoser]
-    [ShortRunJob]
+    //[ShortRunJob]
     public unsafe class SvdBenchmark
     {
         private double[] values;

@@ -6,7 +6,7 @@ using OpenBlasSharp;
 namespace Benchmark
 {
     [MemoryDiagnoser]
-    [ShortRunJob]
+    //[ShortRunJob]
     public unsafe class CholeskyBenchmark
     {
         private double[] values;
