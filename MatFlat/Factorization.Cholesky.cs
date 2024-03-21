@@ -28,7 +28,7 @@ namespace MatFlat
         /// <param name="lda">
         /// The leading dimension of the array A.
         /// </param>
-        /// <exception cref="LinearAlgebraException">
+        /// <exception cref="MatrixFactorizationException">
         /// The matrix is not positive definite.
         /// </exception>
         public static unsafe void Cholesky(int n, float* a, int lda)
@@ -73,7 +73,7 @@ namespace MatFlat
                 }
                 else
                 {
-                    throw new LinearAlgebraException("Cholesky decomposition failed. The matrix must be positive definite.");
+                    throw new MatrixFactorizationException("Cholesky decomposition failed. The matrix must be positive definite.");
                 }
 
                 colj += lda;
@@ -109,7 +109,7 @@ namespace MatFlat
         /// <param name="lda">
         /// The leading dimension of the array A.
         /// </param>
-        /// <exception cref="LinearAlgebraException">
+        /// <exception cref="MatrixFactorizationException">
         /// The matrix is not positive definite.
         /// </exception>
         public static unsafe void Cholesky(int n, double* a, int lda)
@@ -154,7 +154,7 @@ namespace MatFlat
                 }
                 else
                 {
-                    throw new LinearAlgebraException("Cholesky decomposition failed. The matrix must be positive definite.");
+                    throw new MatrixFactorizationException("Cholesky decomposition failed. The matrix must be positive definite.");
                 }
 
                 colj += lda;
@@ -190,7 +190,7 @@ namespace MatFlat
         /// <param name="lda">
         /// The leading dimension of the array A.
         /// </param>
-        /// <exception cref="LinearAlgebraException">
+        /// <exception cref="MatrixFactorizationException">
         /// The matrix is not positive definite.
         /// </exception>
         public static unsafe void Cholesky(int n, Complex* a, int lda)
@@ -235,7 +235,7 @@ namespace MatFlat
                 }
                 else
                 {
-                    throw new LinearAlgebraException("Cholesky decomposition failed. The matrix must be positive definite.");
+                    throw new MatrixFactorizationException("Cholesky decomposition failed. The matrix must be positive definite.");
                 }
 
                 colj += lda;

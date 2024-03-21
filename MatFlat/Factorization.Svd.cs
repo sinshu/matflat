@@ -1086,7 +1086,7 @@ namespace MatFlat
                     n--;
                     break;
                 default:
-                    throw new LinearAlgebraException("An unexpected error occurred.");
+                    throw new MatrixFactorizationException("An unexpected error occurred.");
             }
 
             while (n > 0)
@@ -1113,7 +1113,7 @@ namespace MatFlat
                     n--;
                     break;
                 default:
-                    throw new LinearAlgebraException("An unexpected error occurred.");
+                    throw new MatrixFactorizationException("An unexpected error occurred.");
             }
 
             while (n > 0)
@@ -1145,7 +1145,7 @@ namespace MatFlat
                     n--;
                     break;
                 default:
-                    throw new LinearAlgebraException("An unexpected error occurred.");
+                    throw new MatrixFactorizationException("An unexpected error occurred.");
             }
 
             while (n > 0)
@@ -1169,7 +1169,7 @@ namespace MatFlat
                     n--;
                     break;
                 default:
-                    throw new LinearAlgebraException("An unexpected error occurred.");
+                    throw new MatrixFactorizationException("An unexpected error occurred.");
             }
 
             while (n > 0)
@@ -1193,7 +1193,7 @@ namespace MatFlat
                     n--;
                     break;
                 default:
-                    throw new LinearAlgebraException("An unexpected error occurred.");
+                    throw new MatrixFactorizationException("An unexpected error occurred.");
             }
 
             while (n > 0)
@@ -1228,7 +1228,7 @@ namespace MatFlat
                     n--;
                     break;
                 default:
-                    throw new LinearAlgebraException("An unexpected error occurred.");
+                    throw new MatrixFactorizationException("An unexpected error occurred.");
             }
 
             while (n > 0)
@@ -1257,7 +1257,7 @@ namespace MatFlat
                     n--;
                     break;
                 default:
-                    throw new LinearAlgebraException("An unexpected error occurred.");
+                    throw new MatrixFactorizationException("An unexpected error occurred.");
             }
 
             while (n > 0)
@@ -1284,7 +1284,7 @@ namespace MatFlat
                     n--;
                     break;
                 default:
-                    throw new LinearAlgebraException("An unexpected error occurred.");
+                    throw new MatrixFactorizationException("An unexpected error occurred.");
             }
 
             while (n > 0)
@@ -1309,7 +1309,7 @@ namespace MatFlat
                     n--;
                     break;
                 default:
-                    throw new LinearAlgebraException("An unexpected error occurred.");
+                    throw new MatrixFactorizationException("An unexpected error occurred.");
             }
 
             while (n > 0)

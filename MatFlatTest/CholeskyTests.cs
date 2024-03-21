@@ -77,7 +77,7 @@ namespace MatFlatTest
                         Assert.Fail();
                     }
                 }
-                catch (LinearAlgebraException)
+                catch (MatrixFactorizationException)
                 {
                     if (decomposable)
                     {
@@ -160,7 +160,7 @@ namespace MatFlatTest
                         Assert.Fail();
                     }
                 }
-                catch (LinearAlgebraException)
+                catch (MatrixFactorizationException)
                 {
                     if (decomposable)
                     {
@@ -244,7 +244,7 @@ namespace MatFlatTest
                         Assert.Fail();
                     }
                 }
-                catch (LinearAlgebraException)
+                catch (MatrixFactorizationException)
                 {
                     if (decomposable)
                     {
