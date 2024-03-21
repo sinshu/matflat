@@ -325,13 +325,13 @@ namespace MatFlat
 
                 k++;
 
-                // Perform the task indicated by case.
+                // Perform the task indicated by kase.
                 double f;
                 double cs;
                 double sn;
                 switch (kase)
                 {
-                    // Deflate negligible s[m].
+                    // Deflate negligible s(p).
                     case 1:
                         f = e[p - 2];
                         e[p - 2] = 0.0;
@@ -362,25 +362,27 @@ namespace MatFlat
 
                         break;
 
-                    // Split at negligible s[l].
+                    // Split at negligible s(k).
                     case 2:
                         f = e[k - 1];
                         e[k - 1] = 0.0;
-                        for (var k2 = k; k2 < p; k2++)
+                        for (var j = k; j < p; j++)
                         {
-                            var t = stmp[k2];
+                            var t = stmp[j];
                             Drotg(ref t, ref f, out cs, out sn);
-                            stmp[k2] = t;
-                            f = -sn * e[k2];
-                            e[k2] = cs * e[k2];
-                            if (computeVectors)
+                            stmp[j] = t;
+                            f = -sn * e[j];
+                            e[j] = cs * e[j];
+
+                            if (u != null)
                             {
-                                // Rotate
-                                for (i2 = 0; i2 < m; i2++)
+                                var uColj = u + ldu * j;
+                                var uColkm1 = u + ldu * (k - 1);
+                                for (var i = 0; i < m; i++)
                                 {
-                                    var z = (cs * u[(k2 * ldu) + i2]) + (sn * u[((k - 1) * ldu) + i2]);
-                                    u[((k - 1) * ldu) + i2] = (cs * u[((k - 1) * ldu) + i2]) - (sn * u[(k2 * ldu) + i2]);
-                                    u[(k2 * ldu) + i2] = z;
+                                    var z = (cs * uColj[i]) + (sn * uColkm1[i]);
+                                    uColkm1[i] = (cs * uColkm1[i]) - (sn * uColj[i]);
+                                    uColj[i] = z;
                                 }
                             }
                         }
@@ -390,20 +392,20 @@ namespace MatFlat
                     // Perform one qr step.
                     case 3:
 
-                        // calculate the shift.
+                        // Calculate the shift.
                         var scale = 0.0;
                         scale = Math.Max(scale, Math.Abs(stmp[p - 1]));
                         scale = Math.Max(scale, Math.Abs(stmp[p - 2]));
                         scale = Math.Max(scale, Math.Abs(e[p - 2]));
                         scale = Math.Max(scale, Math.Abs(stmp[k]));
                         scale = Math.Max(scale, Math.Abs(e[k]));
-                        var sm = stmp[p - 1] / scale;
-                        var smm1 = stmp[p - 2] / scale;
-                        var emm1 = e[p - 2] / scale;
-                        var sl = stmp[k] / scale;
-                        var el = e[k] / scale;
-                        var b = (((smm1 + sm) * (smm1 - sm)) + (emm1 * emm1)) / 2.0;
-                        var c = (sm * emm1) * (sm * emm1);
+                        var sp = stmp[p - 1] / scale;
+                        var spm1 = stmp[p - 2] / scale;
+                        var epm1 = e[p - 2] / scale;
+                        var sk = stmp[k] / scale;
+                        var ek = e[k] / scale;
+                        var b = (((spm1 + sp) * (spm1 - sp)) + (epm1 * epm1)) / 2.0;
+                        var c = (sp * epm1) * (sp * epm1);
                         var shift = 0.0;
                         if (b != 0.0 || c != 0.0)
                         {
@@ -412,55 +414,61 @@ namespace MatFlat
                             {
                                 shift = -shift;
                             }
-
                             shift = c / (b + shift);
                         }
 
-                        f = ((sl + sm) * (sl - sm)) + shift;
-                        var g = sl * el;
+                        f = ((sk + sp) * (sk - sp)) + shift;
+                        var g = sk * ek;
 
-                        // Chase zeros
-                        for (var k2 = k; k2 < p - 1; k2++)
+                        // Chase zeros.
+                        for (var j = k; j < p - 1; j++)
                         {
                             Drotg(ref f, ref g, out cs, out sn);
-                            if (k2 != k)
+                            if (j != k)
                             {
-                                e[k2 - 1] = f;
+                                e[j - 1] = f;
                             }
 
-                            f = (cs * stmp[k2]) + (sn * e[k2]);
-                            e[k2] = (cs * e[k2]) - (sn * stmp[k2]);
-                            g = sn * stmp[k2 + 1];
-                            stmp[k2 + 1] = cs * stmp[k2 + 1];
-                            if (computeVectors)
+                            f = (cs * stmp[j]) + (sn * e[j]);
+                            e[j] = (cs * e[j]) - (sn * stmp[j]);
+                            g = sn * stmp[j + 1];
+                            stmp[j + 1] *= cs;
+
+                            if (vt != null)
                             {
-                                for (i2 = 0; i2 < n; i2++)
+                                for (var i = 0; i < n; i++)
                                 {
-                                    var z = (cs * vt[(k2 * ldvt) + i2]) + (sn * vt[((k2 + 1) * ldvt) + i2]);
-                                    vt[((k2 + 1) * ldvt) + i2] = (cs * vt[((k2 + 1) * ldvt) + i2]) - (sn * vt[(k2 * ldvt) + i2]);
-                                    vt[(k2 * ldvt) + i2] = z;
+                                    var vtColj = vt + ldvt * j;
+                                    var vtColjp1 = vt + ldvt * (j + 1);
+                                    var z = cs * vtColj[i] + sn * vtColjp1[i];
+                                    vtColjp1[i] = cs * vtColjp1[i] - sn * vtColj[i];
+                                    vtColj[i] = z;
                                 }
                             }
 
                             Drotg(ref f, ref g, out cs, out sn);
-                            stmp[k2] = f;
-                            f = (cs * e[k2]) + (sn * stmp[k2 + 1]);
-                            stmp[k2 + 1] = -(sn * e[k2]) + (cs * stmp[k2 + 1]);
-                            g = sn * e[k2 + 1];
-                            e[k2 + 1] = cs * e[k2 + 1];
-                            if (computeVectors && k2 < m)
+                            stmp[j] = f;
+                            f = (cs * e[j]) + (sn * stmp[j + 1]);
+                            stmp[j + 1] = -(sn * e[j]) + (cs * stmp[j + 1]);
+                            g = sn * e[j + 1];
+                            e[j + 1] *= cs;
+
+                            if (u != null && j < m)
                             {
-                                for (i2 = 0; i2 < m; i2++)
+                                for (var i = 0; i < m; i++)
                                 {
-                                    var z = (cs * u[(k2 * ldu) + i2]) + (sn * u[((k2 + 1) * ldu) + i2]);
-                                    u[((k2 + 1) * ldu) + i2] = (cs * u[((k2 + 1) * ldu) + i2]) - (sn * u[(k2 * ldu) + i2]);
-                                    u[(k2 * ldu) + i2] = z;
+                                    var uColj = u + ldu * j;
+                                    var uColjp1 = u + ldu * (j + 1);
+                                    var z = cs * uColj[i] + sn * uColjp1[i];
+                                    uColjp1[i] = cs * uColjp1[i] - sn * uColj[i];
+                                    uColj[i] = z;
                                 }
                             }
                         }
 
                         e[p - 2] = f;
-                        iter = iter + 1;
+                        iter = iter++;
+
                         break;
 
                     // Convergence
@@ -949,7 +957,7 @@ namespace MatFlat
                             f = cs * stmp[j].Real + sn * e[j].Real;
                             e[j] = cs * e[j] - sn * stmp[j];
                             g = sn * stmp[j + 1].Real;
-                            stmp[j + 1] = cs * stmp[j + 1];
+                            stmp[j + 1] *= cs;
 
                             if (vt != null)
                             {
@@ -968,7 +976,7 @@ namespace MatFlat
                             f = cs * e[j].Real + sn * stmp[j + 1].Real;
                             stmp[j + 1] = -(sn * e[j]) + (cs * stmp[j + 1]);
                             g = sn * e[j + 1].Real;
-                            e[j + 1] = cs * e[j + 1];
+                            e[j + 1] *= cs;
 
                             if (u != null && j < m)
                             {
