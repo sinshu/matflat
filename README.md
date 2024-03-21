@@ -32,6 +32,24 @@ Currently the following methods are implemented:
 
 
 
+## Installation
+
+.NET 8 is required.
+
+[The NuGet package](https://www.nuget.org/packages/MatFlat) is available.
+
+```ps1
+Install-Package MatFlat
+```
+
+All the classes are in the `MatFlat` namespace.
+
+```cs
+using MatFlat;
+```
+
+
+
 ## Performance
 
 The following is a performance comparison with the managed implementation in Math.NET Numerics.
