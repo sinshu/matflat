@@ -31,12 +31,14 @@ namespace MatFlat
         /// </param>
         /// <param name="u">
         /// On exit, U contains the M-by-M orthogonal matrix corresponding to the left singular vectors.
+        /// If null, the left singular vectors are not computed.
         /// </param>
         /// <param name="ldu">
         /// The leading dimension of the array U.
         /// </param>
         /// <param name="vt">
         /// On exit, VT contains the N-by-N orthogonal matrix corresponding to the right singular vectors.
+        /// If null, the right singular vectors are not computed.
         /// </param>
         /// <param name="ldvt">
         /// The leading dimension of the array VT.
@@ -130,12 +132,14 @@ namespace MatFlat
         /// </param>
         /// <param name="u">
         /// On exit, U contains the M-by-M orthogonal matrix corresponding to the left singular vectors.
+        /// If null, the left singular vectors are not computed.
         /// </param>
         /// <param name="ldu">
         /// The leading dimension of the array U.
         /// </param>
         /// <param name="vt">
         /// On exit, VT contains the N-by-N orthogonal matrix corresponding to the right singular vectors.
+        /// If null, the right singular vectors are not computed.
         /// </param>
         /// <param name="ldvt">
         /// The leading dimension of the array VT.
