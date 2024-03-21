@@ -106,7 +106,7 @@ namespace MatFlat
             switch (n & 1)
             {
                 case 0:
-                    sum = 0.0F;
+                    sum = 0.0;
                     break;
                 case 1:
                     sum = (double)x[0] * (double)y[0];
@@ -164,7 +164,7 @@ namespace MatFlat
             switch (n & 1)
             {
                 case 0:
-                    sum = 0.0;
+                    sum = Complex.Zero;
                     break;
                 case 1:
                     sum = x[0] * y[0];
@@ -193,7 +193,7 @@ namespace MatFlat
             switch (n & 1)
             {
                 case 0:
-                    sum = 0;
+                    sum = 0.0;
                     break;
                 case 1:
                     sum = (double)x[0] * (double)y[0];
@@ -223,7 +223,7 @@ namespace MatFlat
             switch (n & 1)
             {
                 case 0:
-                    sum = 0;
+                    sum = 0.0;
                     break;
                 case 1:
                     sum = x[0] * y[0];
