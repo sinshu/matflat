@@ -614,7 +614,7 @@ namespace MatFlat
                         {
                             var l = p - 2 - j + k;
                             var t = stmp[l];
-                            Internals.Drotg(ref t, ref f, out cs, out sn);
+                            Internals.Srotg(ref t, ref f, out cs, out sn);
                             stmp[l] = t;
                             if (l != k)
                             {
@@ -644,7 +644,7 @@ namespace MatFlat
                         for (var j = k; j < p; j++)
                         {
                             var t = stmp[j];
-                            Internals.Drotg(ref t, ref f, out cs, out sn);
+                            Internals.Srotg(ref t, ref f, out cs, out sn);
                             stmp[j] = t;
                             f = -sn * e[j];
                             e[j] = cs * e[j];
@@ -698,7 +698,7 @@ namespace MatFlat
                         // Chase zeros.
                         for (var j = k; j < p - 1; j++)
                         {
-                            Internals.Drotg(ref f, ref g, out cs, out sn);
+                            Internals.Srotg(ref f, ref g, out cs, out sn);
                             if (j != k)
                             {
                                 e[j - 1] = f;
@@ -721,7 +721,7 @@ namespace MatFlat
                                 }
                             }
 
-                            Internals.Drotg(ref f, ref g, out cs, out sn);
+                            Internals.Srotg(ref f, ref g, out cs, out sn);
                             stmp[j] = f;
                             f = (cs * e[j]) + (sn * stmp[j + 1]);
                             stmp[j + 1] = -(sn * e[j]) + (cs * stmp[j + 1]);

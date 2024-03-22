@@ -545,19 +545,19 @@ namespace MatFlat
             }
         }
 
-        internal static void Drotg(ref float da, ref float db, out float c, out float s)
+        internal static void Srotg(ref float da, ref float db, out float c, out float s)
         {
             double r, z;
 
-            var roe = db;
-            var absda = Math.Abs(da);
-            var absdb = Math.Abs(db);
-            if (absda > absdb)
+            var roe = (double)db;
+            var ada = (double)Math.Abs(da);
+            var adb = (double)Math.Abs(db);
+            if (ada > adb)
             {
                 roe = da;
             }
 
-            var scale = absda + absdb;
+            var scale = ada + adb;
             if (scale == 0.0)
             {
                 c = 1.0F;
@@ -577,15 +577,15 @@ namespace MatFlat
 
                 c = (float)(da / r);
                 s = (float)(db / r);
-                z = 1.0;
-                if (absda > absdb)
+                z = 1.0F;
+                if (ada > adb)
                 {
                     z = s;
                 }
 
-                if (absdb >= absda && c != 0.0)
+                if (adb >= ada && c != 0.0F)
                 {
-                    z = 1.0 / c;
+                    z = 1.0F / c;
                 }
             }
 
@@ -598,14 +598,14 @@ namespace MatFlat
             double r, z;
 
             var roe = db;
-            var absda = Math.Abs(da);
-            var absdb = Math.Abs(db);
-            if (absda > absdb)
+            var ada = Math.Abs(da);
+            var adb = Math.Abs(db);
+            if (ada > adb)
             {
                 roe = da;
             }
 
-            var scale = absda + absdb;
+            var scale = ada + adb;
             if (scale == 0.0)
             {
                 c = 1.0;
@@ -626,12 +626,12 @@ namespace MatFlat
                 c = da / r;
                 s = db / r;
                 z = 1.0;
-                if (absda > absdb)
+                if (ada > adb)
                 {
                     z = s;
                 }
 
-                if (absdb >= absda && c != 0.0)
+                if (adb >= ada && c != 0.0)
                 {
                     z = 1.0 / c;
                 }
