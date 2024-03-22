@@ -268,7 +268,7 @@ namespace MatFlatTest
             fixed (float* pa = a)
             fixed (float* ps = symmetric)
             {
-                Blas.Sgemm(
+                OpenBlasSharp.Blas.Sgemm(
                     Order.ColMajor,
                     Transpose.NoTrans,
                     Transpose.Trans,
@@ -307,7 +307,7 @@ namespace MatFlatTest
             fixed (double* pa = a)
             fixed (double* ps = symmetric)
             {
-                Blas.Dgemm(
+                OpenBlasSharp.Blas.Dgemm(
                     Order.ColMajor,
                     Transpose.NoTrans,
                     Transpose.Trans,
@@ -348,7 +348,7 @@ namespace MatFlatTest
             {
                 var one = Complex.One;
                 var zero = Complex.Zero;
-                Blas.Zgemm(
+                OpenBlasSharp.Blas.Zgemm(
                     Order.ColMajor,
                     Transpose.NoTrans,
                     Transpose.ConjTrans,

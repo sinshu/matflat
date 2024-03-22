@@ -63,7 +63,7 @@ namespace Benchmark
             fixed (double* pa = a)
             fixed (double* ps = symmetric)
             {
-                Blas.Dgemm(
+                OpenBlasSharp.Blas.Dgemm(
                     global::OpenBlasSharp.Order.ColMajor,
                     Transpose.NoTrans,
                     Transpose.Trans,
