@@ -310,6 +310,35 @@ namespace MatFlat
             return sum;
         }
 
+        internal static unsafe double Dot(int n, double* x, int incx, double* y, int incy)
+        {
+            double sum;
+            switch (n & 1)
+            {
+                case 0:
+                    sum = 0.0;
+                    break;
+                case 1:
+                    sum = x[0] * y[0];
+                    x += incx;
+                    y += incy;
+                    n--;
+                    break;
+                default:
+                    throw new MatFlatException("An unexpected error occurred.");
+            }
+
+            while (n > 0)
+            {
+                sum += x[0] * y[0] + x[incx] * y[incy];
+                x += 2 * incx;
+                y += 2 * incy;
+                n -= 2;
+            }
+
+            return sum;
+        }
+
         internal static unsafe double Dot(int n, float* x, float* y, int inc)
         {
             double sum;
