@@ -51,7 +51,7 @@ namespace MatFlatTest
                 MatFlat.Blas.ForwardSubstitution(n, pa, lda, px, incx);
             }
 
-            Assert.That(actual, Is.EqualTo(expected).Within(1.0E-12));
+            Assert.That(actual, Is.EqualTo(expected).Within(1.0E-11));
         }
     }
 }

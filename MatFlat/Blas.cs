@@ -11,12 +11,8 @@ namespace MatFlat
         {
             for (var i = 0; i < n; i++)
             {
-                var sum = x[i * incx];
-                for (var j = 0; j < i; j++)
-                {
-                    sum -= a[j * lda + i] * x[j * incx];
-                }
-                x[i * incx] = sum / a[i * lda + i];
+                var p = incx * i;
+                x[p] = (x[p] - Internals.Dot(i, a + i, lda, x, incx)) / a[lda * i + i];
             }
         }
     }
