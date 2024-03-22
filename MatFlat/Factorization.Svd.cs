@@ -666,7 +666,6 @@ namespace MatFlat
 
                     // Perform one qr step.
                     case 3:
-
                         // Calculate the shift.
                         var scale = 0.0F;
                         scale = MathF.Max(scale, MathF.Abs(stmp[p - 1]));
@@ -748,7 +747,6 @@ namespace MatFlat
 
                     // Convergence.
                     case 4:
-
                         // Make the singular value positive.
                         if (stmp[k] < 0.0)
                         {
@@ -1179,7 +1177,6 @@ namespace MatFlat
 
                     // Perform one qr step.
                     case 3:
-
                         // Calculate the shift.
                         var scale = 0.0;
                         scale = Math.Max(scale, Math.Abs(stmp[p - 1]));
@@ -1261,7 +1258,6 @@ namespace MatFlat
 
                     // Convergence.
                     case 4:
-
                         // Make the singular value positive.
                         if (stmp[k] < 0.0)
                         {
