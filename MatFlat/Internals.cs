@@ -223,93 +223,6 @@ namespace MatFlat
             return sum;
         }
 
-        internal static unsafe double Dot(int n, float* x, int incx, float* y)
-        {
-            double sum;
-            switch (n & 1)
-            {
-                case 0:
-                    sum = 0.0;
-                    break;
-                case 1:
-                    sum = (double)x[0] * (double)y[0];
-                    x += incx;
-                    y++;
-                    n--;
-                    break;
-                default:
-                    throw new MatFlatException("An unexpected error occurred.");
-            }
-
-            while (n > 0)
-            {
-                sum += (double)x[0] * (double)y[0] + (double)x[incx] * (double)y[1];
-                x += 2 * incx;
-                y += 2;
-                n -= 2;
-            }
-
-            return sum;
-        }
-
-        internal static unsafe double Dot(int n, double* x, int incx, double* y)
-        {
-            double sum;
-            switch (n & 1)
-            {
-                case 0:
-                    sum = 0.0;
-                    break;
-                case 1:
-                    sum = x[0] * y[0];
-                    x += incx;
-                    y++;
-                    n--;
-                    break;
-                default:
-                    throw new MatFlatException("An unexpected error occurred.");
-            }
-
-            while (n > 0)
-            {
-                sum += x[0] * y[0] + x[incx] * y[1];
-                x += 2 * incx;
-                y += 2;
-                n -= 2;
-            }
-
-            return sum;
-        }
-
-        internal static unsafe Complex Dot(int n, Complex* x, int incx, Complex* y)
-        {
-            Complex sum;
-            switch (n & 1)
-            {
-                case 0:
-                    sum = Complex.Zero;
-                    break;
-                case 1:
-                    sum = x[0] * y[0];
-                    x += incx;
-                    y++;
-                    n--;
-                    break;
-                default:
-                    throw new MatFlatException("An unexpected error occurred.");
-            }
-
-            while (n > 0)
-            {
-                sum += x[0] * y[0] + x[incx] * y[1];
-                x += 2 * incx;
-                y += 2;
-                n -= 2;
-            }
-
-            return sum;
-        }
-
         internal static unsafe double Dot(int n, float* x, int incx, float* y, int incy)
         {
             double sum;
@@ -397,66 +310,6 @@ namespace MatFlat
             return sum;
         }
 
-        internal static unsafe double Dot(int n, float* x, float* y, int inc)
-        {
-            double sum;
-            switch (n & 1)
-            {
-                case 0:
-                    sum = 0.0;
-                    break;
-                case 1:
-                    sum = (double)x[0] * (double)y[0];
-                    x += inc;
-                    y += inc;
-                    n--;
-                    break;
-                default:
-                    throw new MatFlatException("An unexpected error occurred.");
-            }
-
-            var inc2 = 2 * inc;
-            while (n > 0)
-            {
-                sum += (double)x[0] * (double)y[0] + (double)x[inc] * (double)y[inc];
-                x += inc2;
-                y += inc2;
-                n -= 2;
-            }
-
-            return sum;
-        }
-
-        internal static unsafe double Dot(int n, double* x, double* y, int inc)
-        {
-            double sum;
-            switch (n & 1)
-            {
-                case 0:
-                    sum = 0.0;
-                    break;
-                case 1:
-                    sum = x[0] * y[0];
-                    x += inc;
-                    y += inc;
-                    n--;
-                    break;
-                default:
-                    throw new MatFlatException("An unexpected error occurred.");
-            }
-
-            var inc2 = 2 * inc;
-            while (n > 0)
-            {
-                sum += x[0] * y[0] + x[inc] * y[inc];
-                x += inc2;
-                y += inc2;
-                n -= 2;
-            }
-
-            return sum;
-        }
-
         internal static unsafe Complex DotConj(int n, Complex* x, Complex* y)
         {
             Complex sum;
@@ -480,36 +333,6 @@ namespace MatFlat
                 sum += MulConj(x[0], y[0]) + MulConj(x[1], y[1]);
                 x += 2;
                 y += 2;
-                n -= 2;
-            }
-
-            return sum;
-        }
-
-        internal static unsafe Complex DotConj(int n, Complex* x, Complex* y, int inc)
-        {
-            Complex sum;
-            switch (n & 1)
-            {
-                case 0:
-                    sum = Complex.Zero;
-                    break;
-                case 1:
-                    sum = MulConj(x[0], y[0]);
-                    x += inc;
-                    y += inc;
-                    n--;
-                    break;
-                default:
-                    throw new MatFlatException("An unexpected error occurred.");
-            }
-
-            var inc2 = 2 * inc;
-            while (n > 0)
-            {
-                sum += MulConj(x[0], y[0]) + MulConj(x[inc], y[inc]);
-                x += inc2;
-                y += inc2;
                 n -= 2;
             }
 
