@@ -52,11 +52,7 @@ namespace MatFlat
                         var p = incx * i;
                         var aColi = a + lda * i;
                         x[p] /= aColi[i];
-                        //for (var j = 0; j < i; j++)
-                        {
-                            //x[j * incx] -= aColi[j] * x[p];
-                        }
-                        MulSub(i, aColi, x[p], x, incx);
+                        MulSub(i, aColi, 1, x[p], x, incx);
                     }
                 }
                 else if (transa == Transpose.Trans)
@@ -88,10 +84,7 @@ namespace MatFlat
                     {
                         var p = incx * j;
                         x[p] /= a[j * lda + j];
-                        for (var i = j - 1; i >= 0; i--)
-                        {
-                            x[i * incx] -= a[i * lda + j] * x[p];
-                        }
+                        MulSub(j, a + j, lda, x[p], x, incx);
                     }
                 }
                 else
@@ -105,7 +98,7 @@ namespace MatFlat
             }
         }
 
-        internal static unsafe void MulSub<T>(int n, T* x, T y, T* dst, int incdst) where T : unmanaged, INumberBase<T>
+        internal static unsafe void MulSub<T>(int n, T* x, int incx, T y, T* dst, int incdst) where T : unmanaged, INumberBase<T>
         {
             switch (n & 1)
             {
@@ -113,7 +106,7 @@ namespace MatFlat
                     break;
                 case 1:
                     dst[0] -= x[0] * y;
-                    x++;
+                    x += incx;
                     dst += incdst;
                     n--;
                     break;
@@ -124,8 +117,8 @@ namespace MatFlat
             while (n > 0)
             {
                 dst[0] -= x[0] * y;
-                dst[incdst] -= x[1] * y;
-                x += 2;
+                dst[incdst] -= x[incx] * y;
+                x += 2 * incx;
                 dst += 2 * incdst;
                 n -= 2;
             }
