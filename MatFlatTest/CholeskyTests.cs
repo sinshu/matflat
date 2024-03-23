@@ -270,8 +270,8 @@ namespace MatFlatTest
             {
                 OpenBlasSharp.Blas.Sgemm(
                     Order.ColMajor,
-                    Transpose.NoTrans,
-                    Transpose.Trans,
+                    OpenBlasSharp.Transpose.NoTrans,
+                    OpenBlasSharp.Transpose.Trans,
                     n, n, n,
                     1.0F,
                     pa, lda,
@@ -309,8 +309,8 @@ namespace MatFlatTest
             {
                 OpenBlasSharp.Blas.Dgemm(
                     Order.ColMajor,
-                    Transpose.NoTrans,
-                    Transpose.Trans,
+                    OpenBlasSharp.Transpose.NoTrans,
+                    OpenBlasSharp.Transpose.Trans,
                     n, n, n,
                     1.0,
                     pa, lda,
@@ -350,8 +350,8 @@ namespace MatFlatTest
                 var zero = Complex.Zero;
                 OpenBlasSharp.Blas.Zgemm(
                     Order.ColMajor,
-                    Transpose.NoTrans,
-                    Transpose.ConjTrans,
+                    OpenBlasSharp.Transpose.NoTrans,
+                    OpenBlasSharp.Transpose.ConjTrans,
                     n, n, n,
                     &one,
                     pa, lda,

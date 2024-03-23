@@ -65,8 +65,8 @@ namespace Benchmark
             {
                 OpenBlasSharp.Blas.Dgemm(
                     global::OpenBlasSharp.Order.ColMajor,
-                    Transpose.NoTrans,
-                    Transpose.Trans,
+                    OpenBlasSharp.Transpose.NoTrans,
+                    OpenBlasSharp.Transpose.Trans,
                     n, n, n,
                     1.0,
                     pa, n,

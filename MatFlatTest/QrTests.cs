@@ -47,7 +47,7 @@ namespace MatFlatTest
                 Factorization.QrUpperTriangularFactor(m, n, pa, lda, pr, ldr, prdiag);
                 OpenBlasSharp.Blas.Sgemm(
                     Order.ColMajor,
-                    Transpose.NoTrans, Transpose.NoTrans,
+                    OpenBlasSharp.Transpose.NoTrans, OpenBlasSharp.Transpose.NoTrans,
                     m, n, n,
                     1.0F,
                     pq, ldq,
@@ -56,7 +56,7 @@ namespace MatFlatTest
                     preconstructed, m);
                 OpenBlasSharp.Blas.Sgemm(
                     Order.ColMajor,
-                    Transpose.Trans, Transpose.NoTrans,
+                    OpenBlasSharp.Transpose.Trans, OpenBlasSharp.Transpose.NoTrans,
                     n, n, m,
                     1.0F,
                     pq, ldq,
@@ -152,7 +152,7 @@ namespace MatFlatTest
                 Factorization.QrUpperTriangularFactor(m, n, pa, lda, pr, ldr, prdiag);
                 OpenBlasSharp.Blas.Sgemm(
                     Order.ColMajor,
-                    Transpose.NoTrans, Transpose.NoTrans,
+                    OpenBlasSharp.Transpose.NoTrans, OpenBlasSharp.Transpose.NoTrans,
                     m, n, n,
                     1.0F,
                     pq, ldq,
@@ -161,7 +161,7 @@ namespace MatFlatTest
                     preconstructed, m);
                 OpenBlasSharp.Blas.Sgemm(
                     Order.ColMajor,
-                    Transpose.Trans, Transpose.NoTrans,
+                    OpenBlasSharp.Transpose.Trans, OpenBlasSharp.Transpose.NoTrans,
                     n, n, m,
                     1.0F,
                     pq, ldq,
@@ -235,7 +235,7 @@ namespace MatFlatTest
                 Factorization.QrUpperTriangularFactor(m, n, pa, lda, pr, ldr, prdiag);
                 OpenBlasSharp.Blas.Dgemm(
                     Order.ColMajor,
-                    Transpose.NoTrans, Transpose.NoTrans,
+                    OpenBlasSharp.Transpose.NoTrans, OpenBlasSharp.Transpose.NoTrans,
                     m, n, n,
                     1.0,
                     pq, ldq,
@@ -244,7 +244,7 @@ namespace MatFlatTest
                     preconstructed, m);
                 OpenBlasSharp.Blas.Dgemm(
                     Order.ColMajor,
-                    Transpose.Trans, Transpose.NoTrans,
+                    OpenBlasSharp.Transpose.Trans, OpenBlasSharp.Transpose.NoTrans,
                     n, n, m,
                     1.0,
                     pq, ldq,
@@ -340,7 +340,7 @@ namespace MatFlatTest
                 Factorization.QrUpperTriangularFactor(m, n, pa, lda, pr, ldr, prdiag);
                 OpenBlasSharp.Blas.Dgemm(
                     Order.ColMajor,
-                    Transpose.NoTrans, Transpose.NoTrans,
+                    OpenBlasSharp.Transpose.NoTrans, OpenBlasSharp.Transpose.NoTrans,
                     m, n, n,
                     1.0,
                     pq, ldq,
@@ -349,7 +349,7 @@ namespace MatFlatTest
                     preconstructed, m);
                 OpenBlasSharp.Blas.Dgemm(
                     Order.ColMajor,
-                    Transpose.Trans, Transpose.NoTrans,
+                    OpenBlasSharp.Transpose.Trans, OpenBlasSharp.Transpose.NoTrans,
                     n, n, m,
                     1.0,
                     pq, ldq,
@@ -425,7 +425,7 @@ namespace MatFlatTest
                 Factorization.QrUpperTriangularFactor(m, n, pa, lda, pr, ldr, prdiag);
                 OpenBlasSharp.Blas.Zgemm(
                     Order.ColMajor,
-                    Transpose.NoTrans, Transpose.NoTrans,
+                    OpenBlasSharp.Transpose.NoTrans, OpenBlasSharp.Transpose.NoTrans,
                     m, n, n,
                     &one,
                     pq, ldq,
@@ -434,7 +434,7 @@ namespace MatFlatTest
                     preconstructed, m);
                 OpenBlasSharp.Blas.Zgemm(
                     Order.ColMajor,
-                    Transpose.ConjTrans, Transpose.NoTrans,
+                    OpenBlasSharp.Transpose.ConjTrans, OpenBlasSharp.Transpose.NoTrans,
                     n, n, m,
                     &one,
                     pq, ldq,
@@ -538,7 +538,7 @@ namespace MatFlatTest
                 Factorization.QrUpperTriangularFactor(m, n, pa, lda, pr, ldr, prdiag);
                 OpenBlasSharp.Blas.Zgemm(
                     Order.ColMajor,
-                    Transpose.NoTrans, Transpose.NoTrans,
+                    OpenBlasSharp.Transpose.NoTrans, OpenBlasSharp.Transpose.NoTrans,
                     m, n, n,
                     &one,
                     pq, ldq,
@@ -547,7 +547,7 @@ namespace MatFlatTest
                     preconstructed, m);
                 OpenBlasSharp.Blas.Zgemm(
                     Order.ColMajor,
-                    Transpose.ConjTrans, Transpose.NoTrans,
+                    OpenBlasSharp.Transpose.ConjTrans, OpenBlasSharp.Transpose.NoTrans,
                     n, n, m,
                     &one,
                     pq, ldq,
