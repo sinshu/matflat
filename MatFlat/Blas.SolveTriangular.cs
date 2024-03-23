@@ -291,6 +291,23 @@ namespace MatFlat
                         MulSub(j, a + j, lda, x[p], x, incx);
                     }
                 }
+                else if (transa == Transpose.ConjNoTrans)
+                {
+                    for (var i = 0; i < n; i++)
+                    {
+                        var p = incx * i;
+                        x[p] = (x[p] - Internals.DotConj(i, a + i, lda, x, incx)) / a[lda * i + i].Conjugate();
+                    }
+                }
+                else if (transa == Transpose.ConjTrans)
+                {
+                    for (var j = n - 1; j >= 0; j--)
+                    {
+                        var p = incx * j;
+                        x[p] /= a[j * lda + j].Conjugate();
+                        MulSubConj(j, a + j, lda, x[p], x, incx);
+                    }
+                }
                 else
                 {
                     throw new ArgumentException("Invalid enum value.", nameof(transa));
