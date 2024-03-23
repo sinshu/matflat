@@ -33,5 +33,31 @@ namespace MatFlat
                 n -= 2;
             }
         }
+
+        internal static unsafe void MulSubConj(int n, Complex* x, int incx, Complex y, Complex* dst, int incdst)
+        {
+            switch (n & 1)
+            {
+                case 0:
+                    break;
+                case 1:
+                    dst[0] -= Internals.MulConj(x[0], y);
+                    x += incx;
+                    dst += incdst;
+                    n--;
+                    break;
+                default:
+                    throw new MatFlatException("An unexpected error occurred.");
+            }
+
+            while (n > 0)
+            {
+                dst[0] -= Internals.MulConj(x[0], y);
+                dst[incdst] -= Internals.MulConj(x[incx], y);
+                x += 2 * incx;
+                dst += 2 * incdst;
+                n -= 2;
+            }
+        }
     }
 }
