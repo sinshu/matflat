@@ -1,6 +1,6 @@
 # MatFlat
 
-The purpose of this library is to provide reasonably fast matrix decomposition implementations, entirely in pure C#.
+This library aims to provide a pure C# implementation of reasonably fast low-level routines for linear algebra operations.
 
 This library is based on the following great projects:
 
@@ -8,12 +8,13 @@ This library is based on the following great projects:
 * [Accord.NET](https://github.com/accord-net/framework)
 * [Mapack Matrix Package](https://github.com/sinshu/mapack)
 
-Currently the following methods are implemented:
+Currently the following routines are implemented:
 
 * LU decomposition
 * Cholesky decomposition
 * QR decomposition
 * Singular value decomposition
+* Forward and backward substitution
 
 
 ## Features
@@ -22,13 +23,14 @@ Currently the following methods are implemented:
 * Faster than the managed matrix decompositions in Math.NET in many cases.
 * Small code size, with no dependencies other than .NET 8.
 * No internal multi-threaded optimization, making it safe to use in any multi-threaded code.
-* LAPACK-like interface that allows arbitrary leading dimension.
+* BLAS and LAPACK-like interface that allows arbitrary leading dimension.
 
 
 
 ## Limitations
 
-* Only the column-major order is supported.
+* Unsafe pointers are required, similar to the original BLAS and LAPACK routines.
+* Only column-major order is supported.
 
 
 
