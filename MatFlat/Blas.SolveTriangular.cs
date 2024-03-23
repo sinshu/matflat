@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Numerics;
 
 namespace MatFlat
 {
@@ -51,10 +52,11 @@ namespace MatFlat
                         var p = incx * i;
                         var aColi = a + lda * i;
                         x[p] /= aColi[i];
-                        for (var j = i - 1; j >= 0; j--)
+                        //for (var j = 0; j < i; j++)
                         {
-                            x[j * incx] -= aColi[j] * x[p];
+                            //x[j * incx] -= aColi[j] * x[p];
                         }
+                        MulSub(i, aColi, x[p], x, incx);
                     }
                 }
                 else if (transa == Transpose.Trans)
@@ -100,6 +102,32 @@ namespace MatFlat
             else
             {
                 throw new ArgumentException("Invalid enum value.", nameof(uplo));
+            }
+        }
+
+        internal static unsafe void MulSub<T>(int n, T* x, T y, T* dst, int incdst) where T : unmanaged, INumberBase<T>
+        {
+            switch (n & 1)
+            {
+                case 0:
+                    break;
+                case 1:
+                    dst[0] -= x[0] * y;
+                    x++;
+                    dst += incdst;
+                    n--;
+                    break;
+                default:
+                    throw new MatFlatException("An unexpected error occurred.");
+            }
+
+            while (n > 0)
+            {
+                dst[0] -= x[0] * y;
+                dst[incdst] -= x[1] * y;
+                x += 2;
+                dst += 2 * incdst;
+                n -= 2;
             }
         }
     }
