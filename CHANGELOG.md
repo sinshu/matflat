@@ -1,6 +1,6 @@
 # v0.3.1
 
-* Now GEVD does not normalize the eigenvectors.
+* GEVD now does not normalize the eigenvectors, in order to match common implementations.
 
 # v0.3.0
 
