@@ -46,7 +46,7 @@ namespace MatFlatTest
                 for (var col = 0; col < n; col++)
                 {
                     Console.Write("\t");
-                    Console.Write(Get(m, n, a, lda, row, col));
+                    Console.Write(Get(m, n, a, lda, row, col).ToString("G6", null));
                 }
                 Console.WriteLine();
             }
