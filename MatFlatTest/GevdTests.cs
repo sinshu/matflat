@@ -33,6 +33,10 @@ namespace MatFlatTest
             {
                 Console.WriteLine(value);
             }
+            Console.WriteLine();
+
+            Matrix.Print(n, n, a, lda);
+            Console.WriteLine();
         }
 
         private static unsafe double[] GetDecomposableDouble(int seed, int n, int lda)

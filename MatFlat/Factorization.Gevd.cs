@@ -24,8 +24,13 @@ namespace MatFlat
 
         private static unsafe void GevdCore(int n, double* a, int lda, double* b, int ldb, double* w, double* c)
         {
+            // This implementation is based on the following method:
+            // https://www.netlib.org/lapack/lug/node54.html
+
+            // Cholesky B.
             Cholesky(n, b, ldb);
 
+            // Compute C.
             for (var j = 0; j < n; j++)
             {
                 var aColj = a + lda * j;
@@ -39,18 +44,37 @@ namespace MatFlat
                 }
                 cColj[j] = aColj[j];
             }
-
             for (var i = 0; i < n; i++)
             {
                 Blas.SolveTriangular(Uplo.Lower, Transpose.NoTrans, n, b, ldb, c + i, n);
             }
-
             for (var i = 0; i < n; i++)
             {
                 Blas.SolveTriangular(Uplo.Lower, Transpose.NoTrans, n, b, ldb, c + n * i, 1);
             }
 
+            // Solve the eigenvalue problem of C.
             Svd(n, n, c, n, w, a, lda, null, 0);
+
+            // Recover the eigenvectors.
+            for (var i = 0; i < n; i++)
+            {
+                Blas.SolveTriangular(Uplo.Lower, Transpose.Trans, n, b, ldb, a + lda * i, 1);
+            }
+            for (var j = 0; j < n; j++)
+            {
+                var aColj = a + lda * j;
+                var sum = 0.0;
+                for (var i = 0; i < n; i++)
+                {
+                    sum += aColj[i] * aColj[i];
+                }
+                sum = Math.Sqrt(sum);
+                for (var i = 0; i < n; i++)
+                {
+                    aColj[i] /= sum;
+                }
+            }
         }
     }
 }
