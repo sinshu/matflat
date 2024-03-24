@@ -64,16 +64,8 @@ namespace MatFlat
             for (var j = 0; j < n; j++)
             {
                 var aColj = a + lda * j;
-                var sum = 0.0;
-                for (var i = 0; i < n; i++)
-                {
-                    sum += aColj[i] * aColj[i];
-                }
-                sum = Math.Sqrt(sum);
-                for (var i = 0; i < n; i++)
-                {
-                    aColj[i] /= sum;
-                }
+                var norm = Internals.Norm(n, aColj);
+                Internals.DivInplace(n, aColj, norm);
             }
         }
     }
