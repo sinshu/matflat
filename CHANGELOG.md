@@ -1,3 +1,7 @@
+# v0.3.0
+
+* Added generalized eigenvalue decomposition.
+
 # v0.2.0
 
 * Added forward and backward substitution.
