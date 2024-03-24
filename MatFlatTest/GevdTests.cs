@@ -9,34 +9,68 @@ namespace MatFlatTest
 {
     public class GevdTests
     {
+        [TestCase(1, 1, 1)]
+        [TestCase(1, 3, 2)]
+        [TestCase(2, 2, 2)]
+        [TestCase(2, 4, 3)]
+        [TestCase(3, 3, 3)]
         [TestCase(3, 4, 5)]
+        [TestCase(5, 5, 5)]
+        [TestCase(5, 7, 8)]
+        [TestCase(10, 10, 10)]
+        [TestCase(10, 17, 11)]
         public unsafe void GevdDouble(int n, int lda, int ldb)
         {
             var a = GetDecomposableDouble(42, n, lda);
             var b = GetDecomposableDouble(57, n, ldb);
+
+            var v = a.ToArray();
+            var l = b.ToArray();
             var w = new double[n];
 
-            Matrix.Print(n, n, a, lda);
-            Console.WriteLine();
+            NanLowerPart(n, v, lda);
+            NanLowerPart(n, l, ldb);
 
-            Matrix.Print(n, n, b, ldb);
-            Console.WriteLine();
-
-            fixed (double* pa = a)
-            fixed (double* pb = b)
+            fixed (double* pv = v)
+            fixed (double* pl = l)
             fixed (double* pw = w)
             {
-                Factorization.Gevd(n, pa, lda, pb, ldb, pw);
+                Factorization.Gevd(n, pv, lda, pl, ldb, pw);
             }
 
-            foreach (var value in w)
+            var left = new double[n];
+            var right = new double[n];
+            fixed (double* pa = a)
+            fixed (double* pb = b)
+            fixed (double* pv = v)
+            fixed (double* pl = left)
+            fixed (double* pr = right)
             {
-                Console.WriteLine(value);
-            }
-            Console.WriteLine();
+                for (var j = 0; j < n; j++)
+                {
+                    OpenBlasSharp.Blas.Dgemv(
+                        Order.ColMajor,
+                        OpenBlasSharp.Transpose.NoTrans,
+                        n, n,
+                        1.0,
+                        pa, lda,
+                        pv + lda * j, 1,
+                        0.0,
+                        pl, 1);
 
-            Matrix.Print(n, n, a, lda);
-            Console.WriteLine();
+                    OpenBlasSharp.Blas.Dgemv(
+                        Order.ColMajor,
+                        OpenBlasSharp.Transpose.NoTrans,
+                        n, n,
+                        w[j],
+                        pb, ldb,
+                        pv + lda * j, 1,
+                        0.0,
+                        pr, 1);
+
+                    Assert.That(left, Is.EqualTo(right).Within(1.0E-11));
+                }
+            }
         }
 
         private static unsafe double[] GetDecomposableDouble(int seed, int n, int lda)
@@ -63,19 +97,25 @@ namespace MatFlatTest
             {
                 for (var col = 0; col < n; col++)
                 {
-                    if (col >= row)
-                    {
-                        var value = symmetric[n * col + row];
-                        a[lda * col + row] = value;
-                    }
-                    else
+                    a[lda * col + row] = symmetric[n * col + row];
+                }
+            }
+
+            return a;
+        }
+
+        private static void NanLowerPart(int n, double[] a, int lda)
+        {
+            for (var row = 0; row < n; row++)
+            {
+                for (var col = 0; col < n; col++)
+                {
+                    if (row > col)
                     {
                         a[lda * col + row] = double.NaN;
                     }
                 }
             }
-
-            return a;
         }
     }
 }
