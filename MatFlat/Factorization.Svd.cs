@@ -7,7 +7,7 @@ namespace MatFlat
     public static partial class Factorization
     {
         /// <summary>
-        /// computes the singular value decomposition (SVD) of a general M-by-N matrix A.
+        /// Computes the singular value decomposition (SVD) of a general M-by-N matrix A.
         /// </summary>
         /// <param name="m">
         /// The number of rows of the matrix A.
@@ -108,7 +108,7 @@ namespace MatFlat
         }
 
         /// <summary>
-        /// computes the singular value decomposition (SVD) of a general M-by-N matrix A.
+        /// Computes the singular value decomposition (SVD) of a general M-by-N matrix A.
         /// </summary>
         /// <param name="m">
         /// The number of rows of the matrix A.
@@ -209,7 +209,7 @@ namespace MatFlat
         }
 
         /// <summary>
-        /// computes the singular value decomposition (SVD) of a general M-by-N matrix A.
+        /// Computes the singular value decomposition (SVD) of a general M-by-N matrix A.
         /// </summary>
         /// <param name="m">
         /// The number of rows of the matrix A.
