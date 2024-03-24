@@ -71,6 +71,26 @@ namespace MatFlatTest
                     Assert.That(left, Is.EqualTo(right).Within(1.0E-11));
                 }
             }
+
+            for (var i = 0; i < v.Length; i++)
+            {
+                var row = i % lda;
+                var col = i / lda;
+                if (row >= lda)
+                {
+                    Assert.That(v[i], Is.EqualTo(a[i]).Within(0));
+                }
+            }
+
+            for (var i = 0; i < l.Length; i++)
+            {
+                var row = i % ldb;
+                var col = i / ldb;
+                if (row >= ldb)
+                {
+                    Assert.That(l[i], Is.EqualTo(b[i]).Within(0));
+                }
+            }
         }
 
         private static unsafe double[] GetDecomposableDouble(int seed, int n, int lda)
