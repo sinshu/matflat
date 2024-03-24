@@ -68,7 +68,7 @@ namespace MatFlatTest
                         0.0F,
                         pr, 1);
 
-                    Assert.That(left, Is.EqualTo(right).Within(1.0E-3));
+                    Assert.That(left, Is.EqualTo(right).Within(0.05));
                 }
             }
 
@@ -152,7 +152,7 @@ namespace MatFlatTest
                         0.0,
                         pr, 1);
 
-                    Assert.That(left, Is.EqualTo(right).Within(1.0E-11));
+                    Assert.That(left, Is.EqualTo(right).Within(1.0E-9));
                 }
             }
 

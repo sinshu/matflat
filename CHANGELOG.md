@@ -1,3 +1,7 @@
+# v0.3.1
+
+* Now GEVD does not normalize the eigenvectors.
+
 # v0.3.0
 
 * Added generalized eigenvalue decomposition.

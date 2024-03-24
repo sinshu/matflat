@@ -325,14 +325,6 @@ namespace MatFlat
             {
                 Blas.SolveTriangular(Uplo.Lower, Transpose.Trans, n, b, ldb, a + lda * i, 1);
             }
-
-            // Normalize the eigenvectors.
-            for (var j = 0; j < n; j++)
-            {
-                var aColj = a + lda * j;
-                var norm = (float)Internals.Norm(n, aColj);
-                Internals.DivInplace(n, aColj, norm);
-            }
         }
 
         private static unsafe void GevdCore(int n, double* a, int lda, double* b, int ldb, double* w, double* c)
@@ -380,14 +372,6 @@ namespace MatFlat
             for (var i = 0; i < n; i++)
             {
                 Blas.SolveTriangular(Uplo.Lower, Transpose.Trans, n, b, ldb, a + lda * i, 1);
-            }
-
-            // Normalize the eigenvectors.
-            for (var j = 0; j < n; j++)
-            {
-                var aColj = a + lda * j;
-                var norm = Internals.Norm(n, aColj);
-                Internals.DivInplace(n, aColj, norm);
             }
         }
 
@@ -444,14 +428,6 @@ namespace MatFlat
             for (var i = 0; i < n; i++)
             {
                 Blas.SolveTriangular(Uplo.Lower, Transpose.ConjTrans, n, b, ldb, a + lda * i, 1);
-            }
-
-            // Normalize the eigenvectors.
-            for (var j = 0; j < n; j++)
-            {
-                var aColj = a + lda * j;
-                var norm = Internals.Norm(n, aColj);
-                Internals.DivInplace(n, aColj, norm);
             }
         }
     }
