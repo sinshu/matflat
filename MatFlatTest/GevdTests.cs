@@ -19,6 +19,90 @@ namespace MatFlatTest
         [TestCase(5, 7, 8)]
         [TestCase(10, 10, 10)]
         [TestCase(10, 17, 11)]
+        public unsafe void GevdSingle(int n, int lda, int ldb)
+        {
+            var a = GetDecomposableSingle(42, n, lda);
+            var b = GetDecomposableSingle(57, n, ldb);
+
+            var v = a.ToArray();
+            var l = b.ToArray();
+            var w = new float[n];
+
+            NanLowerPart(n, v, lda);
+            NanLowerPart(n, l, ldb);
+
+            fixed (float* pv = v)
+            fixed (float* pl = l)
+            fixed (float* pw = w)
+            {
+                Factorization.Gevd(n, pv, lda, pl, ldb, pw);
+            }
+
+            var left = new float[n];
+            var right = new float[n];
+            fixed (float* pa = a)
+            fixed (float* pb = b)
+            fixed (float* pv = v)
+            fixed (float* pl = left)
+            fixed (float* pr = right)
+            {
+                for (var j = 0; j < n; j++)
+                {
+                    OpenBlasSharp.Blas.Sgemv(
+                        Order.ColMajor,
+                        OpenBlasSharp.Transpose.NoTrans,
+                        n, n,
+                        1.0F,
+                        pa, lda,
+                        pv + lda * j, 1,
+                        0.0F,
+                        pl, 1);
+
+                    OpenBlasSharp.Blas.Sgemv(
+                        Order.ColMajor,
+                        OpenBlasSharp.Transpose.NoTrans,
+                        n, n,
+                        w[j],
+                        pb, ldb,
+                        pv + lda * j, 1,
+                        0.0F,
+                        pr, 1);
+
+                    Assert.That(left, Is.EqualTo(right).Within(1.0E-3));
+                }
+            }
+
+            for (var i = 0; i < v.Length; i++)
+            {
+                var row = i % lda;
+                var col = i / lda;
+                if (row >= lda)
+                {
+                    Assert.That(v[i], Is.EqualTo(a[i]).Within(0));
+                }
+            }
+
+            for (var i = 0; i < l.Length; i++)
+            {
+                var row = i % ldb;
+                var col = i / ldb;
+                if (row >= ldb)
+                {
+                    Assert.That(l[i], Is.EqualTo(b[i]).Within(0));
+                }
+            }
+        }
+
+        [TestCase(1, 1, 1)]
+        [TestCase(1, 3, 2)]
+        [TestCase(2, 2, 2)]
+        [TestCase(2, 4, 3)]
+        [TestCase(3, 3, 3)]
+        [TestCase(3, 4, 5)]
+        [TestCase(5, 5, 5)]
+        [TestCase(5, 7, 8)]
+        [TestCase(10, 10, 10)]
+        [TestCase(10, 17, 11)]
         public unsafe void GevdDouble(int n, int lda, int ldb)
         {
             var a = GetDecomposableDouble(42, n, lda);
@@ -162,6 +246,37 @@ namespace MatFlatTest
             }
         }
 
+        private static unsafe float[] GetDecomposableSingle(int seed, int n, int lda)
+        {
+            var a = Matrix.RandomSingle(seed, n, n, lda);
+
+            var symmetric = new float[n * n];
+            fixed (float* pa = a)
+            fixed (float* ps = symmetric)
+            {
+                OpenBlasSharp.Blas.Sgemm(
+                    Order.ColMajor,
+                    OpenBlasSharp.Transpose.NoTrans,
+                    OpenBlasSharp.Transpose.Trans,
+                    n, n, n,
+                    1.0F,
+                    pa, lda,
+                    pa, lda,
+                    0.0F,
+                    ps, n);
+            }
+
+            for (var row = 0; row < n; row++)
+            {
+                for (var col = 0; col < n; col++)
+                {
+                    a[lda * col + row] = symmetric[n * col + row];
+                }
+            }
+
+            return a;
+        }
+
         private static unsafe double[] GetDecomposableDouble(int seed, int n, int lda)
         {
             var a = Matrix.RandomDouble(seed, n, n, lda);
@@ -224,6 +339,20 @@ namespace MatFlatTest
             }
 
             return a;
+        }
+
+        private static void NanLowerPart(int n, float[] a, int lda)
+        {
+            for (var row = 0; row < n; row++)
+            {
+                for (var col = 0; col < n; col++)
+                {
+                    if (row > col)
+                    {
+                        a[lda * col + row] = float.NaN;
+                    }
+                }
+            }
         }
 
         private static void NanLowerPart(int n, double[] a, int lda)
