@@ -14,6 +14,7 @@ namespace MatFlatTest
         {
             var a = GetDecomposableDouble(42, n, lda);
             var b = GetDecomposableDouble(57, n, ldb);
+            var w = new double[n];
 
             Matrix.Print(n, n, a, lda);
             Console.WriteLine();
@@ -23,8 +24,14 @@ namespace MatFlatTest
 
             fixed (double* pa = a)
             fixed (double* pb = b)
+            fixed (double* pw = w)
             {
-                Factorization.Gevd(n, pa, lda, pb, ldb, null);
+                Factorization.Gevd(n, pa, lda, pb, ldb, pw);
+            }
+
+            foreach (var value in w)
+            {
+                Console.WriteLine(value);
             }
         }
 
@@ -52,7 +59,15 @@ namespace MatFlatTest
             {
                 for (var col = 0; col < n; col++)
                 {
-                    a[lda * col + row] = symmetric[n * col + row];
+                    if (col >= row)
+                    {
+                        var value = symmetric[n * col + row];
+                        a[lda * col + row] = value;
+                    }
+                    else
+                    {
+                        a[lda * col + row] = double.NaN;
+                    }
                 }
             }
 

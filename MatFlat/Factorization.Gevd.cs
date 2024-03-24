@@ -8,78 +8,49 @@ namespace MatFlat
     {
         public static unsafe void Gevd(int n, double* a, int lda, double* b, int ldb, double* w)
         {
-            var l = new double[n * n];
-            fixed (double* pl = l)
+            var c = ArrayPool<double>.Shared.Rent(n * n);
+            try
             {
-                for (var j = 0; j < n; j++)
+                fixed (double* pc = c)
                 {
-                    var copyLength = sizeof(double) * n;
-                    Buffer.MemoryCopy(b + ldb * j, pl + n * j, copyLength, copyLength);
+                    GevdCore(n, a, lda, b, ldb, w, pc);
                 }
-
-                Cholesky(n, pl, n);
             }
-
-            var c = new double[n * n];
-            var s = new double[n];
-            fixed (double* pc = c)
-            fixed (double* pl = l)
-            fixed (double* ps = s)
+            finally
             {
-                for (var j = 0; j < n; j++)
-                {
-                    var copyLength = sizeof(double) * n;
-                    Buffer.MemoryCopy(a + lda * j, pc + n * j, copyLength, copyLength);
-                }
-
-                for (var i = 0; i < n; i++)
-                {
-                    Blas.SolveTriangular(Uplo.Lower, Transpose.NoTrans, n, pl, n, pc + i, n);
-                }
-
-                for (var i = 0; i < n; i++)
-                {
-                    Blas.SolveTriangular(Uplo.Lower, Transpose.NoTrans, n, pl, n, pc + n * i, 1);
-                }
-
-                Svd(n, n, pc, n, ps, null, 0, null, 0);
-            }
-
-            Print(n, n, l, n);
-            Console.WriteLine();
-
-            Print(n, n, c, n);
-            Console.WriteLine();
-
-            foreach (var value in s)
-            {
-                Console.WriteLine(value);
+                ArrayPool<double>.Shared.Return(c);
             }
         }
 
-        public static T Get<T>(int m, int n, T[] a, int lda, int row, int col)
+        private static unsafe void GevdCore(int n, double* a, int lda, double* b, int ldb, double* w, double* c)
         {
-            var index = col * lda + row;
-            return a[index];
-        }
+            Cholesky(n, b, ldb);
 
-        public static T Set<T>(int m, int n, T[] a, int lda, int row, int col, T value)
-        {
-            var index = col * lda + row;
-            return a[index] = value;
-        }
-
-        public static void Print<T>(int m, int n, T[] a, int lda) where T : IFormattable
-        {
-            for (var row = 0; row < m; row++)
+            for (var j = 0; j < n; j++)
             {
-                for (var col = 0; col < n; col++)
+                var aColj = a + lda * j;
+                var cColj = c + n * j;
+                var cRowj = c + j;
+                for (var i = 0; i < j; i++)
                 {
-                    Console.Write("\t");
-                    Console.Write(Get(m, n, a, lda, row, col).ToString("G6", null));
+                    cColj[i] = aColj[i];
+                    *cRowj = aColj[i];
+                    cRowj += n;
                 }
-                Console.WriteLine();
+                cColj[j] = aColj[j];
             }
+
+            for (var i = 0; i < n; i++)
+            {
+                Blas.SolveTriangular(Uplo.Lower, Transpose.NoTrans, n, b, ldb, c + i, n);
+            }
+
+            for (var i = 0; i < n; i++)
+            {
+                Blas.SolveTriangular(Uplo.Lower, Transpose.NoTrans, n, b, ldb, c + n * i, 1);
+            }
+
+            Svd(n, n, c, n, w, a, lda, null, 0);
         }
     }
 }
