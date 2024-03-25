@@ -43,10 +43,11 @@ namespace MatFlatTest
 
             var actualA = a.ToArray();
             var actualPiv = new int[m];
+            var actualSign = 0;
             fixed (float* pa = actualA)
             fixed (int* ppiv = actualPiv)
             {
-                Factorization.Lu(m, n, pa, lda, ppiv);
+                Factorization.Lu(m, n, pa, lda, ppiv, &actualSign);
             }
 
             Assert.That(actualA, Is.EqualTo(expectedA).Within(1.0E-5));
@@ -59,6 +60,7 @@ namespace MatFlatTest
 
             var expectedA = a.ToArray();
             var expectedPiv = new int[3];
+            var actualSign = 0;
             fixed (float* pa = expectedA)
             fixed (int* ppiv = expectedPiv)
             {
@@ -70,7 +72,7 @@ namespace MatFlatTest
             fixed (float* pa = actualA)
             fixed (int* ppiv = actualPiv)
             {
-                Factorization.Lu(3, 3, pa, 3, ppiv);
+                Factorization.Lu(3, 3, pa, 3, ppiv, &actualSign);
             }
 
             Assert.That(actualA, Is.EqualTo(expectedA).Within(1.0E-6));
@@ -91,10 +93,11 @@ namespace MatFlatTest
 
             var actualA = a.ToArray();
             var actualPiv = new int[3];
+            var actualSign = 0;
             fixed (float* pa = actualA)
             fixed (int* ppiv = actualPiv)
             {
-                Factorization.Lu(3, 3, pa, 3, ppiv);
+                Factorization.Lu(3, 3, pa, 3, ppiv, &actualSign);
             }
 
             Assert.That(actualA, Is.EqualTo(expectedA).Within(1.0E-6));
@@ -134,10 +137,11 @@ namespace MatFlatTest
 
             var actualA = a.ToArray();
             var actualPiv = new int[m];
+            var actualSign = 0;
             fixed (double* pa = actualA)
             fixed (int* ppiv = actualPiv)
             {
-                Factorization.Lu(m, n, pa, lda, ppiv);
+                Factorization.Lu(m, n, pa, lda, ppiv, &actualSign);
             }
 
             Assert.That(actualA, Is.EqualTo(expectedA).Within(1.0E-12));
@@ -158,10 +162,11 @@ namespace MatFlatTest
 
             var actualA = a.ToArray();
             var actualPiv = new int[3];
+            var actualSign = 0;
             fixed (double* pa = actualA)
             fixed (int* ppiv = actualPiv)
             {
-                Factorization.Lu(3, 3, pa, 3, ppiv);
+                Factorization.Lu(3, 3, pa, 3, ppiv, &actualSign);
             }
 
             Assert.That(actualA, Is.EqualTo(expectedA).Within(1.0E-12));
@@ -182,10 +187,11 @@ namespace MatFlatTest
 
             var actualA = a.ToArray();
             var actualPiv = new int[3];
+            var actualSign = 0;
             fixed (double* pa = actualA)
             fixed (int* ppiv = actualPiv)
             {
-                Factorization.Lu(3, 3, pa, 3, ppiv);
+                Factorization.Lu(3, 3, pa, 3, ppiv, &actualSign);
             }
 
             Assert.That(actualA, Is.EqualTo(expectedA).Within(1.0E-12));
@@ -225,10 +231,11 @@ namespace MatFlatTest
 
             var actualA = a.ToArray();
             var actualPiv = new int[m];
+            var actualSign = 0;
             fixed (Complex* pa = actualA)
             fixed (int* ppiv = actualPiv)
             {
-                Factorization.Lu(m, n, pa, lda, ppiv);
+                Factorization.Lu(m, n, pa, lda, ppiv, &actualSign);
             }
 
             Assert.That(actualA.Select(x => x.Real), Is.EqualTo(expectedA.Select(x => x.Real)).Within(1.0E-12));
@@ -250,10 +257,11 @@ namespace MatFlatTest
 
             var actualA = a.ToArray();
             var actualPiv = new int[3];
+            var actualSign = 0;
             fixed (Complex* pa = actualA)
             fixed (int* ppiv = actualPiv)
             {
-                Factorization.Lu(3, 3, pa, 3, ppiv);
+                Factorization.Lu(3, 3, pa, 3, ppiv, &actualSign);
             }
 
             Assert.That(actualA.Select(x => x.Real), Is.EqualTo(expectedA.Select(x => x.Real)).Within(1.0E-12));
@@ -275,10 +283,11 @@ namespace MatFlatTest
 
             var actualA = a.ToArray();
             var actualPiv = new int[3];
+            var actualSign = 0;
             fixed (Complex* pa = actualA)
             fixed (int* ppiv = actualPiv)
             {
-                Factorization.Lu(3, 3, pa, 3, ppiv);
+                Factorization.Lu(3, 3, pa, 3, ppiv, &actualSign);
             }
 
             Assert.That(actualA.Select(x => x.Real), Is.EqualTo(expectedA.Select(x => x.Real)).Within(1.0E-12));

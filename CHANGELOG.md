@@ -1,3 +1,7 @@
+# v0.4.1
+
+* Fixed issue where the LU decomposition does not report the correct pivot info.
+
 # v0.4.0
 
 * Added eigenvalue decomposition.
