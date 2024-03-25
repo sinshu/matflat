@@ -9,7 +9,100 @@ namespace MatFlatTest
 {
     public class EvdTests
     {
+        [TestCase(1, 1)]
+        [TestCase(1, 3)]
+        [TestCase(2, 2)]
+        [TestCase(2, 3)]
         [TestCase(3, 3)]
+        [TestCase(3, 5)]
+        [TestCase(5, 5)]
+        [TestCase(5, 8)]
+        [TestCase(10, 10)]
+        [TestCase(10, 17)]
+        public unsafe void EvdSingle(int n, int lda)
+        {
+            var a = GetDecomposableSingle(42, n, lda);
+
+            var v = a.ToArray();
+            var w = new float[n];
+
+            NanLowerPart(n, v, lda);
+
+            fixed (float* pv = v)
+            fixed (float* pw = w)
+            {
+                Factorization.Evd(n, pv, lda, pw);
+            }
+
+            var diag = new float[n * n];
+            for (var i = 0; i < n; i++)
+            {
+                diag[n * i + i] = w[i];
+            }
+
+            var tmp = new float[n * n];
+            var reconstructed = new float[n * n];
+
+            fixed (float* pa = a)
+            fixed (float* pv = v)
+            fixed (float* pdiag = diag)
+            fixed (float* ptmp = tmp)
+            fixed (float* preconstructed = reconstructed)
+            {
+                OpenBlasSharp.Blas.Sgemm(
+                    Order.ColMajor,
+                    OpenBlasSharp.Transpose.NoTrans,
+                    OpenBlasSharp.Transpose.NoTrans,
+                    n, n, n,
+                    1.0F,
+                    pv, lda,
+                    pdiag, n,
+                    0.0F,
+                    ptmp, n);
+
+                OpenBlasSharp.Blas.Sgemm(
+                    Order.ColMajor,
+                    OpenBlasSharp.Transpose.NoTrans,
+                    OpenBlasSharp.Transpose.Trans,
+                    n, n, n,
+                    1.0F,
+                    ptmp, n,
+                    pv, lda,
+                    0.0F,
+                    preconstructed, n);
+            }
+
+            for (var row = 0; row < n; row++)
+            {
+                for (var col = 0; col < n; col++)
+                {
+                    var actual = Matrix.Get(n, n, reconstructed, n, row, col);
+                    var expected = Matrix.Get(n, n, a, lda, row, col);
+                    Assert.That(actual, Is.EqualTo(expected).Within(1.0E-5));
+                }
+            }
+
+            for (var i = 0; i < v.Length; i++)
+            {
+                var row = i % lda;
+                var col = i / lda;
+                if (row >= n)
+                {
+                    Assert.That(v[i], Is.EqualTo(a[i]).Within(0));
+                }
+            }
+        }
+
+        [TestCase(1, 1)]
+        [TestCase(1, 3)]
+        [TestCase(2, 2)]
+        [TestCase(2, 3)]
+        [TestCase(3, 3)]
+        [TestCase(3, 5)]
+        [TestCase(5, 5)]
+        [TestCase(5, 8)]
+        [TestCase(10, 10)]
+        [TestCase(10, 17)]
         public unsafe void EvdDouble(int n, int lda)
         {
             var a = GetDecomposableDouble(42, n, lda);
@@ -63,7 +156,25 @@ namespace MatFlatTest
                     preconstructed, n);
             }
 
-            Assert.That(a, Is.EqualTo(reconstructed).Within(1.0E-12));
+            for (var row = 0; row < n; row++)
+            {
+                for (var col = 0; col < n; col++)
+                {
+                    var actual = Matrix.Get(n, n, reconstructed, n, row, col);
+                    var expected = Matrix.Get(n, n, a, lda, row, col);
+                    Assert.That(actual, Is.EqualTo(expected).Within(1.0E-12));
+                }
+            }
+
+            for (var i = 0; i < v.Length; i++)
+            {
+                var row = i % lda;
+                var col = i / lda;
+                if (row >= n)
+                {
+                    Assert.That(v[i], Is.EqualTo(a[i]).Within(0));
+                }
+            }
         }
 
         private static unsafe float[] GetDecomposableSingle(int seed, int n, int lda)
