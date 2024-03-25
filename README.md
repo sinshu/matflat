@@ -14,6 +14,7 @@ Currently the following routines are implemented:
 * Cholesky decomposition
 * QR decomposition
 * Singular value decomposition
+* Eigenvalue decomposition
 * Generalized eigenvalue decomposition
 * Forward and backward substitution
 
@@ -33,7 +34,7 @@ Currently the following routines are implemented:
 
 * Unsafe pointers are required, similar to the original BLAS and LAPACK routines.
 * Only column-major order is supported.
-* GEVD supports only symmetric matrices.
+* EVD and GEVD support only symmetric (Hermitian) matrices.
 
 
 
@@ -157,8 +158,13 @@ BenchmarkDotNet v0.13.12, Windows 11 (10.0.22631.3296/23H2/2023Update/SunValley3
 * ✅ Cholesky decomposition
 * ✅ QR decomposition
 * ✅ Singular value decomposition
-* ⬜ Eigenvalue decomposition
+* ✅ Eigenvalue decomposition
 * ✅ Generalized eigenvalue decomposition
+* ✅ Forward and backward substitution
+* ⬜ Inverse matrix
+* ⬜ Matrix-vector multiplication
+* ⬜ Matrix-matrix multiplication
+* ⬜ Dot product
 
 
 
