@@ -177,6 +177,95 @@ namespace MatFlatTest
             }
         }
 
+        [TestCase(1, 1)]
+        [TestCase(1, 3)]
+        [TestCase(2, 2)]
+        [TestCase(2, 3)]
+        [TestCase(3, 3)]
+        [TestCase(3, 5)]
+        [TestCase(5, 5)]
+        [TestCase(5, 8)]
+        [TestCase(10, 10)]
+        [TestCase(10, 17)]
+        public unsafe void EvdComplex(int n, int lda)
+        {
+            var a = GetDecomposableComplex(42, n, lda);
+
+            var v = a.ToArray();
+            var w = new double[n];
+
+            NanLowerPart(n, v, lda);
+
+            fixed (Complex* pv = v)
+            fixed (double* pw = w)
+            {
+                Factorization.Evd(n, pv, lda, pw);
+            }
+
+            var diag = new Complex[n * n];
+            for (var i = 0; i < n; i++)
+            {
+                diag[n * i + i] = w[i];
+            }
+
+            var tmp = new Complex[n * n];
+            var reconstructed = new Complex[n * n];
+
+            fixed (Complex* pa = a)
+            fixed (Complex* pv = v)
+            fixed (Complex* pdiag = diag)
+            fixed (Complex* ptmp = tmp)
+            fixed (Complex* preconstructed = reconstructed)
+            {
+                var one = Complex.One;
+                var zero = Complex.Zero;
+
+                OpenBlasSharp.Blas.Zgemm(
+                    Order.ColMajor,
+                    OpenBlasSharp.Transpose.NoTrans,
+                    OpenBlasSharp.Transpose.NoTrans,
+                    n, n, n,
+                    &one,
+                    pv, lda,
+                    pdiag, n,
+                    &zero,
+                    ptmp, n);
+
+                OpenBlasSharp.Blas.Zgemm(
+                    Order.ColMajor,
+                    OpenBlasSharp.Transpose.NoTrans,
+                    OpenBlasSharp.Transpose.ConjTrans,
+                    n, n, n,
+                    &one,
+                    ptmp, n,
+                    pv, lda,
+                    &zero,
+                    preconstructed, n);
+            }
+
+            for (var row = 0; row < n; row++)
+            {
+                for (var col = 0; col < n; col++)
+                {
+                    var actual = Matrix.Get(n, n, reconstructed, n, row, col);
+                    var expected = Matrix.Get(n, n, a, lda, row, col);
+                    Assert.That(actual.Real, Is.EqualTo(expected.Real).Within(1.0E-12));
+                    Assert.That(actual.Imaginary, Is.EqualTo(expected.Imaginary).Within(1.0E-12));
+                }
+            }
+
+            for (var i = 0; i < v.Length; i++)
+            {
+                var row = i % lda;
+                var col = i / lda;
+                if (row >= n)
+                {
+                    Assert.That(v[i].Real, Is.EqualTo(a[i].Real).Within(0));
+                    Assert.That(v[i].Imaginary, Is.EqualTo(a[i].Imaginary).Within(0));
+                }
+            }
+        }
+
         private static unsafe float[] GetDecomposableSingle(int seed, int n, int lda)
         {
             var a = Matrix.RandomSingle(seed, n, n, lda);
