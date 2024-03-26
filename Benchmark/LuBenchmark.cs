@@ -43,11 +43,10 @@ namespace Benchmark
         {
             values.CopyTo(a, 0);
 
-            int sign = 0;
             fixed (double* pa = a)
             fixed (int* ppiv = matFlatPiv)
             {
-                global::MatFlat.Factorization.Lu(Order, Order, pa, Order, ppiv, &sign);
+                global::MatFlat.Factorization.Lu(Order, Order, pa, Order, ppiv);
             }
         }
 

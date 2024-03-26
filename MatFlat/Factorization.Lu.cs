@@ -39,10 +39,10 @@ namespace MatFlat
         /// The size of the array must be <paramref name="m"/>.
         /// </para>
         /// </param>
-        /// <param name="sign">
-        /// On exit, the pivot sign is stored.
-        /// </param>
-        public static unsafe void Lu(int m, int n, float* a, int lda, int* piv, int* sign)
+        /// <returns>
+        /// The pivot sign.
+        /// </returns>
+        public static unsafe int Lu(int m, int n, float* a, int lda, int* piv)
         {
             if (m <= 0)
             {
@@ -74,7 +74,7 @@ namespace MatFlat
             {
                 fixed (float* pwork = work)
                 {
-                    LuCore(m, n, a, lda, piv, sign, pwork);
+                    return LuCore(m, n, a, lda, piv, pwork);
                 }
             }
             finally
@@ -116,10 +116,10 @@ namespace MatFlat
         /// The size of the array must be <paramref name="m"/>.
         /// </para>
         /// </param>
-        /// <param name="sign">
-        /// On exit, the pivot sign is stored.
-        /// </param>
-        public static unsafe void Lu(int m, int n, double* a, int lda, int* piv, int* sign)
+        /// <returns>
+        /// The pivot sign.
+        /// </returns>
+        public static unsafe int Lu(int m, int n, double* a, int lda, int* piv)
         {
             if (m <= 0)
             {
@@ -151,7 +151,7 @@ namespace MatFlat
             {
                 fixed (double* pwork = work)
                 {
-                    LuCore(m, n, a, lda, piv, sign, pwork);
+                    return LuCore(m, n, a, lda, piv, pwork);
                 }
             }
             finally
@@ -193,10 +193,10 @@ namespace MatFlat
         /// The size of the array must be <paramref name="m"/>.
         /// </para>
         /// </param>
-        /// <param name="sign">
-        /// On exit, the pivot sign is stored.
-        /// </param>
-        public static unsafe void Lu(int m, int n, Complex* a, int lda, int* piv, int* sign)
+        /// <returns>
+        /// The pivot sign.
+        /// </returns>
+        public static unsafe int Lu(int m, int n, Complex* a, int lda, int* piv)
         {
             if (m <= 0)
             {
@@ -228,7 +228,7 @@ namespace MatFlat
             {
                 fixed (Complex* pwork = work)
                 {
-                    LuCore(m, n, a, lda, piv, sign, pwork);
+                    return LuCore(m, n, a, lda, piv, pwork);
                 }
             }
             finally
@@ -237,14 +237,14 @@ namespace MatFlat
             }
         }
 
-        private static unsafe void LuCore(int m, int n, float* a, int lda, int* piv, int* sign, float* work)
+        private static unsafe int LuCore(int m, int n, float* a, int lda, int* piv, float* work)
         {
             // Initialize the pivot matrix to the identity permutation.
             for (var i = 0; i < m; i++)
             {
                 piv[i] = i;
             }
-            *sign = 1;
+            var sign = 1;
 
             var colj = a;
 
@@ -277,7 +277,7 @@ namespace MatFlat
                 {
                     Internals.SwapRows(n, a + p, a + j, lda);
                     (piv[p], piv[j]) = (piv[j], piv[p]);
-                    *sign = -*sign;
+                    sign = -sign;
                 }
 
                 // Compute multipliers.
@@ -289,16 +289,18 @@ namespace MatFlat
 
                 colj += lda;
             }
+
+            return sign;
         }
 
-        private static unsafe void LuCore(int m, int n, double* a, int lda, int* piv, int* sign, double* work)
+        private static unsafe int LuCore(int m, int n, double* a, int lda, int* piv, double* work)
         {
             // Initialize the pivot matrix to the identity permutation.
             for (var i = 0; i < m; i++)
             {
                 piv[i] = i;
             }
-            *sign = 1;
+            var sign = 1;
 
             var colj = a;
 
@@ -331,7 +333,7 @@ namespace MatFlat
                 {
                     Internals.SwapRows(n, a + p, a + j, lda);
                     (piv[p], piv[j]) = (piv[j], piv[p]);
-                    *sign = -*sign;
+                    sign = -sign;
                 }
 
                 // Compute multipliers.
@@ -343,16 +345,18 @@ namespace MatFlat
 
                 colj += lda;
             }
+
+            return sign;
         }
 
-        private static unsafe void LuCore(int m, int n, Complex* a, int lda, int* piv, int* sign, Complex* work)
+        private static unsafe int LuCore(int m, int n, Complex* a, int lda, int* piv, Complex* work)
         {
             // Initialize the pivot matrix to the identity permutation.
             for (var i = 0; i < m; i++)
             {
                 piv[i] = i;
             }
-            *sign = 1;
+            var sign = 1;
 
             var colj = a;
 
@@ -385,7 +389,7 @@ namespace MatFlat
                 {
                     Internals.SwapRows(n, a + p, a + j, lda);
                     (piv[p], piv[j]) = (piv[j], piv[p]);
-                    *sign = -*sign;
+                    sign = -sign;
                 }
 
                 // Compute multipliers.
@@ -397,6 +401,8 @@ namespace MatFlat
 
                 colj += lda;
             }
+
+            return sign;
         }
     }
 }
