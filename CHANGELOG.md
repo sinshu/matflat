@@ -1,3 +1,8 @@
+# v0.5.0
+
+* Revised the LU decomposition API.
+* Added inverse matrix.
+
 # v0.4.1
 
 * Fixed issue where the LU decomposition does not report the correct pivot info.

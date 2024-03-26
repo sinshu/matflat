@@ -17,6 +17,7 @@ Currently the following routines are implemented:
 * Eigenvalue decomposition
 * Generalized eigenvalue decomposition
 * Forward and backward substitution
+* Inverse matrix
 
 
 
@@ -161,7 +162,7 @@ BenchmarkDotNet v0.13.12, Windows 11 (10.0.22631.3296/23H2/2023Update/SunValley3
 * ✅ Eigenvalue decomposition
 * ✅ Generalized eigenvalue decomposition
 * ✅ Forward and backward substitution
-* ⬜ Inverse matrix
+* ✅ Inverse matrix
 * ⬜ Matrix-vector multiplication
 * ⬜ Matrix-matrix multiplication
 * ⬜ Dot product
