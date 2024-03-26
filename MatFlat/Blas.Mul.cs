@@ -7,6 +7,79 @@ namespace MatFlat
     {
         public static unsafe void MulMatMat(Transpose transa, Transpose transb, int m, int n, int k, double* a, int lda, double* b, int ldb, double* c, int ldc)
         {
+            if (m <= 0)
+            {
+                throw new ArgumentException("The value must be greater than or equal to one.", nameof(m));
+            }
+
+            if (n <= 0)
+            {
+                throw new ArgumentException("The value must be greater than or equal to one.", nameof(n));
+            }
+
+            if (k <= 0)
+            {
+                throw new ArgumentException("The value must be greater than or equal to one.", nameof(k));
+            }
+
+            if (a == null)
+            {
+                throw new ArgumentNullException(nameof(a));
+            }
+
+            if (transa == Transpose.NoTrans)
+            {
+                if (lda < m)
+                {
+                    throw new ArgumentException("The leading dimension must be greater than or equal to the number of rows.", nameof(lda));
+                }
+            }
+            else if (transa == Transpose.Trans)
+            {
+                if (lda < k)
+                {
+                    throw new ArgumentException("The leading dimension must be greater than or equal to the number of rows.", nameof(lda));
+                }
+            }
+            else
+            {
+                throw new ArgumentException("Invalid enum value.", nameof(transa));
+            }
+
+            if (b == null)
+            {
+                throw new ArgumentNullException(nameof(b));
+            }
+
+            if (transb == Transpose.NoTrans)
+            {
+                if (ldb < k)
+                {
+                    throw new ArgumentException("The leading dimension must be greater than or equal to the number of rows.", nameof(ldb));
+                }
+            }
+            else if (transb == Transpose.Trans)
+            {
+                if (ldb < n)
+                {
+                    throw new ArgumentException("The leading dimension must be greater than or equal to the number of rows.", nameof(ldb));
+                }
+            }
+            else
+            {
+                throw new ArgumentException("Invalid enum value.", nameof(transb));
+            }
+
+            if (c == null)
+            {
+                throw new ArgumentNullException(nameof(c));
+            }
+
+            if (ldc < m)
+            {
+                throw new ArgumentException("The leading dimension must be greater than or equal to the number of rows.", nameof(ldc));
+            }
+
             if (transa == Transpose.NoTrans)
             {
                 if (transb == Transpose.NoTrans)
@@ -25,7 +98,15 @@ namespace MatFlat
                 }
                 else
                 {
-                    throw new Exception();
+                    var cColj = c;
+                    for (var j = 0; j < n; j++)
+                    {
+                        for (var i = 0; i < m; i++)
+                        {
+                            cColj[i] = Internals.Dot(k, a + i, lda, b + j, ldb);
+                        }
+                        cColj += ldc;
+                    }
                 }
             }
             else
@@ -48,7 +129,17 @@ namespace MatFlat
                 }
                 else
                 {
-                    throw new Exception();
+                    var cColj = c;
+                    for (var j = 0; j < n; j++)
+                    {
+                        var aColi = a;
+                        for (var i = 0; i < m; i++)
+                        {
+                            cColj[i] = Internals.Dot(k, aColi, 1, b + j, ldb);
+                            aColi += lda;
+                        }
+                        cColj += ldc;
+                    }
                 }
             }
         }
