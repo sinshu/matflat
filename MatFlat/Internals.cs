@@ -29,6 +29,16 @@ namespace MatFlat
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static Complex MulConjConj(Complex x, Complex y)
+        {
+            var a = x.Real;
+            var b = -x.Imaginary;
+            var c = y.Real;
+            var d = -y.Imaginary;
+            return new Complex(a * c - b * d, a * d + b * c);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static Complex ChangeArgument(Complex abs, Complex arg)
         {
             var num = abs.Real * abs.Real + abs.Imaginary * abs.Imaginary;
