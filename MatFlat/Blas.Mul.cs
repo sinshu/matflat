@@ -30,7 +30,26 @@ namespace MatFlat
             }
             else
             {
-                throw new Exception();
+                if (transb == Transpose.NoTrans)
+                {
+                    var bColj = b;
+                    var cColj = c;
+                    for (var j = 0; j < n; j++)
+                    {
+                        var aColi = a;
+                        for (var i = 0; i < m; i++)
+                        {
+                            cColj[i] = Internals.Dot(k, aColi, bColj);
+                            aColi += lda;
+                        }
+                        bColj += ldb;
+                        cColj += ldc;
+                    }
+                }
+                else
+                {
+                    throw new Exception();
+                }
             }
         }
     }
