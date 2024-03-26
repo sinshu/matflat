@@ -1,3 +1,7 @@
+# v0.6.0
+
+* Added Matrix-matrix multiplication.
+
 # v0.5.0
 
 * Revised the LU decomposition API.
