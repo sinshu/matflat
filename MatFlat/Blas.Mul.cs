@@ -5,6 +5,43 @@ namespace MatFlat
 {
     public static partial class Blas
     {
+        /// <summary>
+        /// Computes a matrix multiplication <c>C = A * B</c>.
+        /// </summary>
+        /// <param name="transa">
+        /// Specifies whether the matrix A is treated as transposed or not.
+        /// </param>
+        /// <param name="transb">
+        /// Specifies whether the matrix B is treated as transposed or not.
+        /// </param>
+        /// <param name="m">
+        /// The number of rows of the matrix A.
+        /// </param>
+        /// <param name="n">
+        /// The number of columns of the matrix B.
+        /// </param>
+        /// <param name="k">
+        /// The number of columns of the matrix A.
+        /// This is equal to the number of rows of the matrix B.
+        /// </param>
+        /// <param name="a">
+        /// The matrix A.
+        /// </param>
+        /// <param name="lda">
+        /// The leading dimension of the array A.
+        /// </param>
+        /// <param name="b">
+        /// The matrix B.
+        /// </param>
+        /// <param name="ldb">
+        /// The leading dimension of the array B.
+        /// </param>
+        /// <param name="c">
+        /// The matrix C, which is the result of the multiplication.
+        /// </param>
+        /// <param name="ldc">
+        /// The leading dimension of the array C.
+        /// </param>
         public static unsafe void MulMatMat(Transpose transa, Transpose transb, int m, int n, int k, double* a, int lda, double* b, int ldb, double* c, int ldc)
         {
             if (m <= 0)
