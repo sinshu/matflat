@@ -134,5 +134,73 @@ namespace MatFlatTest
                 }
             }
         }
+
+        [TestCase(1, 1)]
+        [TestCase(1, 3)]
+        [TestCase(2, 2)]
+        [TestCase(2, 3)]
+        [TestCase(3, 3)]
+        [TestCase(3, 5)]
+        [TestCase(5, 5)]
+        [TestCase(5, 8)]
+        [TestCase(10, 10)]
+        [TestCase(10, 17)]
+        public unsafe void LuInverseComplex(int n, int lda)
+        {
+            var original = Matrix.RandomComplex(42, n, n, lda);
+
+            var a = original.ToArray();
+            var piv = new int[n];
+            var identity = new Complex[n * n];
+            fixed (Complex* pa = a)
+            fixed (int* ppiv = piv)
+            fixed (Complex* poriginal = original)
+            fixed (Complex* pidentity = identity)
+            {
+                var one = Complex.One;
+                var zero = Complex.Zero;
+
+                Factorization.Lu(n, n, pa, lda, ppiv);
+                Factorization.LuInverse(n, pa, lda, ppiv);
+                OpenBlasSharp.Blas.Zgemm(
+                    Order.ColMajor,
+                    OpenBlasSharp.Transpose.NoTrans,
+                    OpenBlasSharp.Transpose.NoTrans,
+                    n, n, n,
+                    &one,
+                    poriginal, lda,
+                    pa, lda,
+                    &zero,
+                    pidentity, n);
+            }
+
+            for (var row = 0; row < n; row++)
+            {
+                for (var col = 0; col < n; col++)
+                {
+                    var value = identity[col * n + row];
+                    if (row == col)
+                    {
+                        Assert.That(value.Real, Is.EqualTo(1.0).Within(1.0E-12));
+                    }
+                    else
+                    {
+                        Assert.That(value.Real, Is.EqualTo(0.0).Within(1.0E-12));
+                    }
+                    Assert.That(value.Imaginary, Is.EqualTo(0.0).Within(1.0E-12));
+                }
+            }
+
+            for (var i = 0; i < a.Length; i++)
+            {
+                var row = i % lda;
+                var col = i / lda;
+                if (row >= n)
+                {
+                    Assert.That(a[i].Real, Is.EqualTo(original[i].Real).Within(0));
+                    Assert.That(a[i].Imaginary, Is.EqualTo(original[i].Imaginary).Within(0));
+                }
+            }
+        }
     }
 }
