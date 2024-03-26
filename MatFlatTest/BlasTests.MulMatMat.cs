@@ -52,6 +52,9 @@ namespace MatFlatTest
             Assert.That(actual, Is.EqualTo(expected).Within(1.0E-12));
         }
 
+        [TestCase(1, 1, 1, 1, 1, 1)]
+        [TestCase(2, 2, 2, 2, 2, 2)]
+        [TestCase(3, 3, 3, 3, 3, 3)]
         [TestCase(2, 3, 4, 4, 4, 2)]
         [TestCase(2, 3, 4, 5, 6, 3)]
         [TestCase(5, 4, 3, 3, 3, 5)]
