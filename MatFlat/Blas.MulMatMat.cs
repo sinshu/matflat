@@ -117,6 +117,11 @@ namespace MatFlat
                 throw new ArgumentException("The leading dimension must be greater than or equal to the number of rows.", nameof(ldc));
             }
 
+            if (a == c || b == c)
+            {
+                throw new ArgumentException("In-place operation is not supported.");
+            }
+
             if (transa == Transpose.NoTrans)
             {
                 if (transb == Transpose.NoTrans)
@@ -293,6 +298,11 @@ namespace MatFlat
                 throw new ArgumentException("The leading dimension must be greater than or equal to the number of rows.", nameof(ldc));
             }
 
+            if (a == c || b == c)
+            {
+                throw new ArgumentException("In-place operation is not supported.");
+            }
+
             if (transa == Transpose.NoTrans)
             {
                 if (transb == Transpose.NoTrans)
@@ -467,6 +477,11 @@ namespace MatFlat
             if (ldc < m)
             {
                 throw new ArgumentException("The leading dimension must be greater than or equal to the number of rows.", nameof(ldc));
+            }
+
+            if (a == c || b == c)
+            {
+                throw new ArgumentException("In-place operation is not supported.");
             }
 
             delegate*<int, Complex*, int, Complex*, int, Complex> dot;
