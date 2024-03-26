@@ -76,7 +76,7 @@ namespace MatFlatTest
             {
                 var row = i % lda;
                 var col = i / lda;
-                if (row >= lda)
+                if (row >= n)
                 {
                     Assert.That(v[i], Is.EqualTo(a[i]).Within(0));
                 }
@@ -86,7 +86,7 @@ namespace MatFlatTest
             {
                 var row = i % ldb;
                 var col = i / ldb;
-                if (row >= ldb)
+                if (row >= n)
                 {
                     Assert.That(l[i], Is.EqualTo(b[i]).Within(0));
                 }
@@ -160,7 +160,7 @@ namespace MatFlatTest
             {
                 var row = i % lda;
                 var col = i / lda;
-                if (row >= lda)
+                if (row >= n)
                 {
                     Assert.That(v[i], Is.EqualTo(a[i]).Within(0));
                 }
@@ -170,7 +170,7 @@ namespace MatFlatTest
             {
                 var row = i % ldb;
                 var col = i / ldb;
-                if (row >= ldb)
+                if (row >= n)
                 {
                     Assert.That(l[i], Is.EqualTo(b[i]).Within(0));
                 }
@@ -242,6 +242,28 @@ namespace MatFlatTest
 
                     Assert.That(left.Select(x => x.Real), Is.EqualTo(right.Select(x => x.Real)).Within(1.0E-11));
                     Assert.That(left.Select(x => x.Imaginary), Is.EqualTo(right.Select(x => x.Imaginary)).Within(1.0E-11));
+                }
+            }
+
+            for (var i = 0; i < v.Length; i++)
+            {
+                var row = i % lda;
+                var col = i / lda;
+                if (row >= n)
+                {
+                    Assert.That(v[i].Real, Is.EqualTo(a[i].Real).Within(0));
+                    Assert.That(v[i].Imaginary, Is.EqualTo(a[i].Imaginary).Within(0));
+                }
+            }
+
+            for (var i = 0; i < l.Length; i++)
+            {
+                var row = i % ldb;
+                var col = i / ldb;
+                if (row >= n)
+                {
+                    Assert.That(l[i].Real, Is.EqualTo(b[i].Real).Within(0));
+                    Assert.That(l[i].Imaginary, Is.EqualTo(b[i].Imaginary).Within(0));
                 }
             }
         }
