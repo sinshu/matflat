@@ -405,6 +405,33 @@ namespace MatFlat
             return Math.Sqrt(sum);
         }
 
+        internal static unsafe double Norm(int n, float* x, int incx)
+        {
+            double sum;
+            switch (n & 1)
+            {
+                case 0:
+                    sum = 0.0;
+                    break;
+                case 1:
+                    sum = (double)x[0] * (double)x[0];
+                    x += incx;
+                    n--;
+                    break;
+                default:
+                    throw new MatFlatException("An unexpected error occurred.");
+            }
+
+            while (n > 0)
+            {
+                sum += (double)x[0] * (double)x[0] + (double)x[incx] * (double)x[incx];
+                x += 2 * incx;
+                n -= 2;
+            }
+
+            return Math.Sqrt(sum);
+        }
+
         internal static unsafe double Norm(int n, double* x)
         {
             double sum;
@@ -432,6 +459,33 @@ namespace MatFlat
             return Math.Sqrt(sum);
         }
 
+        internal static unsafe double Norm(int n, double* x, int incx)
+        {
+            double sum;
+            switch (n & 1)
+            {
+                case 0:
+                    sum = 0.0;
+                    break;
+                case 1:
+                    sum = x[0] * x[0];
+                    x += incx;
+                    n--;
+                    break;
+                default:
+                    throw new MatFlatException("An unexpected error occurred.");
+            }
+
+            while (n > 0)
+            {
+                sum += x[0] * x[0] + x[incx] * x[incx];
+                x += 2 * incx;
+                n -= 2;
+            }
+
+            return Math.Sqrt(sum);
+        }
+
         internal static unsafe double Norm(int n, Complex* x)
         {
             double sum;
@@ -453,6 +507,33 @@ namespace MatFlat
             {
                 sum += x[0].Real * x[0].Real + x[0].Imaginary * x[0].Imaginary + x[1].Real * x[1].Real + x[1].Imaginary * x[1].Imaginary;
                 x += 2;
+                n -= 2;
+            }
+
+            return Math.Sqrt(sum);
+        }
+
+        internal static unsafe double Norm(int n, Complex* x, int incx)
+        {
+            double sum;
+            switch (n & 1)
+            {
+                case 0:
+                    sum = 0.0;
+                    break;
+                case 1:
+                    sum = x[0].Real * x[0].Real + x[0].Imaginary * x[0].Imaginary;
+                    x += incx;
+                    n--;
+                    break;
+                default:
+                    throw new MatFlatException("An unexpected error occurred.");
+            }
+
+            while (n > 0)
+            {
+                sum += x[0].Real * x[0].Real + x[0].Imaginary * x[0].Imaginary + x[incx].Real * x[incx].Real + x[incx].Imaginary * x[incx].Imaginary;
+                x += 2 * incx;
                 n -= 2;
             }
 
