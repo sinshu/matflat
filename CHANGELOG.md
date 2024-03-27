@@ -1,3 +1,7 @@
+# v0.7.0
+
+* Added Matrix-vector multiplication.
+
 # v0.6.0
 
 * Added Matrix-matrix multiplication.
