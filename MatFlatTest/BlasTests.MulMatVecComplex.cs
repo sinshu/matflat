@@ -75,7 +75,7 @@ namespace MatFlatTest
         public unsafe void Trans(int m, int n, int lda, int incx, int incy)
         {
             var a = Matrix.RandomComplex(42, m, n, lda);
-            var x = Vector.RandomComplex(57, n, incx);
+            var x = Vector.RandomComplex(57, m, incx);
             var y = Vector.RandomComplex(0, n, incy);
 
             var expected = y.ToArray();
@@ -177,7 +177,7 @@ namespace MatFlatTest
         public unsafe void ConjTrans(int m, int n, int lda, int incx, int incy)
         {
             var a = Matrix.RandomComplex(42, m, n, lda);
-            var x = Vector.RandomComplex(57, n, incx);
+            var x = Vector.RandomComplex(57, m, incx);
             var y = Vector.RandomComplex(0, n, incy);
 
             var expected = y.ToArray();

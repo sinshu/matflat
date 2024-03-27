@@ -70,7 +70,7 @@ namespace MatFlatTest
         public unsafe void Trans(int m, int n, int lda, int incx, int incy)
         {
             var a = Matrix.RandomSingle(42, m, n, lda);
-            var x = Vector.RandomSingle(57, n, incx);
+            var x = Vector.RandomSingle(57, m, incx);
             var y = Vector.RandomSingle(0, n, incy);
 
             var expected = y.ToArray();
