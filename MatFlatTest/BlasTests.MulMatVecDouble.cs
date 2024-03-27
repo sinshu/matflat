@@ -71,7 +71,7 @@ namespace MatFlatTest
         {
             var a = Matrix.RandomDouble(42, m, n, lda);
             var x = Vector.RandomDouble(57, n, incx);
-            var y = Vector.RandomDouble(0, m, incy);
+            var y = Vector.RandomDouble(0, n, incy);
 
             var expected = y.ToArray();
             fixed (double* pa = a)

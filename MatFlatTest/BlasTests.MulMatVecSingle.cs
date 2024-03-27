@@ -71,7 +71,7 @@ namespace MatFlatTest
         {
             var a = Matrix.RandomSingle(42, m, n, lda);
             var x = Vector.RandomSingle(57, n, incx);
-            var y = Vector.RandomSingle(0, m, incy);
+            var y = Vector.RandomSingle(0, n, incy);
 
             var expected = y.ToArray();
             fixed (float* pa = a)

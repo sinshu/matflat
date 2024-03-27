@@ -76,7 +76,7 @@ namespace MatFlatTest
         {
             var a = Matrix.RandomComplex(42, m, n, lda);
             var x = Vector.RandomComplex(57, n, incx);
-            var y = Vector.RandomComplex(0, m, incy);
+            var y = Vector.RandomComplex(0, n, incy);
 
             var expected = y.ToArray();
             fixed (Complex* pa = a)
@@ -178,7 +178,7 @@ namespace MatFlatTest
         {
             var a = Matrix.RandomComplex(42, m, n, lda);
             var x = Vector.RandomComplex(57, n, incx);
-            var y = Vector.RandomComplex(0, m, incy);
+            var y = Vector.RandomComplex(0, n, incy);
 
             var expected = y.ToArray();
             fixed (Complex* pa = a)
