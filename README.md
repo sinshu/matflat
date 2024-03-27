@@ -2,6 +2,10 @@
 
 This library aims to provide a pure C# implementation of reasonably fast low-level routines for linear algebra operations.
 
+This library was created as a matrix decomposition implementation for [NumFlat](https://github.com/sinshu/numflat),
+a comprehensive numerical computing library written in pure C#.
+If you're interested in numerical computing with C#, please check out [NumFlat](https://github.com/sinshu/numflat).
+
 This library is based on the following great projects:
 
 * [Math.NET Numerics](https://github.com/mathnet/mathnet-numerics)
