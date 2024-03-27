@@ -217,5 +217,36 @@ namespace MatFlat
                 return Internals.DotConj(n, x, incx, y, incy);
             }
         }
+
+        /// <summary>
+        /// Computes the outer product <c>A = x * y^T</c>.
+        /// </summary>
+        /// <param name="m">
+        /// The number of rows of the matrix A.
+        /// </param>
+        /// <param name="n">
+        /// The number of columns of the matrix A.
+        /// </param>
+        /// <param name="x">
+        /// The vector x.
+        /// </param>
+        /// <param name="incx">
+        /// The stride for the elements of the array x.
+        /// </param>
+        /// <param name="y">
+        /// The vector y.
+        /// </param>
+        /// <param name="incy">
+        /// The stride for the elements of the array y.
+        /// </param>
+        /// <param name="a">
+        /// The matrix A, which is the result of the multiplication.
+        /// </param>
+        /// <param name="lda">
+        /// The leading dimension of the array A.
+        /// </param>
+        public static unsafe void Outer(int m, int n, double* x, int incx, double* y, int incy, double* a, int lda)
+        {
+        }
     }
 }
