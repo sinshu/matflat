@@ -245,8 +245,153 @@ namespace MatFlat
         /// <param name="lda">
         /// The leading dimension of the array A.
         /// </param>
+        public static unsafe void Outer(int m, int n, float* x, int incx, float* y, int incy, float* a, int lda)
+        {
+            var py = y;
+            for (var j = 0; j < n; j++)
+            {
+                var aColj = a + lda * j;
+                var px = x;
+                var t = *py;
+                for (var i = 0; i < m; i++)
+                {
+                    aColj[i] = t * *px;
+                    px += incx;
+                }
+                py += incy;
+            }
+        }
+
+        /// <summary>
+        /// Computes the outer product <c>A = x * y^T</c>.
+        /// </summary>
+        /// <param name="m">
+        /// The number of rows of the matrix A.
+        /// </param>
+        /// <param name="n">
+        /// The number of columns of the matrix A.
+        /// </param>
+        /// <param name="x">
+        /// The vector x.
+        /// </param>
+        /// <param name="incx">
+        /// The stride for the elements of the array x.
+        /// </param>
+        /// <param name="y">
+        /// The vector y.
+        /// </param>
+        /// <param name="incy">
+        /// The stride for the elements of the array y.
+        /// </param>
+        /// <param name="a">
+        /// The matrix A, which is the result of the multiplication.
+        /// </param>
+        /// <param name="lda">
+        /// The leading dimension of the array A.
+        /// </param>
         public static unsafe void Outer(int m, int n, double* x, int incx, double* y, int incy, double* a, int lda)
         {
+            var py = y;
+            for (var j = 0; j < n; j++)
+            {
+                var aColj = a + lda * j;
+                var px = x;
+                var t = *py;
+                for (var i = 0; i < m; i++)
+                {
+                    aColj[i] = t * *px;
+                    px += incx;
+                }
+                py += incy;
+            }
+        }
+
+        /// <summary>
+        /// Computes the outer product <c>A = x * y^T</c>.
+        /// </summary>
+        /// <param name="m">
+        /// The number of rows of the matrix A.
+        /// </param>
+        /// <param name="n">
+        /// The number of columns of the matrix A.
+        /// </param>
+        /// <param name="x">
+        /// The vector x.
+        /// </param>
+        /// <param name="incx">
+        /// The stride for the elements of the array x.
+        /// </param>
+        /// <param name="y">
+        /// The vector y.
+        /// </param>
+        /// <param name="incy">
+        /// The stride for the elements of the array y.
+        /// </param>
+        /// <param name="a">
+        /// The matrix A, which is the result of the multiplication.
+        /// </param>
+        /// <param name="lda">
+        /// The leading dimension of the array A.
+        /// </param>
+        public static unsafe void Outer(int m, int n, Complex* x, int incx, Complex* y, int incy, Complex* a, int lda)
+        {
+            var py = y;
+            for (var j = 0; j < n; j++)
+            {
+                var aColj = a + lda * j;
+                var px = x;
+                var t = *py;
+                for (var i = 0; i < m; i++)
+                {
+                    aColj[i] = t * *px;
+                    px += incx;
+                }
+                py += incy;
+            }
+        }
+
+        /// <summary>
+        /// Computes the outer product <c>A = x * y^H</c>.
+        /// </summary>
+        /// <param name="m">
+        /// The number of rows of the matrix A.
+        /// </param>
+        /// <param name="n">
+        /// The number of columns of the matrix A.
+        /// </param>
+        /// <param name="x">
+        /// The vector x.
+        /// </param>
+        /// <param name="incx">
+        /// The stride for the elements of the array x.
+        /// </param>
+        /// <param name="y">
+        /// The vector y.
+        /// </param>
+        /// <param name="incy">
+        /// The stride for the elements of the array y.
+        /// </param>
+        /// <param name="a">
+        /// The matrix A, which is the result of the multiplication.
+        /// </param>
+        /// <param name="lda">
+        /// The leading dimension of the array A.
+        /// </param>
+        public static unsafe void OuterConj(int m, int n, Complex* x, int incx, Complex* y, int incy, Complex* a, int lda)
+        {
+            var py = y;
+            for (var j = 0; j < n; j++)
+            {
+                var aColj = a + lda * j;
+                var px = x;
+                var t = (*py).Conjugate();
+                for (var i = 0; i < m; i++)
+                {
+                    aColj[i] = t * *px;
+                    px += incx;
+                }
+                py += incy;
+            }
         }
     }
 }

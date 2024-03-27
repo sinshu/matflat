@@ -209,5 +209,191 @@ namespace MatFlatTest
             Assert.That(actual.Real, Is.EqualTo(expected.Real).Within(1.0E-12));
             Assert.That(actual.Imaginary, Is.EqualTo(expected.Imaginary).Within(1.0E-12));
         }
+
+        [TestCase(1, 1, 1, 1, 1)]
+        [TestCase(1, 1, 4, 3, 2)]
+        [TestCase(2, 2, 1, 1, 2)]
+        [TestCase(2, 2, 2, 3, 4)]
+        [TestCase(3, 3, 1, 1, 3)]
+        [TestCase(3, 3, 2, 2, 4)]
+        [TestCase(2, 5, 1, 1, 2)]
+        [TestCase(2, 5, 3, 2, 4)]
+        [TestCase(7, 3, 1, 1, 7)]
+        [TestCase(7, 3, 3, 4, 9)]
+        public unsafe void OuterSingle(int m, int n, int incx, int incy, int lda)
+        {
+            var x = Vector.RandomSingle(42, m, incx);
+            var y = Vector.RandomSingle(57, n, incy);
+            var a = Matrix.RandomSingle(0, m, n, lda);
+
+            var expected = a.ToArray();
+            fixed (float* px = x)
+            fixed (float* py = y)
+            fixed (float* pa = expected)
+            {
+                for (var j = 0; j < n; j++)
+                {
+                    new Span<float>(pa + lda * j, m).Clear();
+                }
+                OpenBlasSharp.Blas.Sger(
+                    OpenBlasSharp.Order.ColMajor,
+                    m, n,
+                    1.0F,
+                    px, incx,
+                    py, incy,
+                    pa, lda);
+            }
+
+            var actual = a.ToArray();
+            fixed (float* px = x)
+            fixed (float* py = y)
+            fixed (float* pa = actual)
+            {
+                MatFlat.Blas.Outer(m, n, px, incx, py, incy, pa, lda);
+            }
+
+            Assert.That(actual, Is.EqualTo(expected).Within(1.0E-6));
+        }
+
+        [TestCase(1, 1, 1, 1, 1)]
+        [TestCase(1, 1, 4, 3, 2)]
+        [TestCase(2, 2, 1, 1, 2)]
+        [TestCase(2, 2, 2, 3, 4)]
+        [TestCase(3, 3, 1, 1, 3)]
+        [TestCase(3, 3, 2, 2, 4)]
+        [TestCase(2, 5, 1, 1, 2)]
+        [TestCase(2, 5, 3, 2, 4)]
+        [TestCase(7, 3, 1, 1, 7)]
+        [TestCase(7, 3, 3, 4, 9)]
+        public unsafe void OuterDouble(int m, int n, int incx, int incy, int lda)
+        {
+            var x = Vector.RandomDouble(42, m, incx);
+            var y = Vector.RandomDouble(57, n, incy);
+            var a = Matrix.RandomDouble(0, m, n, lda);
+
+            var expected = a.ToArray();
+            fixed (double* px = x)
+            fixed (double* py = y)
+            fixed (double* pa = expected)
+            {
+                for (var j = 0; j < n; j++)
+                {
+                    new Span<double>(pa + lda * j, m).Clear();
+                }
+                OpenBlasSharp.Blas.Dger(
+                    OpenBlasSharp.Order.ColMajor,
+                    m, n,
+                    1.0,
+                    px, incx,
+                    py, incy,
+                    pa, lda);
+            }
+
+            var actual = a.ToArray();
+            fixed (double* px = x)
+            fixed (double* py = y)
+            fixed (double* pa = actual)
+            {
+                MatFlat.Blas.Outer(m, n, px, incx, py, incy, pa, lda);
+            }
+
+            Assert.That(actual, Is.EqualTo(expected).Within(1.0E-12));
+        }
+
+        [TestCase(1, 1, 1, 1, 1)]
+        [TestCase(1, 1, 4, 3, 2)]
+        [TestCase(2, 2, 1, 1, 2)]
+        [TestCase(2, 2, 2, 3, 4)]
+        [TestCase(3, 3, 1, 1, 3)]
+        [TestCase(3, 3, 2, 2, 4)]
+        [TestCase(2, 5, 1, 1, 2)]
+        [TestCase(2, 5, 3, 2, 4)]
+        [TestCase(7, 3, 1, 1, 7)]
+        [TestCase(7, 3, 3, 4, 9)]
+        public unsafe void OuterComplex(int m, int n, int incx, int incy, int lda)
+        {
+            var x = Vector.RandomComplex(42, m, incx);
+            var y = Vector.RandomComplex(57, n, incy);
+            var a = Matrix.RandomComplex(0, m, n, lda);
+
+            var expected = a.ToArray();
+            fixed (Complex* px = x)
+            fixed (Complex* py = y)
+            fixed (Complex* pa = expected)
+            {
+                var one = Complex.One;
+
+                for (var j = 0; j < n; j++)
+                {
+                    new Span<Complex>(pa + lda * j, m).Clear();
+                }
+                OpenBlasSharp.Blas.Zgeru(
+                    OpenBlasSharp.Order.ColMajor,
+                    m, n,
+                    &one,
+                    px, incx,
+                    py, incy,
+                    pa, lda);
+            }
+
+            var actual = a.ToArray();
+            fixed (Complex* px = x)
+            fixed (Complex* py = y)
+            fixed (Complex* pa = actual)
+            {
+                MatFlat.Blas.Outer(m, n, px, incx, py, incy, pa, lda);
+            }
+
+            Assert.That(actual.Select(x => x.Real), Is.EqualTo(expected.Select(x => x.Real)).Within(1.0E-12));
+            Assert.That(actual.Select(x => x.Imaginary), Is.EqualTo(expected.Select(x => x.Imaginary)).Within(1.0E-12));
+        }
+
+        [TestCase(1, 1, 1, 1, 1)]
+        [TestCase(1, 1, 4, 3, 2)]
+        [TestCase(2, 2, 1, 1, 2)]
+        [TestCase(2, 2, 2, 3, 4)]
+        [TestCase(3, 3, 1, 1, 3)]
+        [TestCase(3, 3, 2, 2, 4)]
+        [TestCase(2, 5, 1, 1, 2)]
+        [TestCase(2, 5, 3, 2, 4)]
+        [TestCase(7, 3, 1, 1, 7)]
+        [TestCase(7, 3, 3, 4, 9)]
+        public unsafe void OuterConj(int m, int n, int incx, int incy, int lda)
+        {
+            var x = Vector.RandomComplex(42, m, incx);
+            var y = Vector.RandomComplex(57, n, incy);
+            var a = Matrix.RandomComplex(0, m, n, lda);
+
+            var expected = a.ToArray();
+            fixed (Complex* px = x)
+            fixed (Complex* py = y)
+            fixed (Complex* pa = expected)
+            {
+                var one = Complex.One;
+
+                for (var j = 0; j < n; j++)
+                {
+                    new Span<Complex>(pa + lda * j, m).Clear();
+                }
+                OpenBlasSharp.Blas.Zgerc(
+                    OpenBlasSharp.Order.ColMajor,
+                    m, n,
+                    &one,
+                    px, incx,
+                    py, incy,
+                    pa, lda);
+            }
+
+            var actual = a.ToArray();
+            fixed (Complex* px = x)
+            fixed (Complex* py = y)
+            fixed (Complex* pa = actual)
+            {
+                MatFlat.Blas.OuterConj(m, n, px, incx, py, incy, pa, lda);
+            }
+
+            Assert.That(actual.Select(x => x.Real), Is.EqualTo(expected.Select(x => x.Real)).Within(1.0E-12));
+            Assert.That(actual.Select(x => x.Imaginary), Is.EqualTo(expected.Select(x => x.Imaginary)).Within(1.0E-12));
+        }
     }
 }
