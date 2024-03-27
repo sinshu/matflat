@@ -299,6 +299,23 @@ namespace MatFlat
                     y += incy;
                 }
             }
+            else if (trans == Transpose.ConjNoTrans)
+            {
+                for (var i = 0; i < m; i++)
+                {
+                    *y = Internals.DotConj(n, a + i, lda, x, incx);
+                    y += incy;
+                }
+            }
+            else if (trans == Transpose.ConjTrans)
+            {
+                for (var i = 0; i < n; i++)
+                {
+                    *y = Internals.DotConj(m, a, 1, x, incx);
+                    a += lda;
+                    y += incy;
+                }
+            }
             else
             {
                 throw new ArgumentException("Invalid enum value.", nameof(trans));
