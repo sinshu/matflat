@@ -20,6 +20,8 @@ Currently the following routines are implemented:
 * Inverse matrix
 * Matrix-vector multiplication
 * Matrix-matrix multiplication
+* Dot and outer product
+* Vector norm
 
 
 
@@ -167,8 +169,8 @@ BenchmarkDotNet v0.13.12, Windows 11 (10.0.22631.3296/23H2/2023Update/SunValley3
 * ✅ Inverse matrix
 * ✅ Matrix-vector multiplication
 * ✅ Matrix-matrix multiplication
-* ⬜ Dot product
-* ⬜ Norm
+* ✅ Dot and outer product
+* ✅ Vector norm
 
 
 

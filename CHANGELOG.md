@@ -1,3 +1,8 @@
+# v0.8.0
+
+* Added dot and outer product.
+* Added vector norm.
+
 # v0.7.0
 
 * Added Matrix-vector multiplication.
