@@ -345,7 +345,7 @@ namespace MatFlat
                 {
                     var aColj = a + lda * j;
 
-                    if (k < nct && stmp[k] != 0.0)
+                    if (k < nct && stmp[k] != 0.0F)
                     {
                         // Apply the transformation.
                         var t = -(float)(Internals.Dot(m - k, aColk + k, aColj + k) / aColk[k]);
@@ -370,9 +370,9 @@ namespace MatFlat
                     // Compute 2-norm.
                     e[k] = (float)Internals.Norm(n - kp1, e + kp1);
 
-                    if (e[k] != 0.0)
+                    if (e[k] != 0.0F)
                     {
-                        if (e[kp1] != 0.0)
+                        if (e[kp1] != 0.0F)
                         {
                             e[k] = Math.Abs(e[k]) * (e[kp1] / Math.Abs(e[kp1]));
                         }
@@ -444,7 +444,7 @@ namespace MatFlat
                 {
                     var uColk = u + ldu * k;
 
-                    if (stmp[k] != 0.0)
+                    if (stmp[k] != 0.0F)
                     {
                         for (var j = k + 1; j < m; j++)
                         {
@@ -474,7 +474,7 @@ namespace MatFlat
                     var kp1 = k + 1;
                     var vtColk = vt + ldvt * k;
 
-                    if (k < nrt && e[k] != 0.0)
+                    if (k < nrt && e[k] != 0.0F)
                     {
                         for (var j = kp1; j < n; j++)
                         {
@@ -491,7 +491,7 @@ namespace MatFlat
 
             for (var i = 0; i < p; i++)
             {
-                if (stmp[i] != 0.0)
+                if (stmp[i] != 0.0F)
                 {
                     var t = stmp[i];
                     var r = stmp[i] / t;
@@ -512,7 +512,7 @@ namespace MatFlat
                     break;
                 }
 
-                if (e[i] != 0.0)
+                if (e[i] != 0.0F)
                 {
                     var t = e[i];
                     var r = t / e[i];
@@ -567,7 +567,7 @@ namespace MatFlat
                     int ks;
                     for (ks = p - 1; ks > k; ks--)
                     {
-                        var t = 0.0;
+                        var t = 0.0F;
                         if (ks != p - 1)
                         {
                             t += Math.Abs(e[ks]);
@@ -681,10 +681,10 @@ namespace MatFlat
                         var b = (((spm1 + sp) * (spm1 - sp)) + (epm1 * epm1)) / 2.0F;
                         var c = (sp * epm1) * (sp * epm1);
                         var shift = 0.0F;
-                        if (b != 0.0 || c != 0.0)
+                        if (b != 0.0F || c != 0.0F)
                         {
                             shift = MathF.Sqrt((b * b) + c);
-                            if (b < 0.0)
+                            if (b < 0.0F)
                             {
                                 shift = -shift;
                             }
@@ -748,7 +748,7 @@ namespace MatFlat
                     // Convergence.
                     case 4:
                         // Make the singular value positive.
-                        if (stmp[k] < 0.0)
+                        if (stmp[k] < 0.0F)
                         {
                             stmp[k] = -stmp[k];
 
