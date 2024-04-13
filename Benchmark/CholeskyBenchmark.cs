@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using BenchmarkDotNet.Attributes;
-using OpenBlasSharp;
 
 namespace Benchmark
 {
@@ -13,7 +12,7 @@ namespace Benchmark
         private double[] a;
         private global::MathNet.Numerics.Providers.LinearAlgebra.ManagedLinearAlgebraProvider mathNetProvider;
 
-        [Params(5, 10, 20, 50, 100, 200)]
+        [Params(10, 20, 30, 40, 50, 60, 70, 80, 90, 100)]
         public int Order;
 
         [GlobalSetup]
@@ -43,7 +42,7 @@ namespace Benchmark
             }
         }
 
-        //[Benchmark]
+        [Benchmark]
         public void OpenBlas()
         {
             values.CopyTo(a, 0);

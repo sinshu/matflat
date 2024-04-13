@@ -13,9 +13,10 @@ namespace Benchmark
         private double[] s;
         private double[] u;
         private double[] vt;
+        private double[] work;
         private global::MathNet.Numerics.Providers.LinearAlgebra.ManagedLinearAlgebraProvider mathNetProvider;
 
-        [Params(5, 10, 20, 50, 100, 200)]
+        [Params(10, 20, 30, 40, 50, 60, 70, 80, 90, 100)]
         public int Order;
 
         [GlobalSetup]
@@ -27,6 +28,7 @@ namespace Benchmark
             s = new double[Order];
             u = new double[values.Length];
             vt = new double[values.Length];
+            work = new double[Order];
             mathNetProvider = global::MathNet.Numerics.Providers.LinearAlgebra.ManagedLinearAlgebraProvider.Instance;
         }
 
@@ -49,6 +51,29 @@ namespace Benchmark
             fixed (double* pvt = vt)
             {
                 global::MatFlat.Factorization.Svd(Order, Order, pa, Order, ps, pu, Order, pvt, Order);
+            }
+        }
+
+        [Benchmark]
+        public void OpenBlas()
+        {
+            values.CopyTo(a, 0);
+
+            fixed (double* pa = a)
+            fixed (double* ps = s)
+            fixed (double* pu = u)
+            fixed (double* pvt = vt)
+            fixed (double* pwork = work)
+            {
+                global::OpenBlasSharp.Lapack.Dgesvd(
+                    global::OpenBlasSharp.MatrixLayout.ColMajor,
+                    'A', 'A',
+                    Order, Order,
+                    pa, Order,
+                    ps,
+                    pu, Order,
+                    pvt, Order,
+                    pwork);
             }
         }
     }
