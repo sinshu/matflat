@@ -70,6 +70,7 @@ using MatFlat;
 The performance of MatFlat is compared with that of Math.NET Numerics and OpenBLAS below.
 The execution times of various `double` matrix decompositions for square matrices were measured.
 The matrix sizes range from 10x10 to 100x100.
+The plots show the execution times, with the execution time of Math.NET Numerics considered as 1.
 
 ### Measurement condition
 
