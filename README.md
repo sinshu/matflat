@@ -1,6 +1,6 @@
 # MatFlat
 
-This library aims to provide a pure C# implementation of reasonably fast low-level routines for linear algebra operations.
+This library aims to provide a subset of BLAS and LAPACK routines implemented in pure C#.
 
 This library was created as a matrix decomposition implementation for [NumFlat](https://github.com/sinshu/numflat),
 a general purpose numerical computing library written in pure C#.
