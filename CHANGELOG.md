@@ -1,3 +1,7 @@
+# v0.8.1
+
+* Fixed bug where SVD does not return if the matrix contains NaN values.
+
 # v0.8.0
 
 * Added dot and outer product.
