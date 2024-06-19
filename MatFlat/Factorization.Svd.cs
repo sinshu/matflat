@@ -741,7 +741,7 @@ namespace MatFlat
                         }
 
                         e[p - 2] = f;
-                        iter = iter++;
+                        iter++;
 
                         break;
 
@@ -1252,7 +1252,7 @@ namespace MatFlat
                         }
 
                         e[p - 2] = f;
-                        iter = iter++;
+                        iter++;
 
                         break;
 
