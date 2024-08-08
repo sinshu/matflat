@@ -1,3 +1,7 @@
+# v0.8.2
+
+* Optimized SVD a bit.
+
 # v0.8.1
 
 * Fixed bug where SVD does not return if the matrix contains NaN values.
