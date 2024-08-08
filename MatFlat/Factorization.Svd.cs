@@ -328,9 +328,9 @@ namespace MatFlat
 
                     if (stmp[k] != 0.0F)
                     {
-                        if (aColk[k] != 0.0F)
+                        if (aColk[k] < 0.0F)
                         {
-                            stmp[k] = Math.Abs(stmp[k]) * (aColk[k] / Math.Abs(aColk[k]));
+                            stmp[k] = -stmp[k];
                         }
 
                         Internals.DivInplace(m - k, aColk + k, stmp[k]);
@@ -372,9 +372,9 @@ namespace MatFlat
 
                     if (e[k] != 0.0F)
                     {
-                        if (e[kp1] != 0.0F)
+                        if (e[kp1] < 0.0F)
                         {
-                            e[k] = Math.Abs(e[k]) * (e[kp1] / Math.Abs(e[kp1]));
+                            e[k] = -e[k];
                         }
 
                         Internals.DivInplace(n - kp1, e + kp1, e[k]);
@@ -486,43 +486,6 @@ namespace MatFlat
 
                     new Span<float>(vtColk, n).Clear();
                     vtColk[k] = 1.0F;
-                }
-            }
-
-            for (var i = 0; i < p; i++)
-            {
-                if (stmp[i] != 0.0F)
-                {
-                    var t = stmp[i];
-                    var r = stmp[i] / t;
-                    stmp[i] = t;
-                    if (i < p - 1)
-                    {
-                        e[i] /= r;
-                    }
-
-                    if (u != null)
-                    {
-                        Internals.MulInplace(m, u + ldu * i, r);
-                    }
-                }
-
-                if (i == p - 1)
-                {
-                    break;
-                }
-
-                if (e[i] != 0.0F)
-                {
-                    var t = e[i];
-                    var r = t / e[i];
-                    e[i] = t;
-                    stmp[i + 1] = stmp[i + 1] * r;
-
-                    if (vt != null)
-                    {
-                        Internals.MulInplace(n, vt + ldvt * (i + 1), r);
-                    }
                 }
             }
 
@@ -839,9 +802,9 @@ namespace MatFlat
 
                     if (stmp[k] != 0.0)
                     {
-                        if (aColk[k] != 0.0)
+                        if (aColk[k] < 0.0)
                         {
-                            stmp[k] = Math.Abs(stmp[k]) * (aColk[k] / Math.Abs(aColk[k]));
+                            stmp[k] = -stmp[k];
                         }
 
                         Internals.DivInplace(m - k, aColk + k, stmp[k]);
@@ -883,9 +846,9 @@ namespace MatFlat
 
                     if (e[k] != 0.0)
                     {
-                        if (e[kp1] != 0.0)
+                        if (e[kp1] < 0.0)
                         {
-                            e[k] = Math.Abs(e[k]) * (e[kp1] / Math.Abs(e[kp1]));
+                            e[k] = -e[k];
                         }
 
                         Internals.DivInplace(n - kp1, e + kp1, e[k]);
@@ -997,43 +960,6 @@ namespace MatFlat
 
                     new Span<double>(vtColk, n).Clear();
                     vtColk[k] = 1.0;
-                }
-            }
-
-            for (var i = 0; i < p; i++)
-            {
-                if (stmp[i] != 0.0)
-                {
-                    var t = stmp[i];
-                    var r = stmp[i] / t;
-                    stmp[i] = t;
-                    if (i < p - 1)
-                    {
-                        e[i] /= r;
-                    }
-
-                    if (u != null)
-                    {
-                        Internals.MulInplace(m, u + ldu * i, r);
-                    }
-                }
-
-                if (i == p - 1)
-                {
-                    break;
-                }
-
-                if (e[i] != 0.0)
-                {
-                    var t = e[i];
-                    var r = t / e[i];
-                    e[i] = t;
-                    stmp[i + 1] = stmp[i + 1] * r;
-
-                    if (vt != null)
-                    {
-                        Internals.MulInplace(n, vt + ldvt * (i + 1), r);
-                    }
                 }
             }
 
