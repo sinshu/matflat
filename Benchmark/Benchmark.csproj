@@ -9,10 +9,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="BenchmarkDotNet" Version="0.13.12" />
+    <PackageReference Include="BenchmarkDotNet" Version="0.14.0" />
     <PackageReference Include="MathNet.Numerics" Version="5.0.0" />
-    <PackageReference Include="OpenBlasSharp" Version="0.3.2" />
-    <PackageReference Include="OpenBlasSharp.Windows" Version="2024.1.25" />
+    <PackageReference Include="OpenBlasSharp" Version="0.3.4" />
+    <PackageReference Include="OpenBlasSharp.Windows" Version="2024.8.15" />
   </ItemGroup>
 
   <ItemGroup>
