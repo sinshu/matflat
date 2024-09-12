@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Numerics;
+using System.Numerics.Tensors;
 using System.Runtime.CompilerServices;
+using System.Security.Cryptography;
 
 namespace MatFlat
 {
@@ -44,6 +46,13 @@ namespace MatFlat
             var num = abs.Real * abs.Real + abs.Imaginary * abs.Imaginary;
             var den = arg.Real * arg.Real + arg.Imaginary * arg.Imaginary;
             return Math.Sqrt(num / den) * arg;
+        }
+
+        internal static unsafe void MulAdd(int n, double* x, double y, double* dst)
+        {
+            var sx = new Span<double>(x, n);
+            var sdst = new Span<double>(dst, n);
+            TensorPrimitives.FusedMultiplyAdd(sx, y, sdst, sdst);
         }
 
         internal static unsafe void MulAdd<T>(int n, T* x, T y, T* dst) where T : unmanaged, INumberBase<T>
@@ -98,6 +107,12 @@ namespace MatFlat
             }
         }
 
+        internal static unsafe void MulInplace(int n, double* x, double y)
+        {
+            var sx = new Span<double>(x, n);
+            TensorPrimitives.Multiply(sx, y, sx);
+        }
+
         internal static unsafe void MulInplace<T>(int n, T* x, T y) where T : unmanaged, INumberBase<T>
         {
             switch (n & 1)
@@ -120,6 +135,12 @@ namespace MatFlat
                 x += 2;
                 n -= 2;
             }
+        }
+
+        internal static unsafe void DivInplace(int n, double* x, double y)
+        {
+            var sx = new Span<double>(x, n);
+            TensorPrimitives.Divide(sx, y, sx);
         }
 
         internal static unsafe void DivInplace<T>(int n, T* x, T y) where T : unmanaged, INumberBase<T>
@@ -177,31 +198,9 @@ namespace MatFlat
 
         internal static unsafe double Dot(int n, double* x, double* y)
         {
-            double sum;
-            switch (n & 1)
-            {
-                case 0:
-                    sum = 0.0;
-                    break;
-                case 1:
-                    sum = x[0] * y[0];
-                    x++;
-                    y++;
-                    n--;
-                    break;
-                default:
-                    throw new MatFlatException("An unexpected error occurred.");
-            }
-
-            while (n > 0)
-            {
-                sum += x[0] * y[0] + x[1] * y[1];
-                x += 2;
-                y += 2;
-                n -= 2;
-            }
-
-            return sum;
+            var sx = new Span<double>(x, n);
+            var sy = new Span<double>(y, n);
+            return TensorPrimitives.Dot<double>(sx, sy);
         }
 
         internal static unsafe Complex Dot(int n, Complex* x, Complex* y)
@@ -434,29 +433,8 @@ namespace MatFlat
 
         internal static unsafe double Norm(int n, double* x)
         {
-            double sum;
-            switch (n & 1)
-            {
-                case 0:
-                    sum = 0.0;
-                    break;
-                case 1:
-                    sum = x[0] * x[0];
-                    x++;
-                    n--;
-                    break;
-                default:
-                    throw new MatFlatException("An unexpected error occurred.");
-            }
-
-            while (n > 0)
-            {
-                sum += x[0] * x[0] + x[1] * x[1];
-                x += 2;
-                n -= 2;
-            }
-
-            return Math.Sqrt(sum);
+            var sx = new Span<double>(x, n);
+            return TensorPrimitives.Norm<double>(sx);
         }
 
         internal static unsafe double Norm(int n, double* x, int incx)
