@@ -665,6 +665,172 @@ namespace MatFlatTest
             }
         }
 
+        [TestCase(5, 5, 1, 5, 5, 5)]
+        [TestCase(5, 5, 1, 6, 7, 8)]
+        [TestCase(5, 5, 2, 5, 5, 5)]
+        [TestCase(5, 5, 2, 6, 7, 8)]
+        [TestCase(6, 7, 3, 6, 6, 7)]
+        [TestCase(6, 7, 3, 9, 8, 10)]
+        [TestCase(8, 7, 3, 8, 8, 7)]
+        [TestCase(8, 7, 3, 9, 10, 11)]
+        public unsafe void SvdSingle_Kase2(int m, int n, int rank, int lda, int ldu, int ldvt)
+        {
+            var original = Matrix.RandomSingle(0, m, n, lda);
+            var src1 = Matrix.RandomSingle(42, m, rank, m);
+            var src2 = Matrix.RandomSingle(57, rank, n, rank);
+            fixed (float* porig = original)
+            fixed (float* psrc1 = src1)
+            fixed (float* psrc2 = src2)
+            {
+                OpenBlasSharp.Blas.Sgemm(
+                    Order.ColMajor,
+                    OpenBlasSharp.Transpose.NoTrans, OpenBlasSharp.Transpose.NoTrans,
+                    m, n, rank,
+                    1.0F,
+                    psrc1, m,
+                    psrc2, rank,
+                    0.0F,
+                    porig, lda);
+            }
+
+            var a = original.ToArray();
+            var s = new float[Math.Min(m, n)];
+            var u = Matrix.RandomSingle(0, m, m, ldu);
+            var uCopy = u.ToArray();
+            var vt = Matrix.RandomSingle(0, n, n, ldvt);
+            var vtCopy = vt.ToArray();
+            var smat = new float[m * n];
+            var us = new float[m * n];
+            var reconstructed = new float[m * n];
+            var identity1 = new float[m * m];
+            var identity2 = new float[n * n];
+            fixed (float* pa = a)
+            fixed (float* ps = s)
+            fixed (float* pu = u)
+            fixed (float* pvt = vt)
+            fixed (float* psmat = smat)
+            fixed (float* pus = us)
+            fixed (float* preconstructed = reconstructed)
+            fixed (float* pidentity1 = identity1)
+            fixed (float* pidentity2 = identity2)
+            {
+                Factorization.Svd(m, n, pa, lda, ps, pu, ldu, pvt, ldvt);
+                for (var i = 0; i < s.Length; i++)
+                {
+                    Matrix.Set(m, n, smat, m, i, i, s[i]);
+                }
+
+                OpenBlasSharp.Blas.Sgemm(
+                    Order.ColMajor,
+                    OpenBlasSharp.Transpose.NoTrans, OpenBlasSharp.Transpose.NoTrans,
+                    m, n, m,
+                    1.0F,
+                    pu, ldu,
+                    psmat, m,
+                    0.0F,
+                    pus, m);
+                OpenBlasSharp.Blas.Sgemm(
+                    Order.ColMajor,
+                    OpenBlasSharp.Transpose.NoTrans, OpenBlasSharp.Transpose.NoTrans,
+                    m, n, n,
+                    1.0F,
+                    pus, m,
+                    pvt, ldvt,
+                    0.0F,
+                    preconstructed, m);
+                OpenBlasSharp.Blas.Sgemm(
+                    Order.ColMajor,
+                    OpenBlasSharp.Transpose.Trans, OpenBlasSharp.Transpose.NoTrans,
+                    m, m, m,
+                    1.0F,
+                    pu, ldu,
+                    pu, ldu,
+                    0.0F,
+                    pidentity1, m);
+                OpenBlasSharp.Blas.Sgemm(
+                    Order.ColMajor,
+                    OpenBlasSharp.Transpose.Trans, OpenBlasSharp.Transpose.NoTrans,
+                    n, n, n,
+                    1.0F,
+                    pvt, ldvt,
+                    pvt, ldvt,
+                    0.0F,
+                    pidentity2, n);
+            }
+
+            for (var row = 0; row < m; row++)
+            {
+                for (var col = 0; col < n; col++)
+                {
+                    var actual = Matrix.Get(m, n, reconstructed, m, row, col);
+                    var expected = Matrix.Get(m, n, original, lda, row, col);
+                    Assert.That(actual, Is.EqualTo(expected).Within(1.0E-5));
+                }
+            }
+
+            for (var row = 0; row < m; row++)
+            {
+                for (var col = 0; col < m; col++)
+                {
+                    var value = identity1[col * m + row];
+                    if (row == col)
+                    {
+                        Assert.That(value, Is.EqualTo(1.0).Within(1.0E-6));
+                    }
+                    else
+                    {
+                        Assert.That(value, Is.EqualTo(0.0).Within(1.0E-6));
+                    }
+                }
+            }
+
+            for (var row = 0; row < n; row++)
+            {
+                for (var col = 0; col < n; col++)
+                {
+                    var value = identity2[col * n + row];
+                    if (row == col)
+                    {
+                        Assert.That(value, Is.EqualTo(1.0).Within(1.0E-6));
+                    }
+                    else
+                    {
+                        Assert.That(value, Is.EqualTo(0.0).Within(1.0E-6));
+                    }
+                }
+            }
+
+            for (var i = 0; i < a.Length; i++)
+            {
+                var row = i % lda;
+                var col = i / lda;
+                if (row >= m)
+                {
+                    Assert.That(a[i], Is.EqualTo(original[i]).Within(0));
+                }
+            }
+
+            for (var i = 0; i < u.Length; i++)
+            {
+                var row = i % ldu;
+                var col = i / ldu;
+                if (row >= m)
+                {
+                    Assert.That(u[i], Is.EqualTo(uCopy[i]).Within(0));
+                }
+            }
+
+            for (var i = 0; i < vt.Length; i++)
+            {
+                var row = i % ldvt;
+                var col = i / ldvt;
+                if (row >= n)
+                {
+                    Assert.That(vt[i], Is.EqualTo(vtCopy[i]).Within(0));
+                }
+            }
+        }
+
         [TestCase(1, 1, 1, 1, 1)]
         [TestCase(1, 1, 3, 2, 4)]
         [TestCase(2, 2, 2, 2, 2)]
@@ -1182,6 +1348,172 @@ namespace MatFlatTest
             var ldu = 3;
             var ldvt = 3;
             var original = new double[m * n];
+
+            var a = original.ToArray();
+            var s = new double[Math.Min(m, n)];
+            var u = Matrix.RandomDouble(0, m, m, ldu);
+            var uCopy = u.ToArray();
+            var vt = Matrix.RandomDouble(0, n, n, ldvt);
+            var vtCopy = vt.ToArray();
+            var smat = new double[m * n];
+            var us = new double[m * n];
+            var reconstructed = new double[m * n];
+            var identity1 = new double[m * m];
+            var identity2 = new double[n * n];
+            fixed (double* pa = a)
+            fixed (double* ps = s)
+            fixed (double* pu = u)
+            fixed (double* pvt = vt)
+            fixed (double* psmat = smat)
+            fixed (double* pus = us)
+            fixed (double* preconstructed = reconstructed)
+            fixed (double* pidentity1 = identity1)
+            fixed (double* pidentity2 = identity2)
+            {
+                Factorization.Svd(m, n, pa, lda, ps, pu, ldu, pvt, ldvt);
+                for (var i = 0; i < s.Length; i++)
+                {
+                    Matrix.Set(m, n, smat, m, i, i, s[i]);
+                }
+
+                OpenBlasSharp.Blas.Dgemm(
+                    Order.ColMajor,
+                    OpenBlasSharp.Transpose.NoTrans, OpenBlasSharp.Transpose.NoTrans,
+                    m, n, m,
+                    1.0,
+                    pu, ldu,
+                    psmat, m,
+                    0.0,
+                    pus, m);
+                OpenBlasSharp.Blas.Dgemm(
+                    Order.ColMajor,
+                    OpenBlasSharp.Transpose.NoTrans, OpenBlasSharp.Transpose.NoTrans,
+                    m, n, n,
+                    1.0,
+                    pus, m,
+                    pvt, ldvt,
+                    0.0,
+                    preconstructed, m);
+                OpenBlasSharp.Blas.Dgemm(
+                    Order.ColMajor,
+                    OpenBlasSharp.Transpose.Trans, OpenBlasSharp.Transpose.NoTrans,
+                    m, m, m,
+                    1.0,
+                    pu, ldu,
+                    pu, ldu,
+                    0.0,
+                    pidentity1, m);
+                OpenBlasSharp.Blas.Dgemm(
+                    Order.ColMajor,
+                    OpenBlasSharp.Transpose.Trans, OpenBlasSharp.Transpose.NoTrans,
+                    n, n, n,
+                    1.0,
+                    pvt, ldvt,
+                    pvt, ldvt,
+                    0.0,
+                    pidentity2, n);
+            }
+
+            for (var row = 0; row < m; row++)
+            {
+                for (var col = 0; col < n; col++)
+                {
+                    var actual = Matrix.Get(m, n, reconstructed, m, row, col);
+                    var expected = Matrix.Get(m, n, original, lda, row, col);
+                    Assert.That(actual, Is.EqualTo(expected).Within(1.0E-12));
+                }
+            }
+
+            for (var row = 0; row < m; row++)
+            {
+                for (var col = 0; col < m; col++)
+                {
+                    var value = identity1[col * m + row];
+                    if (row == col)
+                    {
+                        Assert.That(value, Is.EqualTo(1.0).Within(1.0E-12));
+                    }
+                    else
+                    {
+                        Assert.That(value, Is.EqualTo(0.0).Within(1.0E-12));
+                    }
+                }
+            }
+
+            for (var row = 0; row < n; row++)
+            {
+                for (var col = 0; col < n; col++)
+                {
+                    var value = identity2[col * n + row];
+                    if (row == col)
+                    {
+                        Assert.That(value, Is.EqualTo(1.0).Within(1.0E-12));
+                    }
+                    else
+                    {
+                        Assert.That(value, Is.EqualTo(0.0).Within(1.0E-12));
+                    }
+                }
+            }
+
+            for (var i = 0; i < a.Length; i++)
+            {
+                var row = i % lda;
+                var col = i / lda;
+                if (row >= m)
+                {
+                    Assert.That(a[i], Is.EqualTo(original[i]).Within(0));
+                }
+            }
+
+            for (var i = 0; i < u.Length; i++)
+            {
+                var row = i % ldu;
+                var col = i / ldu;
+                if (row >= m)
+                {
+                    Assert.That(u[i], Is.EqualTo(uCopy[i]).Within(0));
+                }
+            }
+
+            for (var i = 0; i < vt.Length; i++)
+            {
+                var row = i % ldvt;
+                var col = i / ldvt;
+                if (row >= n)
+                {
+                    Assert.That(vt[i], Is.EqualTo(vtCopy[i]).Within(0));
+                }
+            }
+        }
+
+        [TestCase(5, 5, 1, 5, 5, 5)]
+        [TestCase(5, 5, 1, 6, 7, 8)]
+        [TestCase(5, 5, 2, 5, 5, 5)]
+        [TestCase(5, 5, 2, 6, 7, 8)]
+        [TestCase(6, 7, 3, 6, 6, 7)]
+        [TestCase(6, 7, 3, 9, 8, 10)]
+        [TestCase(8, 7, 3, 8, 8, 7)]
+        [TestCase(8, 7, 3, 9, 10, 11)]
+        public unsafe void SvdDouble_Kase2(int m, int n, int rank, int lda, int ldu, int ldvt)
+        {
+            var original = Matrix.RandomDouble(0, m, n, lda);
+            var src1 = Matrix.RandomDouble(42, m, rank, m);
+            var src2 = Matrix.RandomDouble(57, rank, n, rank);
+            fixed (double* porig = original)
+            fixed (double* psrc1 = src1)
+            fixed (double* psrc2 = src2)
+            {
+                OpenBlasSharp.Blas.Dgemm(
+                    Order.ColMajor,
+                    OpenBlasSharp.Transpose.NoTrans, OpenBlasSharp.Transpose.NoTrans,
+                    m, n, rank,
+                    1.0,
+                    psrc1, m,
+                    psrc2, rank,
+                    0.0,
+                    porig, lda);
+            }
 
             var a = original.ToArray();
             var s = new double[Math.Min(m, n)];
@@ -1972,6 +2304,182 @@ namespace MatFlatTest
                         Assert.That(value.Real, Is.EqualTo(0.0).Within(1.0E-12));
                     }
                     Assert.That(value.Imaginary, Is.EqualTo(0.0).Within(1.0E-12));
+                }
+            }
+        }
+
+        [TestCase(5, 5, 1, 5, 5, 5)]
+        [TestCase(5, 5, 1, 6, 7, 8)]
+        [TestCase(5, 5, 2, 5, 5, 5)]
+        [TestCase(5, 5, 2, 6, 7, 8)]
+        [TestCase(6, 7, 3, 6, 6, 7)]
+        [TestCase(6, 7, 3, 9, 8, 10)]
+        [TestCase(8, 7, 3, 8, 8, 7)]
+        [TestCase(8, 7, 3, 9, 10, 11)]
+        public unsafe void SvdComplex_Kase2(int m, int n, int rank, int lda, int ldu, int ldvt)
+        {
+            var original = Matrix.RandomComplex(0, m, n, lda);
+            var src1 = Matrix.RandomComplex(42, m, rank, m);
+            var src2 = Matrix.RandomComplex(57, rank, n, rank);
+            fixed (Complex* porig = original)
+            fixed (Complex* psrc1 = src1)
+            fixed (Complex* psrc2 = src2)
+            {
+                var one = Complex.One;
+                var zero = Complex.Zero;
+                OpenBlasSharp.Blas.Zgemm(
+                    Order.ColMajor,
+                    OpenBlasSharp.Transpose.NoTrans, OpenBlasSharp.Transpose.NoTrans,
+                    m, n, rank,
+                    &one,
+                    psrc1, m,
+                    psrc2, rank,
+                    &zero,
+                    porig, lda);
+            }
+
+            var a = original.ToArray();
+            var s = new double[Math.Min(m, n)];
+            var u = Matrix.RandomComplex(0, m, m, ldu);
+            var uCopy = u.ToArray();
+            var vt = Matrix.RandomComplex(0, n, n, ldvt);
+            var vtCopy = vt.ToArray();
+            var smat = new Complex[m * n];
+            var us = new Complex[m * n];
+            var reconstructed = new Complex[m * n];
+            var identity1 = new Complex[m * m];
+            var identity2 = new Complex[n * n];
+            fixed (Complex* pa = a)
+            fixed (double* ps = s)
+            fixed (Complex* pu = u)
+            fixed (Complex* pvt = vt)
+            fixed (Complex* psmat = smat)
+            fixed (Complex* pus = us)
+            fixed (Complex* preconstructed = reconstructed)
+            fixed (Complex* pidentity1 = identity1)
+            fixed (Complex* pidentity2 = identity2)
+            {
+                Factorization.Svd(m, n, pa, lda, ps, pu, ldu, pvt, ldvt);
+                for (var i = 0; i < s.Length; i++)
+                {
+                    Matrix.Set(m, n, smat, m, i, i, s[i]);
+                }
+
+                var one = Complex.One;
+                var zero = Complex.Zero;
+                OpenBlasSharp.Blas.Zgemm(
+                    Order.ColMajor,
+                    OpenBlasSharp.Transpose.NoTrans, OpenBlasSharp.Transpose.NoTrans,
+                    m, n, m,
+                    &one,
+                    pu, ldu,
+                    psmat, m,
+                    &zero,
+                    pus, m);
+                OpenBlasSharp.Blas.Zgemm(
+                    Order.ColMajor,
+                    OpenBlasSharp.Transpose.NoTrans, OpenBlasSharp.Transpose.NoTrans,
+                    m, n, n,
+                    &one,
+                    pus, m,
+                    pvt, ldvt,
+                    &zero,
+                    preconstructed, m);
+                OpenBlasSharp.Blas.Zgemm(
+                    Order.ColMajor,
+                    OpenBlasSharp.Transpose.ConjTrans, OpenBlasSharp.Transpose.NoTrans,
+                    m, m, m,
+                    &one,
+                    pu, ldu,
+                    pu, ldu,
+                    &zero,
+                    pidentity1, m);
+                OpenBlasSharp.Blas.Zgemm(
+                    Order.ColMajor,
+                    OpenBlasSharp.Transpose.ConjTrans, OpenBlasSharp.Transpose.NoTrans,
+                    n, n, n,
+                    &one,
+                    pvt, ldvt,
+                    pvt, ldvt,
+                    &zero,
+                    pidentity2, n);
+            }
+
+            for (var row = 0; row < m; row++)
+            {
+                for (var col = 0; col < n; col++)
+                {
+                    var actual = Matrix.Get(m, n, reconstructed, m, row, col);
+                    var expected = Matrix.Get(m, n, original, lda, row, col);
+                    Assert.That(actual.Real, Is.EqualTo(expected.Real).Within(1.0E-12));
+                    Assert.That(actual.Imaginary, Is.EqualTo(expected.Imaginary).Within(1.0E-12));
+                }
+            }
+
+            for (var row = 0; row < m; row++)
+            {
+                for (var col = 0; col < m; col++)
+                {
+                    var value = identity1[col * m + row];
+                    if (row == col)
+                    {
+                        Assert.That(value.Real, Is.EqualTo(1.0).Within(1.0E-12));
+                    }
+                    else
+                    {
+                        Assert.That(value.Real, Is.EqualTo(0.0).Within(1.0E-12));
+                    }
+                    Assert.That(value.Imaginary, Is.EqualTo(0.0).Within(1.0E-12));
+                }
+            }
+
+            for (var row = 0; row < n; row++)
+            {
+                for (var col = 0; col < n; col++)
+                {
+                    var value = identity2[col * n + row];
+                    if (row == col)
+                    {
+                        Assert.That(value.Real, Is.EqualTo(1.0).Within(1.0E-12));
+                    }
+                    else
+                    {
+                        Assert.That(value.Real, Is.EqualTo(0.0).Within(1.0E-12));
+                    }
+                    Assert.That(value.Imaginary, Is.EqualTo(0.0).Within(1.0E-12));
+                }
+            }
+
+            for (var i = 0; i < a.Length; i++)
+            {
+                var row = i % lda;
+                var col = i / lda;
+                if (row >= m)
+                {
+                    Assert.That(a[i].Real, Is.EqualTo(original[i].Real).Within(0));
+                    Assert.That(a[i].Imaginary, Is.EqualTo(original[i].Imaginary).Within(0));
+                }
+            }
+
+            for (var i = 0; i < u.Length; i++)
+            {
+                var row = i % ldu;
+                var col = i / ldu;
+                if (row >= m)
+                {
+                    Assert.That(u[i].Real, Is.EqualTo(uCopy[i].Real).Within(0));
+                    Assert.That(u[i].Imaginary, Is.EqualTo(uCopy[i].Imaginary).Within(0));
+                }
+            }
+
+            for (var i = 0; i < vt.Length; i++)
+            {
+                var row = i % ldvt;
+                var col = i / ldvt;
+                if (row >= n)
+                {
+                    Assert.That(vt[i].Real, Is.EqualTo(vtCopy[i].Real).Within(0));
+                    Assert.That(vt[i].Imaginary, Is.EqualTo(vtCopy[i].Imaginary).Within(0));
                 }
             }
         }
