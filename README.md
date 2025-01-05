@@ -2,9 +2,10 @@
 
 This library aims to provide a subset of BLAS and LAPACK routines implemented in pure C#.
 
-This library was created as a matrix decomposition implementation for [NumFlat](https://github.com/sinshu/numflat),
-a general purpose numerical computing library written in pure C#.
-If you're interested in numerical computing with C#, please check out [NumFlat](https://github.com/sinshu/numflat).
+> [!NOTE]
+> This library was created as a matrix decomposition implementation for [NumFlat](https://github.com/sinshu/numflat),
+> a general purpose numerical computing library written in pure C#.
+> If you're interested in numerical computing with C#, please check out [NumFlat](https://github.com/sinshu/numflat).
 
 This library is based on the following great projects:
 
