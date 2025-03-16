@@ -8,14 +8,14 @@ namespace MatFlat
     {
         /// <summary>
         /// Computes the generalized eigenvalue decomposition (GEVD) of
-        /// an N-by-N Hermitian matrix A and a positive definite matrix B.
+        /// N-by-N symmetric positive definite matrices A and B.
         /// </summary>
         /// <param name="n">
         /// The order of the matrices A and B.
         /// </param>
         /// <param name="a">
         /// <para>
-        /// On entry, the Hermitian matrix A.
+        /// On entry, the symmetric positive definite matrix A.
         /// </para>
         /// <para>
         /// The leading N-by-N upper triangular part of A contains
@@ -31,7 +31,7 @@ namespace MatFlat
         /// </param>
         /// <param name="b">
         /// <para>
-        /// On entry, the Hermitian positive definite matrix B.
+        /// On entry, the symmetric positive definite matrix B.
         /// </para>
         /// <para>
         /// The leading N-by-N upper triangular part of B contains
@@ -99,14 +99,14 @@ namespace MatFlat
 
         /// <summary>
         /// Computes the generalized eigenvalue decomposition (GEVD) of
-        /// an N-by-N Hermitian matrix A and a positive definite matrix B.
+        /// N-by-N symmetric positive definite matrices A and B.
         /// </summary>
         /// <param name="n">
         /// The order of the matrices A and B.
         /// </param>
         /// <param name="a">
         /// <para>
-        /// On entry, the Hermitian matrix A.
+        /// On entry, the symmetric positive definite matrix A.
         /// </para>
         /// <para>
         /// The leading N-by-N upper triangular part of A contains
@@ -122,7 +122,7 @@ namespace MatFlat
         /// </param>
         /// <param name="b">
         /// <para>
-        /// On entry, the Hermitian positive definite matrix B.
+        /// On entry, the symmetric positive definite matrix B.
         /// </para>
         /// <para>
         /// The leading N-by-N upper triangular part of B contains
@@ -190,14 +190,14 @@ namespace MatFlat
 
         /// <summary>
         /// Computes the generalized eigenvalue decomposition (GEVD) of
-        /// an N-by-N Hermitian matrix A and a positive definite matrix B.
+        /// N-by-N symmetric positive definite matrices A and B.
         /// </summary>
         /// <param name="n">
         /// The order of the matrices A and B.
         /// </param>
         /// <param name="a">
         /// <para>
-        /// On entry, the Hermitian matrix A.
+        /// On entry, the symmetric positive definite matrix A.
         /// </para>
         /// <para>
         /// The leading N-by-N upper triangular part of A contains
@@ -213,7 +213,7 @@ namespace MatFlat
         /// </param>
         /// <param name="b">
         /// <para>
-        /// On entry, the Hermitian positive definite matrix B.
+        /// On entry, the symmetric positive definite matrix B.
         /// </para>
         /// <para>
         /// The leading N-by-N upper triangular part of B contains

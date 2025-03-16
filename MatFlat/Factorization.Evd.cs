@@ -8,14 +8,14 @@ namespace MatFlat
     {
         /// <summary>
         /// Computes the eigenvalue decomposition (EVD) of
-        /// an N-by-N Hermitian matrix A.
+        /// an N-by-N symmetric positive definite matrix A.
         /// </summary>
         /// <param name="n">
         /// The order of the matrix A.
         /// </param>
         /// <param name="a">
         /// <para>
-        /// On entry, the Hermitian matrix A.
+        /// On entry, the symmetric positive definite matrix A.
         /// </para>
         /// <para>
         /// The leading N-by-N upper triangular part of A contains
@@ -73,14 +73,14 @@ namespace MatFlat
 
         /// <summary>
         /// Computes the eigenvalue decomposition (EVD) of
-        /// an N-by-N Hermitian matrix A.
+        /// an N-by-N symmetric positive definite matrix A.
         /// </summary>
         /// <param name="n">
         /// The order of the matrix A.
         /// </param>
         /// <param name="a">
         /// <para>
-        /// On entry, the Hermitian matrix A.
+        /// On entry, the symmetric positive definite matrix A.
         /// </para>
         /// <para>
         /// The leading N-by-N upper triangular part of A contains
@@ -138,14 +138,14 @@ namespace MatFlat
 
         /// <summary>
         /// Computes the eigenvalue decomposition (EVD) of
-        /// an N-by-N Hermitian matrix A.
+        /// an N-by-N symmetric positive definite matrix A.
         /// </summary>
         /// <param name="n">
         /// The order of the matrix A.
         /// </param>
         /// <param name="a">
         /// <para>
-        /// On entry, the Hermitian matrix A.
+        /// On entry, the symmetric positive definite matrix A.
         /// </para>
         /// <para>
         /// The leading N-by-N upper triangular part of A contains

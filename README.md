@@ -44,7 +44,7 @@ Currently the following routines are implemented:
 
 * Unsafe pointers are required, similar to the original BLAS and LAPACK routines.
 * Only column-major order is supported.
-* EVD and GEVD support only symmetric (Hermitian) matrices.
+* EVD and GEVD support only symmetric positive definite matrices.
 
 
 
