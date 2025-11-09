@@ -54,8 +54,8 @@ Currently the following routines are implemented:
 
 [The NuGet package](https://www.nuget.org/packages/MatFlat) is available.
 
-```ps1
-Install-Package MatFlat
+```
+dotnet add package MatFlat
 ```
 
 All the classes are in the `MatFlat` namespace.
