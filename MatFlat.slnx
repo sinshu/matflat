@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="Benchmark/Benchmark.csproj" />
+  <Project Path="MatFlat/MatFlat.csproj" />
+  <Project Path="MatFlatTest/MatFlatTest.csproj" />
+  <Project Path="Workspace/Workspace.csproj" />
+</Solution>
