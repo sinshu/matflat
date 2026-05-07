@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Linq;
+using ILNumerics.F2NET;
 using NUnit.Framework;
 
 namespace MatFlatTest
 {
     public class BlasTests_MulMatMatDouble
     {
+        private static readonly ManagedLAPACK Blas = new ManagedLAPACK();
+
         [TestCase(1, 1, 1, 1, 1, 1)]
         [TestCase(1, 1, 1, 2, 3, 4)]
         [TestCase(2, 2, 2, 2, 2, 2)]
@@ -29,9 +32,8 @@ namespace MatFlatTest
             fixed (double* pb = b)
             fixed (double* pc = expected)
             {
-                OpenBlasSharp.Blas.Dgemm(
-                    OpenBlasSharp.Order.ColMajor,
-                    OpenBlasSharp.Transpose.NoTrans, OpenBlasSharp.Transpose.NoTrans,
+                Blas.dgemm(
+                    'N', 'N',
                     m, n, k,
                     1.0,
                     pa, lda,
@@ -71,9 +73,8 @@ namespace MatFlatTest
             fixed (double* pb = b)
             fixed (double* pc = expected)
             {
-                OpenBlasSharp.Blas.Dgemm(
-                    OpenBlasSharp.Order.ColMajor,
-                    OpenBlasSharp.Transpose.Trans, OpenBlasSharp.Transpose.NoTrans,
+                Blas.dgemm(
+                    'T', 'N',
                     m, n, k,
                     1.0,
                     pa, lda,
@@ -113,9 +114,8 @@ namespace MatFlatTest
             fixed (double* pb = b)
             fixed (double* pc = expected)
             {
-                OpenBlasSharp.Blas.Dgemm(
-                    OpenBlasSharp.Order.ColMajor,
-                    OpenBlasSharp.Transpose.NoTrans, OpenBlasSharp.Transpose.Trans,
+                Blas.dgemm(
+                    'N', 'T',
                     m, n, k,
                     1.0,
                     pa, lda,
@@ -155,9 +155,8 @@ namespace MatFlatTest
             fixed (double* pb = b)
             fixed (double* pc = expected)
             {
-                OpenBlasSharp.Blas.Dgemm(
-                    OpenBlasSharp.Order.ColMajor,
-                    OpenBlasSharp.Transpose.Trans, OpenBlasSharp.Transpose.Trans,
+                Blas.dgemm(
+                    'T', 'T',
                     m, n, k,
                     1.0,
                     pa, lda,
