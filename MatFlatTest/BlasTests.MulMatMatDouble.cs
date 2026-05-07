@@ -1,13 +1,15 @@
 ﻿using System;
 using System.Linq;
-using ILNumerics.F2NET;
 using NUnit.Framework;
+using ILNumerics.Core.Native;
+using ILNumerics.F2NET;
+using MatFlat;
 
 namespace MatFlatTest
 {
     public class BlasTests_MulMatMatDouble
     {
-        private static readonly ManagedLAPACK Blas = new ManagedLAPACK();
+        private static readonly ILapack lapack = new ManagedLAPACK();
 
         [TestCase(1, 1, 1, 1, 1, 1)]
         [TestCase(1, 1, 1, 2, 3, 4)]
@@ -32,7 +34,7 @@ namespace MatFlatTest
             fixed (double* pb = b)
             fixed (double* pc = expected)
             {
-                Blas.dgemm(
+                lapack.dgemm(
                     'N', 'N',
                     m, n, k,
                     1.0,
@@ -47,7 +49,7 @@ namespace MatFlatTest
             fixed (double* pb = b)
             fixed (double* pc = actual)
             {
-                MatFlat.Blas.MulMatMat(MatFlat.Transpose.NoTrans, MatFlat.Transpose.NoTrans, m, n, k, pa, lda, pb, ldb, pc, ldc);
+                Blas.MulMatMat(Transpose.NoTrans, Transpose.NoTrans, m, n, k, pa, lda, pb, ldb, pc, ldc);
             }
 
             Assert.That(actual, Is.EqualTo(expected).Within(1.0E-12));
@@ -73,7 +75,7 @@ namespace MatFlatTest
             fixed (double* pb = b)
             fixed (double* pc = expected)
             {
-                Blas.dgemm(
+                lapack.dgemm(
                     'T', 'N',
                     m, n, k,
                     1.0,
@@ -88,7 +90,7 @@ namespace MatFlatTest
             fixed (double* pb = b)
             fixed (double* pc = actual)
             {
-                MatFlat.Blas.MulMatMat(MatFlat.Transpose.Trans, MatFlat.Transpose.NoTrans, m, n, k, pa, lda, pb, ldb, pc, ldc);
+                Blas.MulMatMat(Transpose.Trans, Transpose.NoTrans, m, n, k, pa, lda, pb, ldb, pc, ldc);
             }
 
             Assert.That(actual, Is.EqualTo(expected).Within(1.0E-12));
@@ -114,7 +116,7 @@ namespace MatFlatTest
             fixed (double* pb = b)
             fixed (double* pc = expected)
             {
-                Blas.dgemm(
+                lapack.dgemm(
                     'N', 'T',
                     m, n, k,
                     1.0,
@@ -129,7 +131,7 @@ namespace MatFlatTest
             fixed (double* pb = b)
             fixed (double* pc = actual)
             {
-                MatFlat.Blas.MulMatMat(MatFlat.Transpose.NoTrans, MatFlat.Transpose.Trans, m, n, k, pa, lda, pb, ldb, pc, ldc);
+                Blas.MulMatMat(Transpose.NoTrans, Transpose.Trans, m, n, k, pa, lda, pb, ldb, pc, ldc);
             }
 
             Assert.That(actual, Is.EqualTo(expected).Within(1.0E-12));
@@ -155,7 +157,7 @@ namespace MatFlatTest
             fixed (double* pb = b)
             fixed (double* pc = expected)
             {
-                Blas.dgemm(
+                lapack.dgemm(
                     'T', 'T',
                     m, n, k,
                     1.0,
@@ -170,7 +172,7 @@ namespace MatFlatTest
             fixed (double* pb = b)
             fixed (double* pc = actual)
             {
-                MatFlat.Blas.MulMatMat(MatFlat.Transpose.Trans, MatFlat.Transpose.Trans, m, n, k, pa, lda, pb, ldb, pc, ldc);
+                Blas.MulMatMat(Transpose.Trans, Transpose.Trans, m, n, k, pa, lda, pb, ldb, pc, ldc);
             }
 
             Assert.That(actual, Is.EqualTo(expected).Within(1.0E-12));
