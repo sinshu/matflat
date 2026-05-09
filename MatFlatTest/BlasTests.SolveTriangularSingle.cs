@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Numerics;
 using ILNumerics.Core.Native;
 using ILNumerics.F2NET;
 using MatFlat;
