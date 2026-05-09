@@ -1,12 +1,46 @@
 ﻿using System;
 using System.Linq;
 using System.Numerics;
+using ILNumerics;
+using ILNumerics.Core.Native;
+using ILNumerics.F2NET;
+using MatFlat;
 using NUnit.Framework;
 
 namespace MatFlatTest
 {
     public class BlasTests_MulMatMatComplex
     {
+        private static readonly ILapack lapack = new ManagedLAPACK();
+
+        private static unsafe void FakeZgemm(char TransA, char TransB, int M, int N, int K, complex alpha, complex* A, int lda, complex* B, int ldb, complex beta, complex* C, int ldc)
+        {
+            // ManagedLAPACKは、OpenBLASでいうConjNoTransをサポートしていない。
+            // そこで、この関数ではtransに'!'を指定することで、AやBの中身をconjすることにする。
+
+            if (TransA == '!')
+            {
+                // ここでAの中身をconjする
+                TransA = 'N';
+            }
+
+            if (TransB == '!')
+            {
+                // ここでBの中身をconjする
+                TransB = 'N';
+            }
+
+            // 準備は整った。あとは普通にgemmを呼ぶだけ。
+            lapack.zgemm(
+                TransA, TransB,
+                M, N, K,
+                alpha,
+                A, lda,
+                B, ldb,
+                beta,
+                C, ldc);
+        }
+
         [TestCase(1, 1, 1, 1, 1, 1)]
         [TestCase(1, 1, 1, 2, 3, 4)]
         [TestCase(2, 2, 2, 2, 2, 2)]
@@ -30,22 +64,14 @@ namespace MatFlatTest
                 var c = Matrix.RandomComplex(0, m, n, ldc);
 
                 var expected = c.ToArray();
-                fixed (Complex* pa = a)
-                fixed (Complex* pb = b)
+                fixed (Complex* pa = a.ToArray()) // FakeZgemmはaの中身を書き換えるかもしれないからコピーを渡す
+                fixed (Complex* pb = b.ToArray()) // FakeZgemmはbの中身を書き換えるかもしれないからコピーを渡す
                 fixed (Complex* pc = expected)
                 {
                     var one = Complex.One;
                     var zero = Complex.Zero;
 
-                    OpenBlasSharp.Blas.Zgemm(
-                        OpenBlasSharp.Order.ColMajor,
-                        obTrans1, obTrans2,
-                        m, n, k,
-                        &one,
-                        pa, lda,
-                        pb, ldb,
-                        &zero,
-                        pc, ldc);
+                    // ここでFakeZgemmを呼ぶ。FakeZgemmは、transに'!'を指定することで、AやBの中身をconjすることにする。
                 }
 
                 var actual = c.ToArray();

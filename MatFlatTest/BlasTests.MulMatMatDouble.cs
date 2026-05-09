@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Linq;
-using NUnit.Framework;
 using ILNumerics.Core.Native;
 using ILNumerics.F2NET;
 using MatFlat;
+using NUnit.Framework;
 
 namespace MatFlatTest
 {
