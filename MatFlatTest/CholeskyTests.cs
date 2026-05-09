@@ -2,7 +2,6 @@ using System;
 using System.Linq;
 using System.Numerics;
 using NUnit.Framework;
-using OpenBlasSharp;
 using MatFlat;
 
 namespace MatFlatTest
@@ -28,8 +27,8 @@ namespace MatFlatTest
             var expectedA = a.ToArray();
             fixed (float* pa = expectedA)
             {
-                Lapack.Spotrf(MatrixLayout.ColMajor, 'U', n, pa, lda);
-                OpenBlasResultToL(n, expectedA, lda);
+                LapackTest.Spotrf('U', n, pa, lda);
+                LapackResultToL(n, expectedA, lda);
             }
 
             var actualA = a.ToArray();
@@ -61,8 +60,8 @@ namespace MatFlatTest
             var expectedA = a.ToArray();
             fixed (float* pa = expectedA)
             {
-                var result = Lapack.Spotrf(MatrixLayout.ColMajor, 'U', n, pa, lda);
-                OpenBlasResultToL(n, expectedA, lda);
+                var result = LapackTest.Spotrf('U', n, pa, lda);
+                LapackResultToL(n, expectedA, lda);
                 decomposable = result == 0;
             }
 
@@ -111,8 +110,8 @@ namespace MatFlatTest
             var expectedA = a.ToArray();
             fixed (double* pa = expectedA)
             {
-                Lapack.Dpotrf(MatrixLayout.ColMajor, 'U', n, pa, lda);
-                OpenBlasResultToL(n, expectedA, lda);
+                LapackTest.Dpotrf('U', n, pa, lda);
+                LapackResultToL(n, expectedA, lda);
             }
 
             var actualA = a.ToArray();
@@ -144,8 +143,8 @@ namespace MatFlatTest
             var expectedA = a.ToArray();
             fixed (double* pa = expectedA)
             {
-                var result = Lapack.Dpotrf(MatrixLayout.ColMajor, 'U', n, pa, lda);
-                OpenBlasResultToL(n, expectedA, lda);
+                var result = LapackTest.Dpotrf('U', n, pa, lda);
+                LapackResultToL(n, expectedA, lda);
                 decomposable = result == 0;
             }
 
@@ -194,8 +193,8 @@ namespace MatFlatTest
             var expectedA = a.ToArray();
             fixed (Complex* pa = expectedA)
             {
-                Lapack.Zpotrf(MatrixLayout.ColMajor, 'U', n, pa, lda);
-                OpenBlasResultToL(n, expectedA, lda);
+                LapackTest.Zpotrf('U', n, pa, lda);
+                LapackResultToL(n, expectedA, lda);
             }
 
             var actualA = a.ToArray();
@@ -228,8 +227,8 @@ namespace MatFlatTest
             var expectedA = a.ToArray();
             fixed (Complex* pa = expectedA)
             {
-                var result = Lapack.Zpotrf(MatrixLayout.ColMajor, 'U', n, pa, lda);
-                OpenBlasResultToL(n, expectedA, lda);
+                var result = LapackTest.Zpotrf('U', n, pa, lda);
+                LapackResultToL(n, expectedA, lda);
                 decomposable = result == 0;
             }
 
@@ -268,10 +267,9 @@ namespace MatFlatTest
             fixed (float* pa = a)
             fixed (float* ps = symmetric)
             {
-                OpenBlasSharp.Blas.Sgemm(
-                    Order.ColMajor,
-                    OpenBlasSharp.Transpose.NoTrans,
-                    OpenBlasSharp.Transpose.Trans,
+                LapackTest.Sgemm(
+                    Transpose.NoTrans,
+                    Transpose.Trans,
                     n, n, n,
                     1.0F,
                     pa, lda,
@@ -307,10 +305,9 @@ namespace MatFlatTest
             fixed (double* pa = a)
             fixed (double* ps = symmetric)
             {
-                OpenBlasSharp.Blas.Dgemm(
-                    Order.ColMajor,
-                    OpenBlasSharp.Transpose.NoTrans,
-                    OpenBlasSharp.Transpose.Trans,
+                LapackTest.Dgemm(
+                    Transpose.NoTrans,
+                    Transpose.Trans,
                     n, n, n,
                     1.0,
                     pa, lda,
@@ -348,10 +345,9 @@ namespace MatFlatTest
             {
                 var one = Complex.One;
                 var zero = Complex.Zero;
-                OpenBlasSharp.Blas.Zgemm(
-                    Order.ColMajor,
-                    OpenBlasSharp.Transpose.NoTrans,
-                    OpenBlasSharp.Transpose.ConjTrans,
+                LapackTest.Zgemm(
+                    Transpose.NoTrans,
+                    Transpose.ConjTrans,
                     n, n, n,
                     &one,
                     pa, lda,
@@ -433,7 +429,7 @@ namespace MatFlatTest
             return a;
         }
 
-        private static void OpenBlasResultToL<T>(int n, T[] a, int lda) where T : unmanaged, INumberBase<T>
+        private static void LapackResultToL<T>(int n, T[] a, int lda) where T : unmanaged, INumberBase<T>
         {
             for (var row = 0; row < n; row++)
             {
@@ -458,7 +454,7 @@ namespace MatFlatTest
             }
         }
 
-        private static void OpenBlasResultToL(int n, Complex[] a, int lda)
+        private static void LapackResultToL(int n, Complex[] a, int lda)
         {
             for (var row = 0; row < n; row++)
             {

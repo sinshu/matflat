@@ -23,8 +23,6 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="NUnit3TestAdapter" Version="6.1.0" />
-    <PackageReference Include="OpenBlasSharp" Version="0.3.4" />
-    <PackageReference Include="OpenBlasSharp.Windows" Version="2026.1.17" />
   </ItemGroup>
 
   <ItemGroup>

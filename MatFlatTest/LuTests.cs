@@ -2,7 +2,6 @@ using System;
 using System.Linq;
 using System.Numerics;
 using NUnit.Framework;
-using OpenBlasSharp;
 using MatFlat;
 
 namespace MatFlatTest
@@ -38,7 +37,7 @@ namespace MatFlatTest
             fixed (float* pa = expectedA)
             fixed (int* ppiv = expectedPiv)
             {
-                Lapack.Sgetrf(MatrixLayout.ColMajor, m, n, pa, lda, ppiv);
+                LapackTest.Sgetrf(m, n, pa, lda, ppiv);
             }
 
             var actualA = a.ToArray();
@@ -62,7 +61,7 @@ namespace MatFlatTest
             fixed (float* pa = expectedA)
             fixed (int* ppiv = expectedPiv)
             {
-                Lapack.Sgetrf(MatrixLayout.ColMajor, 3, 3, pa, 3, ppiv);
+                LapackTest.Sgetrf(3, 3, pa, 3, ppiv);
             }
 
             var actualA = a.ToArray();
@@ -86,7 +85,7 @@ namespace MatFlatTest
             fixed (float* pa = expectedA)
             fixed (int* ppiv = expectedPiv)
             {
-                Lapack.Sgetrf(MatrixLayout.ColMajor, 3, 3, pa, 3, ppiv);
+                LapackTest.Sgetrf(3, 3, pa, 3, ppiv);
             }
 
             var actualA = a.ToArray();
@@ -129,7 +128,7 @@ namespace MatFlatTest
             fixed (double* pa = expectedA)
             fixed (int* ppiv = expectedPiv)
             {
-                Lapack.Dgetrf(MatrixLayout.ColMajor, m, n, pa, lda, ppiv);
+                LapackTest.Dgetrf(m, n, pa, lda, ppiv);
             }
 
             var actualA = a.ToArray();
@@ -153,7 +152,7 @@ namespace MatFlatTest
             fixed (double* pa = expectedA)
             fixed (int* ppiv = expectedPiv)
             {
-                Lapack.Dgetrf(MatrixLayout.ColMajor, 3, 3, pa, 3, ppiv);
+                LapackTest.Dgetrf(3, 3, pa, 3, ppiv);
             }
 
             var actualA = a.ToArray();
@@ -177,7 +176,7 @@ namespace MatFlatTest
             fixed (double* pa = expectedA)
             fixed (int* ppiv = expectedPiv)
             {
-                Lapack.Dgetrf(MatrixLayout.ColMajor, 3, 3, pa, 3, ppiv);
+                LapackTest.Dgetrf(3, 3, pa, 3, ppiv);
             }
 
             var actualA = a.ToArray();
@@ -220,7 +219,7 @@ namespace MatFlatTest
             fixed (Complex* pa = expectedA)
             fixed (int* ppiv = expectedPiv)
             {
-                Lapack.Zgetrf(MatrixLayout.ColMajor, m, n, pa, lda, ppiv);
+                LapackTest.Zgetrf(m, n, pa, lda, ppiv);
             }
 
             var actualA = a.ToArray();
@@ -245,7 +244,7 @@ namespace MatFlatTest
             fixed (Complex* pa = expectedA)
             fixed (int* ppiv = expectedPiv)
             {
-                Lapack.Zgetrf(MatrixLayout.ColMajor, 3, 3, pa, 3, ppiv);
+                LapackTest.Zgetrf(3, 3, pa, 3, ppiv);
             }
 
             var actualA = a.ToArray();
@@ -270,7 +269,7 @@ namespace MatFlatTest
             fixed (Complex* pa = expectedA)
             fixed (int* ppiv = expectedPiv)
             {
-                Lapack.Zgetrf(MatrixLayout.ColMajor, 3, 3, pa, 3, ppiv);
+                LapackTest.Zgetrf(3, 3, pa, 3, ppiv);
             }
 
             var actualA = a.ToArray();
