@@ -79,10 +79,8 @@ namespace MatFlatTest
                 var c = Matrix.RandomComplex(0, m, n, ldc);
 
                 var expected = c.ToArray();
-                var expectedA = a.ToArray();
-                var expectedB = b.ToArray();
-                fixed (Complex* pa = expectedA)
-                fixed (Complex* pb = expectedB)
+                fixed (Complex* pa = a.ToArray()) // FakeZgemm might modify the input matrices, so we pass copies of them.
+                fixed (Complex* pb = b.ToArray()) // FakeZgemm might modify the input matrices, so we pass copies of them.
                 fixed (Complex* pc = expected)
                 {
                     var one = Complex.One;
@@ -131,10 +129,8 @@ namespace MatFlatTest
                 var c = Matrix.RandomComplex(0, m, n, ldc);
 
                 var expected = c.ToArray();
-                var expectedA = a.ToArray();
-                var expectedB = b.ToArray();
-                fixed (Complex* pa = expectedA)
-                fixed (Complex* pb = expectedB)
+                fixed (Complex* pa = a.ToArray()) // FakeZgemm might modify the input matrices, so we pass copies of them.
+                fixed (Complex* pb = b.ToArray()) // FakeZgemm might modify the input matrices, so we pass copies of them.
                 fixed (Complex* pc = expected)
                 {
                     var one = Complex.One;
@@ -183,10 +179,8 @@ namespace MatFlatTest
                 var c = Matrix.RandomComplex(0, m, n, ldc);
 
                 var expected = c.ToArray();
-                var expectedA = a.ToArray();
-                var expectedB = b.ToArray();
-                fixed (Complex* pa = expectedA)
-                fixed (Complex* pb = expectedB)
+                fixed (Complex* pa = a.ToArray()) // FakeZgemm might modify the input matrices, so we pass copies of them.
+                fixed (Complex* pb = b.ToArray()) // FakeZgemm might modify the input matrices, so we pass copies of them.
                 fixed (Complex* pc = expected)
                 {
                     var one = Complex.One;
@@ -235,10 +229,8 @@ namespace MatFlatTest
                 var c = Matrix.RandomComplex(0, m, n, ldc);
 
                 var expected = c.ToArray();
-                var expectedA = a.ToArray();
-                var expectedB = b.ToArray();
-                fixed (Complex* pa = expectedA)
-                fixed (Complex* pb = expectedB)
+                fixed (Complex* pa = a.ToArray()) // FakeZgemm might modify the input matrices, so we pass copies of them.
+                fixed (Complex* pb = b.ToArray()) // FakeZgemm might modify the input matrices, so we pass copies of them.
                 fixed (Complex* pc = expected)
                 {
                     var one = Complex.One;
