@@ -1,12 +1,43 @@
 ﻿using System;
 using System.Linq;
-using System.Numerics;
+using ILNumerics.Core.Native;
+using ILNumerics.F2NET;
+using MatFlat;
 using NUnit.Framework;
 
 namespace MatFlatTest
 {
     public class BlasTests_SolveTriangularDouble
     {
+        private static readonly ILapack lapack = new ManagedLAPACK();
+
+        private static unsafe void FakeDtrsv(char uplo, char transA, int n, double* a, int lda, double* x, int incx)
+        {
+            var b = new double[n];
+            for (var i = 0; i < n; i++)
+            {
+                b[i] = x[i * incx];
+            }
+
+            var info = 0;
+            fixed (double* pb = b)
+            {
+                lapack.dtrtrs(
+                    uplo, transA, 'N',
+                    n, 1,
+                    a, lda,
+                    pb, n,
+                    ref info);
+            }
+
+            Assert.That(info, Is.EqualTo(0));
+
+            for (var i = 0; i < n; i++)
+            {
+                x[i * incx] = b[i];
+            }
+        }
+
         [TestCase(1, 1, 1)]
         [TestCase(1, 2, 3)]
         [TestCase(2, 2, 1)]
@@ -34,21 +65,14 @@ namespace MatFlatTest
             fixed (double* pa = a)
             fixed (double* px = expected)
             {
-                OpenBlasSharp.Blas.Dtrsv(
-                    OpenBlasSharp.Order.ColMajor,
-                    OpenBlasSharp.Uplo.Upper,
-                    OpenBlasSharp.Transpose.NoTrans,
-                    OpenBlasSharp.Diag.NonUnit,
-                    n,
-                    pa, lda,
-                    px, incx);
+                FakeDtrsv('U', 'N', n, pa, lda, px, incx);
             }
 
             var actual = input.ToArray();
             fixed (double* pa = a)
             fixed (double* px = actual)
             {
-                MatFlat.Blas.SolveTriangular(MatFlat.Uplo.Upper, MatFlat.Transpose.NoTrans, n, pa, lda, px, incx);
+                Blas.SolveTriangular(Uplo.Upper, Transpose.NoTrans, n, pa, lda, px, incx);
             }
 
             Assert.That(actual, Is.EqualTo(expected).Within(1.0E-11));
@@ -81,21 +105,14 @@ namespace MatFlatTest
             fixed (double* pa = a)
             fixed (double* px = expected)
             {
-                OpenBlasSharp.Blas.Dtrsv(
-                    OpenBlasSharp.Order.ColMajor,
-                    OpenBlasSharp.Uplo.Lower,
-                    OpenBlasSharp.Transpose.NoTrans,
-                    OpenBlasSharp.Diag.NonUnit,
-                    n,
-                    pa, lda,
-                    px, incx);
+                FakeDtrsv('L', 'N', n, pa, lda, px, incx);
             }
 
             var actual = input.ToArray();
             fixed (double* pa = a)
             fixed (double* px = actual)
             {
-                MatFlat.Blas.SolveTriangular(MatFlat.Uplo.Lower, MatFlat.Transpose.NoTrans, n, pa, lda, px, incx);
+                Blas.SolveTriangular(Uplo.Lower, Transpose.NoTrans, n, pa, lda, px, incx);
             }
 
             Assert.That(actual, Is.EqualTo(expected).Within(1.0E-11));
@@ -128,21 +145,14 @@ namespace MatFlatTest
             fixed (double* pa = a)
             fixed (double* px = expected)
             {
-                OpenBlasSharp.Blas.Dtrsv(
-                    OpenBlasSharp.Order.ColMajor,
-                    OpenBlasSharp.Uplo.Upper,
-                    OpenBlasSharp.Transpose.Trans,
-                    OpenBlasSharp.Diag.NonUnit,
-                    n,
-                    pa, lda,
-                    px, incx);
+                FakeDtrsv('U', 'T', n, pa, lda, px, incx);
             }
 
             var actual = input.ToArray();
             fixed (double* pa = a)
             fixed (double* px = actual)
             {
-                MatFlat.Blas.SolveTriangular(MatFlat.Uplo.Upper, MatFlat.Transpose.Trans, n, pa, lda, px, incx);
+                Blas.SolveTriangular(Uplo.Upper, Transpose.Trans, n, pa, lda, px, incx);
             }
 
             Assert.That(actual, Is.EqualTo(expected).Within(1.0E-11));
@@ -175,21 +185,14 @@ namespace MatFlatTest
             fixed (double* pa = a)
             fixed (double* px = expected)
             {
-                OpenBlasSharp.Blas.Dtrsv(
-                    OpenBlasSharp.Order.ColMajor,
-                    OpenBlasSharp.Uplo.Lower,
-                    OpenBlasSharp.Transpose.Trans,
-                    OpenBlasSharp.Diag.NonUnit,
-                    n,
-                    pa, lda,
-                    px, incx);
+                FakeDtrsv('L', 'T', n, pa, lda, px, incx);
             }
 
             var actual = input.ToArray();
             fixed (double* pa = a)
             fixed (double* px = actual)
             {
-                MatFlat.Blas.SolveTriangular(MatFlat.Uplo.Lower, MatFlat.Transpose.Trans, n, pa, lda, px, incx);
+                Blas.SolveTriangular(Uplo.Lower, Transpose.Trans, n, pa, lda, px, incx);
             }
 
             Assert.That(actual, Is.EqualTo(expected).Within(1.0E-11));

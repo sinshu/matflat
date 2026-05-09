@@ -2,7 +2,6 @@ using System;
 using System.Linq;
 using System.Numerics;
 using NUnit.Framework;
-using OpenBlasSharp;
 using MatFlat;
 
 namespace MatFlatTest
@@ -33,10 +32,9 @@ namespace MatFlatTest
             {
                 Factorization.Lu(n, n, pa, lda, ppiv);
                 Factorization.LuInverse(n, pa, lda, ppiv);
-                OpenBlasSharp.Blas.Sgemm(
-                    Order.ColMajor,
-                    OpenBlasSharp.Transpose.NoTrans,
-                    OpenBlasSharp.Transpose.NoTrans,
+                LapackTest.Sgemm(
+                    Transpose.NoTrans,
+                    Transpose.NoTrans,
                     n, n, n,
                     1.0F,
                     poriginal, lda,
@@ -96,10 +94,9 @@ namespace MatFlatTest
             {
                 Factorization.Lu(n, n, pa, lda, ppiv);
                 Factorization.LuInverse(n, pa, lda, ppiv);
-                OpenBlasSharp.Blas.Dgemm(
-                    Order.ColMajor,
-                    OpenBlasSharp.Transpose.NoTrans,
-                    OpenBlasSharp.Transpose.NoTrans,
+                LapackTest.Dgemm(
+                    Transpose.NoTrans,
+                    Transpose.NoTrans,
                     n, n, n,
                     1.0,
                     poriginal, lda,
@@ -162,10 +159,9 @@ namespace MatFlatTest
 
                 Factorization.Lu(n, n, pa, lda, ppiv);
                 Factorization.LuInverse(n, pa, lda, ppiv);
-                OpenBlasSharp.Blas.Zgemm(
-                    Order.ColMajor,
-                    OpenBlasSharp.Transpose.NoTrans,
-                    OpenBlasSharp.Transpose.NoTrans,
+                LapackTest.Zgemm(
+                    Transpose.NoTrans,
+                    Transpose.NoTrans,
                     n, n, n,
                     &one,
                     poriginal, lda,
