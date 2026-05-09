@@ -1,11 +1,42 @@
 ﻿using System;
 using System.Linq;
+using MatFlat;
 using NUnit.Framework;
 
 namespace MatFlatTest
 {
     public class BlasTests_MulMatVecDouble
     {
+        private static unsafe void FakeDgemv(char transA, int m, int n, double* a, int lda, double* x, int incx, double* y, int incy)
+        {
+            if (transA == 'N')
+            {
+                for (var row = 0; row < m; row++)
+                {
+                    var sum = 0.0;
+                    for (var col = 0; col < n; col++)
+                    {
+                        sum += a[(col * lda) + row] * x[col * incx];
+                    }
+
+                    y[row * incy] = sum;
+                }
+            }
+            else
+            {
+                for (var col = 0; col < n; col++)
+                {
+                    var sum = 0.0;
+                    for (var row = 0; row < m; row++)
+                    {
+                        sum += a[(col * lda) + row] * x[row * incx];
+                    }
+
+                    y[col * incy] = sum;
+                }
+            }
+        }
+
         [TestCase(1, 1, 1, 1, 1)]
         [TestCase(1, 1, 3, 2, 4)]
         [TestCase(2, 2, 2, 1, 1)]
@@ -31,15 +62,7 @@ namespace MatFlatTest
             fixed (double* px = x)
             fixed (double* py = expected)
             {
-                OpenBlasSharp.Blas.Dgemv(
-                    OpenBlasSharp.Order.ColMajor,
-                    OpenBlasSharp.Transpose.NoTrans,
-                    m, n,
-                    1.0,
-                    pa, lda,
-                    px, incx,
-                    0.0,
-                    py, incy);
+                FakeDgemv('N', m, n, pa, lda, px, incx, py, incy);
             }
 
             var actual = y.ToArray();
@@ -47,7 +70,7 @@ namespace MatFlatTest
             fixed (double* px = x)
             fixed (double* py = actual)
             {
-                MatFlat.Blas.MulMatVec(MatFlat.Transpose.NoTrans, m, n, pa, lda, px, incx, py, incy);
+                Blas.MulMatVec(Transpose.NoTrans, m, n, pa, lda, px, incx, py, incy);
             }
 
             Assert.That(actual, Is.EqualTo(expected).Within(1.0E-12));
@@ -78,15 +101,7 @@ namespace MatFlatTest
             fixed (double* px = x)
             fixed (double* py = expected)
             {
-                OpenBlasSharp.Blas.Dgemv(
-                    OpenBlasSharp.Order.ColMajor,
-                    OpenBlasSharp.Transpose.Trans,
-                    m, n,
-                    1.0,
-                    pa, lda,
-                    px, incx,
-                    0.0,
-                    py, incy);
+                FakeDgemv('T', m, n, pa, lda, px, incx, py, incy);
             }
 
             var actual = y.ToArray();
@@ -94,7 +109,7 @@ namespace MatFlatTest
             fixed (double* px = x)
             fixed (double* py = actual)
             {
-                MatFlat.Blas.MulMatVec(MatFlat.Transpose.Trans, m, n, pa, lda, px, incx, py, incy);
+                Blas.MulMatVec(Transpose.Trans, m, n, pa, lda, px, incx, py, incy);
             }
 
             Assert.That(actual, Is.EqualTo(expected).Within(1.0E-12));

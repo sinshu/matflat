@@ -1,11 +1,42 @@
 ﻿using System;
 using System.Linq;
+using MatFlat;
 using NUnit.Framework;
 
 namespace MatFlatTest
 {
     public class BlasTests_MulMatVecSingle
     {
+        private static unsafe void FakeSgemv(char transA, int m, int n, float* a, int lda, float* x, int incx, float* y, int incy)
+        {
+            if (transA == 'N')
+            {
+                for (var row = 0; row < m; row++)
+                {
+                    var sum = 0.0F;
+                    for (var col = 0; col < n; col++)
+                    {
+                        sum += a[(col * lda) + row] * x[col * incx];
+                    }
+
+                    y[row * incy] = sum;
+                }
+            }
+            else
+            {
+                for (var col = 0; col < n; col++)
+                {
+                    var sum = 0.0F;
+                    for (var row = 0; row < m; row++)
+                    {
+                        sum += a[(col * lda) + row] * x[row * incx];
+                    }
+
+                    y[col * incy] = sum;
+                }
+            }
+        }
+
         [TestCase(1, 1, 1, 1, 1)]
         [TestCase(1, 1, 3, 2, 4)]
         [TestCase(2, 2, 2, 1, 1)]
@@ -31,15 +62,7 @@ namespace MatFlatTest
             fixed (float* px = x)
             fixed (float* py = expected)
             {
-                OpenBlasSharp.Blas.Sgemv(
-                    OpenBlasSharp.Order.ColMajor,
-                    OpenBlasSharp.Transpose.NoTrans,
-                    m, n,
-                    1.0F,
-                    pa, lda,
-                    px, incx,
-                    0.0F,
-                    py, incy);
+                FakeSgemv('N', m, n, pa, lda, px, incx, py, incy);
             }
 
             var actual = y.ToArray();
@@ -47,7 +70,7 @@ namespace MatFlatTest
             fixed (float* px = x)
             fixed (float* py = actual)
             {
-                MatFlat.Blas.MulMatVec(MatFlat.Transpose.NoTrans, m, n, pa, lda, px, incx, py, incy);
+                Blas.MulMatVec(Transpose.NoTrans, m, n, pa, lda, px, incx, py, incy);
             }
 
             Assert.That(actual, Is.EqualTo(expected).Within(1.0E-5));
@@ -78,15 +101,7 @@ namespace MatFlatTest
             fixed (float* px = x)
             fixed (float* py = expected)
             {
-                OpenBlasSharp.Blas.Sgemv(
-                    OpenBlasSharp.Order.ColMajor,
-                    OpenBlasSharp.Transpose.Trans,
-                    m, n,
-                    1.0F,
-                    pa, lda,
-                    px, incx,
-                    0.0F,
-                    py, incy);
+                FakeSgemv('T', m, n, pa, lda, px, incx, py, incy);
             }
 
             var actual = y.ToArray();
@@ -94,7 +109,7 @@ namespace MatFlatTest
             fixed (float* px = x)
             fixed (float* py = actual)
             {
-                MatFlat.Blas.MulMatVec(MatFlat.Transpose.Trans, m, n, pa, lda, px, incx, py, incy);
+                Blas.MulMatVec(Transpose.Trans, m, n, pa, lda, px, incx, py, incy);
             }
 
             Assert.That(actual, Is.EqualTo(expected).Within(1.0E-5));
