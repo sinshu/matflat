@@ -252,6 +252,13 @@ BenchmarkDotNet v0.13.12, Windows 11 (10.0.22631.3447/23H2/2023Update/SunValley3
 
 
 
+## References
+
+MatFlat uses the managed LAPACK implementation in ILNumerics.ONAL as a reference for unit tests.
+For more information about ILNumerics.ONAL, see [Introducing ILNumerics.ONAL, the Open Numerical Algorithm Language for .NET](https://ilnumerics.net/blog/introducing-ilnumerics-onal-the-open-numerical-algorithm-language-for-net/).
+
+
+
 ## License
 
 MatFlat is available under [the MIT license](LICENSE.txt).
