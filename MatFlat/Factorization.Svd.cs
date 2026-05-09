@@ -1076,6 +1076,7 @@ namespace MatFlat
 
                     // Split at negligible s(k).
                     case 2:
+                        TraceDoubleSvdKase(2, m, n, p, k);
                         f = e[k - 1];
                         e[k - 1] = 0.0;
                         for (var j = k; j < p; j++)
@@ -1255,6 +1256,14 @@ namespace MatFlat
 
             var copySize = sizeof(double) * Math.Min(m, n);
             Buffer.MemoryCopy(stmp, s, copySize, copySize);
+        }
+
+        private static void TraceDoubleSvdKase(int kase, int m, int n, int p, int k)
+        {
+            if (Environment.GetEnvironmentVariable("MATFLAT_TRACE_SVD_KASE") == "1")
+            {
+                Console.WriteLine($"MatFlat.Svd<double>: reached case {kase} (m={m}, n={n}, p={p}, k={k})");
+            }
         }
 
         private static unsafe void SvdCore(int m, int n, Complex* a, int lda, double* s, Complex* u, int ldu, Complex* vt, int ldvt, Complex* work, Complex* e, Complex* stmp)
