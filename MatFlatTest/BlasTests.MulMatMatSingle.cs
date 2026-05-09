@@ -1,11 +1,16 @@
 ﻿using System;
 using System.Linq;
+using ILNumerics.Core.Native;
+using ILNumerics.F2NET;
+using MatFlat;
 using NUnit.Framework;
 
 namespace MatFlatTest
 {
     public class BlasTests_MulMatMatSingle
     {
+        private static readonly ILapack lapack = new ManagedLAPACK();
+
         [TestCase(1, 1, 1, 1, 1, 1)]
         [TestCase(1, 1, 1, 2, 3, 4)]
         [TestCase(2, 2, 2, 2, 2, 2)]
@@ -29,9 +34,8 @@ namespace MatFlatTest
             fixed (float* pb = b)
             fixed (float* pc = expected)
             {
-                OpenBlasSharp.Blas.Sgemm(
-                    OpenBlasSharp.Order.ColMajor,
-                    OpenBlasSharp.Transpose.NoTrans, OpenBlasSharp.Transpose.NoTrans,
+                lapack.sgemm(
+                    'N', 'N',
                     m, n, k,
                     1.0F,
                     pa, lda,
@@ -45,7 +49,7 @@ namespace MatFlatTest
             fixed (float* pb = b)
             fixed (float* pc = actual)
             {
-                MatFlat.Blas.MulMatMat(MatFlat.Transpose.NoTrans, MatFlat.Transpose.NoTrans, m, n, k, pa, lda, pb, ldb, pc, ldc);
+                Blas.MulMatMat(Transpose.NoTrans, Transpose.NoTrans, m, n, k, pa, lda, pb, ldb, pc, ldc);
             }
 
             Assert.That(actual, Is.EqualTo(expected).Within(1.0E-6));
@@ -71,9 +75,8 @@ namespace MatFlatTest
             fixed (float* pb = b)
             fixed (float* pc = expected)
             {
-                OpenBlasSharp.Blas.Sgemm(
-                    OpenBlasSharp.Order.ColMajor,
-                    OpenBlasSharp.Transpose.Trans, OpenBlasSharp.Transpose.NoTrans,
+                lapack.sgemm(
+                    'T', 'N',
                     m, n, k,
                     1.0F,
                     pa, lda,
@@ -87,7 +90,7 @@ namespace MatFlatTest
             fixed (float* pb = b)
             fixed (float* pc = actual)
             {
-                MatFlat.Blas.MulMatMat(MatFlat.Transpose.Trans, MatFlat.Transpose.NoTrans, m, n, k, pa, lda, pb, ldb, pc, ldc);
+                Blas.MulMatMat(Transpose.Trans, Transpose.NoTrans, m, n, k, pa, lda, pb, ldb, pc, ldc);
             }
 
             Assert.That(actual, Is.EqualTo(expected).Within(1.0E-6));
@@ -113,9 +116,8 @@ namespace MatFlatTest
             fixed (float* pb = b)
             fixed (float* pc = expected)
             {
-                OpenBlasSharp.Blas.Sgemm(
-                    OpenBlasSharp.Order.ColMajor,
-                    OpenBlasSharp.Transpose.NoTrans, OpenBlasSharp.Transpose.Trans,
+                lapack.sgemm(
+                    'N', 'T',
                     m, n, k,
                     1.0F,
                     pa, lda,
@@ -129,7 +131,7 @@ namespace MatFlatTest
             fixed (float* pb = b)
             fixed (float* pc = actual)
             {
-                MatFlat.Blas.MulMatMat(MatFlat.Transpose.NoTrans, MatFlat.Transpose.Trans, m, n, k, pa, lda, pb, ldb, pc, ldc);
+                Blas.MulMatMat(Transpose.NoTrans, Transpose.Trans, m, n, k, pa, lda, pb, ldb, pc, ldc);
             }
 
             Assert.That(actual, Is.EqualTo(expected).Within(1.0E-6));
@@ -155,9 +157,8 @@ namespace MatFlatTest
             fixed (float* pb = b)
             fixed (float* pc = expected)
             {
-                OpenBlasSharp.Blas.Sgemm(
-                    OpenBlasSharp.Order.ColMajor,
-                    OpenBlasSharp.Transpose.Trans, OpenBlasSharp.Transpose.Trans,
+                lapack.sgemm(
+                    'T', 'T',
                     m, n, k,
                     1.0F,
                     pa, lda,
@@ -171,7 +172,7 @@ namespace MatFlatTest
             fixed (float* pb = b)
             fixed (float* pc = actual)
             {
-                MatFlat.Blas.MulMatMat(MatFlat.Transpose.Trans, MatFlat.Transpose.Trans, m, n, k, pa, lda, pb, ldb, pc, ldc);
+                Blas.MulMatMat(Transpose.Trans, Transpose.Trans, m, n, k, pa, lda, pb, ldb, pc, ldc);
             }
 
             Assert.That(actual, Is.EqualTo(expected).Within(1.0E-6));

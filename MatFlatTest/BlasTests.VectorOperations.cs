@@ -1,12 +1,116 @@
 ﻿using System;
 using System.Linq;
 using System.Numerics;
+using MatFlat;
 using NUnit.Framework;
 
 namespace MatFlatTest
 {
     public class BlasTests_VectorOperations
     {
+        private static unsafe float FakeSnrm2(int n, float* x, int incx)
+        {
+            return MathF.Sqrt(FakeSdot(n, x, incx, x, incx));
+        }
+
+        private static unsafe double FakeDnrm2(int n, double* x, int incx)
+        {
+            return Math.Sqrt(FakeDdot(n, x, incx, x, incx));
+        }
+
+        private static unsafe double FakeDznrm2(int n, Complex* x, int incx)
+        {
+            return Math.Sqrt(FakeZdotc(n, x, incx, x, incx).Real);
+        }
+
+        private static unsafe float FakeSdot(int n, float* x, int incx, float* y, int incy)
+        {
+            var sum = 0.0F;
+            for (var i = 0; i < n; i++)
+            {
+                sum += x[i * incx] * y[i * incy];
+            }
+
+            return sum;
+        }
+
+        private static unsafe double FakeDdot(int n, double* x, int incx, double* y, int incy)
+        {
+            var sum = 0.0;
+            for (var i = 0; i < n; i++)
+            {
+                sum += x[i * incx] * y[i * incy];
+            }
+
+            return sum;
+        }
+
+        private static unsafe Complex FakeZdotu(int n, Complex* x, int incx, Complex* y, int incy)
+        {
+            var sum = Complex.Zero;
+            for (var i = 0; i < n; i++)
+            {
+                sum += x[i * incx] * y[i * incy];
+            }
+
+            return sum;
+        }
+
+        private static unsafe Complex FakeZdotc(int n, Complex* x, int incx, Complex* y, int incy)
+        {
+            var sum = Complex.Zero;
+            for (var i = 0; i < n; i++)
+            {
+                sum += Complex.Conjugate(x[i * incx]) * y[i * incy];
+            }
+
+            return sum;
+        }
+
+        private static unsafe void FakeSger(int m, int n, float* x, int incx, float* y, int incy, float* a, int lda)
+        {
+            for (var col = 0; col < n; col++)
+            {
+                for (var row = 0; row < m; row++)
+                {
+                    a[(col * lda) + row] = x[row * incx] * y[col * incy];
+                }
+            }
+        }
+
+        private static unsafe void FakeDger(int m, int n, double* x, int incx, double* y, int incy, double* a, int lda)
+        {
+            for (var col = 0; col < n; col++)
+            {
+                for (var row = 0; row < m; row++)
+                {
+                    a[(col * lda) + row] = x[row * incx] * y[col * incy];
+                }
+            }
+        }
+
+        private static unsafe void FakeZgeru(int m, int n, Complex* x, int incx, Complex* y, int incy, Complex* a, int lda)
+        {
+            for (var col = 0; col < n; col++)
+            {
+                for (var row = 0; row < m; row++)
+                {
+                    a[(col * lda) + row] = x[row * incx] * y[col * incy];
+                }
+            }
+        }
+
+        private static unsafe void FakeZgerc(int m, int n, Complex* x, int incx, Complex* y, int incy, Complex* a, int lda)
+        {
+            for (var col = 0; col < n; col++)
+            {
+                for (var row = 0; row < m; row++)
+                {
+                    a[(col * lda) + row] = x[row * incx] * Complex.Conjugate(y[col * incy]);
+                }
+            }
+        }
+
         [TestCase(1, 1)]
         [TestCase(1, 2)]
         [TestCase(2, 1)]
@@ -22,13 +126,13 @@ namespace MatFlatTest
             float expected;
             fixed (float* px = x)
             {
-                expected = OpenBlasSharp.Blas.Snrm2(n, px, incx);
+                expected = FakeSnrm2(n, px, incx);
             }
 
             float actual;
             fixed (float* px = x)
             {
-                actual = MatFlat.Blas.L2Norm(n, px, incx);
+                actual = Blas.L2Norm(n, px, incx);
             }
 
             Assert.That(actual, Is.EqualTo(expected).Within(1.0E-6));
@@ -49,13 +153,13 @@ namespace MatFlatTest
             double expected;
             fixed (double* px = x)
             {
-                expected = OpenBlasSharp.Blas.Dnrm2(n, px, incx);
+                expected = FakeDnrm2(n, px, incx);
             }
 
             double actual;
             fixed (double* px = x)
             {
-                actual = MatFlat.Blas.L2Norm(n, px, incx);
+                actual = Blas.L2Norm(n, px, incx);
             }
 
             Assert.That(actual, Is.EqualTo(expected).Within(1.0E-12));
@@ -76,13 +180,13 @@ namespace MatFlatTest
             double expected;
             fixed (Complex* px = x)
             {
-                expected = OpenBlasSharp.Blas.Dznrm2(n, px, incx);
+                expected = FakeDznrm2(n, px, incx);
             }
 
             double actual;
             fixed (Complex* px = x)
             {
-                actual = MatFlat.Blas.L2Norm(n, px, incx);
+                actual = Blas.L2Norm(n, px, incx);
             }
 
             Assert.That(actual, Is.EqualTo(expected).Within(1.0E-12));
@@ -105,14 +209,14 @@ namespace MatFlatTest
             fixed (float* px = x)
             fixed (float* py = y)
             {
-                expected = OpenBlasSharp.Blas.Sdot(n, px, incx, py, incy);
+                expected = FakeSdot(n, px, incx, py, incy);
             }
 
             float actual;
             fixed (float* px = x)
             fixed (float* py = y)
             {
-                actual = MatFlat.Blas.Dot(n, px, incx, py, incy);
+                actual = Blas.Dot(n, px, incx, py, incy);
             }
 
             Assert.That(actual, Is.EqualTo(expected).Within(1.0E-6));
@@ -135,14 +239,14 @@ namespace MatFlatTest
             fixed (double* px = x)
             fixed (double* py = y)
             {
-                expected = OpenBlasSharp.Blas.Ddot(n, px, incx, py, incy);
+                expected = FakeDdot(n, px, incx, py, incy);
             }
 
             double actual;
             fixed (double* px = x)
             fixed (double* py = y)
             {
-                actual = MatFlat.Blas.Dot(n, px, incx, py, incy);
+                actual = Blas.Dot(n, px, incx, py, incy);
             }
 
             Assert.That(actual, Is.EqualTo(expected).Within(1.0E-12));
@@ -165,14 +269,14 @@ namespace MatFlatTest
             fixed (Complex* px = x)
             fixed (Complex* py = y)
             {
-                expected = OpenBlasSharp.Blas.Zdotu(n, px, incx, py, incy);
+                expected = FakeZdotu(n, px, incx, py, incy);
             }
 
             Complex actual;
             fixed (Complex* px = x)
             fixed (Complex* py = y)
             {
-                actual = MatFlat.Blas.Dot(n, px, incx, py, incy);
+                actual = Blas.Dot(n, px, incx, py, incy);
             }
 
             Assert.That(actual.Real, Is.EqualTo(expected.Real).Within(1.0E-12));
@@ -196,14 +300,14 @@ namespace MatFlatTest
             fixed (Complex* px = x)
             fixed (Complex* py = y)
             {
-                expected = OpenBlasSharp.Blas.Zdotc(n, px, incx, py, incy);
+                expected = FakeZdotc(n, px, incx, py, incy);
             }
 
             Complex actual;
             fixed (Complex* px = x)
             fixed (Complex* py = y)
             {
-                actual = MatFlat.Blas.DotConj(n, px, incx, py, incy);
+                actual = Blas.DotConj(n, px, incx, py, incy);
             }
 
             Assert.That(actual.Real, Is.EqualTo(expected.Real).Within(1.0E-12));
@@ -231,17 +335,7 @@ namespace MatFlatTest
             fixed (float* py = y)
             fixed (float* pa = expected)
             {
-                for (var j = 0; j < n; j++)
-                {
-                    new Span<float>(pa + lda * j, m).Clear();
-                }
-                OpenBlasSharp.Blas.Sger(
-                    OpenBlasSharp.Order.ColMajor,
-                    m, n,
-                    1.0F,
-                    px, incx,
-                    py, incy,
-                    pa, lda);
+                FakeSger(m, n, px, incx, py, incy, pa, lda);
             }
 
             var actual = a.ToArray();
@@ -249,7 +343,7 @@ namespace MatFlatTest
             fixed (float* py = y)
             fixed (float* pa = actual)
             {
-                MatFlat.Blas.Outer(m, n, px, incx, py, incy, pa, lda);
+                Blas.Outer(m, n, px, incx, py, incy, pa, lda);
             }
 
             Assert.That(actual, Is.EqualTo(expected).Within(1.0E-6));
@@ -276,17 +370,7 @@ namespace MatFlatTest
             fixed (double* py = y)
             fixed (double* pa = expected)
             {
-                for (var j = 0; j < n; j++)
-                {
-                    new Span<double>(pa + lda * j, m).Clear();
-                }
-                OpenBlasSharp.Blas.Dger(
-                    OpenBlasSharp.Order.ColMajor,
-                    m, n,
-                    1.0,
-                    px, incx,
-                    py, incy,
-                    pa, lda);
+                FakeDger(m, n, px, incx, py, incy, pa, lda);
             }
 
             var actual = a.ToArray();
@@ -294,7 +378,7 @@ namespace MatFlatTest
             fixed (double* py = y)
             fixed (double* pa = actual)
             {
-                MatFlat.Blas.Outer(m, n, px, incx, py, incy, pa, lda);
+                Blas.Outer(m, n, px, incx, py, incy, pa, lda);
             }
 
             Assert.That(actual, Is.EqualTo(expected).Within(1.0E-12));
@@ -321,19 +405,7 @@ namespace MatFlatTest
             fixed (Complex* py = y)
             fixed (Complex* pa = expected)
             {
-                var one = Complex.One;
-
-                for (var j = 0; j < n; j++)
-                {
-                    new Span<Complex>(pa + lda * j, m).Clear();
-                }
-                OpenBlasSharp.Blas.Zgeru(
-                    OpenBlasSharp.Order.ColMajor,
-                    m, n,
-                    &one,
-                    px, incx,
-                    py, incy,
-                    pa, lda);
+                FakeZgeru(m, n, px, incx, py, incy, pa, lda);
             }
 
             var actual = a.ToArray();
@@ -341,7 +413,7 @@ namespace MatFlatTest
             fixed (Complex* py = y)
             fixed (Complex* pa = actual)
             {
-                MatFlat.Blas.Outer(m, n, px, incx, py, incy, pa, lda);
+                Blas.Outer(m, n, px, incx, py, incy, pa, lda);
             }
 
             Assert.That(actual.Select(x => x.Real), Is.EqualTo(expected.Select(x => x.Real)).Within(1.0E-12));
@@ -369,19 +441,7 @@ namespace MatFlatTest
             fixed (Complex* py = y)
             fixed (Complex* pa = expected)
             {
-                var one = Complex.One;
-
-                for (var j = 0; j < n; j++)
-                {
-                    new Span<Complex>(pa + lda * j, m).Clear();
-                }
-                OpenBlasSharp.Blas.Zgerc(
-                    OpenBlasSharp.Order.ColMajor,
-                    m, n,
-                    &one,
-                    px, incx,
-                    py, incy,
-                    pa, lda);
+                FakeZgerc(m, n, px, incx, py, incy, pa, lda);
             }
 
             var actual = a.ToArray();
@@ -389,7 +449,7 @@ namespace MatFlatTest
             fixed (Complex* py = y)
             fixed (Complex* pa = actual)
             {
-                MatFlat.Blas.OuterConj(m, n, px, incx, py, incy, pa, lda);
+                Blas.OuterConj(m, n, px, incx, py, incy, pa, lda);
             }
 
             Assert.That(actual.Select(x => x.Real), Is.EqualTo(expected.Select(x => x.Real)).Within(1.0E-12));

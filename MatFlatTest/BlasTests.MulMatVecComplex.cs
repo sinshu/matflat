@@ -1,12 +1,55 @@
 ﻿using System;
 using System.Linq;
 using System.Numerics;
+using MatFlat;
 using NUnit.Framework;
 
 namespace MatFlatTest
 {
     public class BlasTests_MulMatVecComplex
     {
+        private static unsafe void FakeZgemv(char transA, int m, int n, Complex* a, int lda, Complex* x, int incx, Complex* y, int incy)
+        {
+            if (transA == 'N' || transA == '!')
+            {
+                for (var row = 0; row < m; row++)
+                {
+                    var sum = Complex.Zero;
+                    for (var col = 0; col < n; col++)
+                    {
+                        var value = a[(col * lda) + row];
+                        if (transA == '!')
+                        {
+                            value = Complex.Conjugate(value);
+                        }
+
+                        sum += value * x[col * incx];
+                    }
+
+                    y[row * incy] = sum;
+                }
+            }
+            else
+            {
+                for (var col = 0; col < n; col++)
+                {
+                    var sum = Complex.Zero;
+                    for (var row = 0; row < m; row++)
+                    {
+                        var value = a[(col * lda) + row];
+                        if (transA == 'C')
+                        {
+                            value = Complex.Conjugate(value);
+                        }
+
+                        sum += value * x[row * incx];
+                    }
+
+                    y[col * incy] = sum;
+                }
+            }
+        }
+
         [TestCase(1, 1, 1, 1, 1)]
         [TestCase(1, 1, 3, 2, 4)]
         [TestCase(2, 2, 2, 1, 1)]
@@ -32,18 +75,7 @@ namespace MatFlatTest
             fixed (Complex* px = x)
             fixed (Complex* py = expected)
             {
-                var one = Complex.One;
-                var zero = Complex.Zero;
-
-                OpenBlasSharp.Blas.Zgemv(
-                    OpenBlasSharp.Order.ColMajor,
-                    OpenBlasSharp.Transpose.NoTrans,
-                    m, n,
-                    &one,
-                    pa, lda,
-                    px, incx,
-                    &zero,
-                    py, incy);
+                FakeZgemv('N', m, n, pa, lda, px, incx, py, incy);
             }
 
             var actual = y.ToArray();
@@ -51,7 +83,7 @@ namespace MatFlatTest
             fixed (Complex* px = x)
             fixed (Complex* py = actual)
             {
-                MatFlat.Blas.MulMatVec(MatFlat.Transpose.NoTrans, m, n, pa, lda, px, incx, py, incy);
+                Blas.MulMatVec(Transpose.NoTrans, m, n, pa, lda, px, incx, py, incy);
             }
 
             Assert.That(actual.Select(x => x.Real), Is.EqualTo(expected.Select(x => x.Real)).Within(1.0E-12));
@@ -83,18 +115,7 @@ namespace MatFlatTest
             fixed (Complex* px = x)
             fixed (Complex* py = expected)
             {
-                var one = Complex.One;
-                var zero = Complex.Zero;
-
-                OpenBlasSharp.Blas.Zgemv(
-                    OpenBlasSharp.Order.ColMajor,
-                    OpenBlasSharp.Transpose.Trans,
-                    m, n,
-                    &one,
-                    pa, lda,
-                    px, incx,
-                    &zero,
-                    py, incy);
+                FakeZgemv('T', m, n, pa, lda, px, incx, py, incy);
             }
 
             var actual = y.ToArray();
@@ -102,7 +123,7 @@ namespace MatFlatTest
             fixed (Complex* px = x)
             fixed (Complex* py = actual)
             {
-                MatFlat.Blas.MulMatVec(MatFlat.Transpose.Trans, m, n, pa, lda, px, incx, py, incy);
+                Blas.MulMatVec(Transpose.Trans, m, n, pa, lda, px, incx, py, incy);
             }
 
             Assert.That(actual.Select(x => x.Real), Is.EqualTo(expected.Select(x => x.Real)).Within(1.0E-12));
@@ -134,18 +155,7 @@ namespace MatFlatTest
             fixed (Complex* px = x)
             fixed (Complex* py = expected)
             {
-                var one = Complex.One;
-                var zero = Complex.Zero;
-
-                OpenBlasSharp.Blas.Zgemv(
-                    OpenBlasSharp.Order.ColMajor,
-                    OpenBlasSharp.Transpose.ConjNoTrans,
-                    m, n,
-                    &one,
-                    pa, lda,
-                    px, incx,
-                    &zero,
-                    py, incy);
+                FakeZgemv('!', m, n, pa, lda, px, incx, py, incy);
             }
 
             var actual = y.ToArray();
@@ -153,7 +163,7 @@ namespace MatFlatTest
             fixed (Complex* px = x)
             fixed (Complex* py = actual)
             {
-                MatFlat.Blas.MulMatVec(MatFlat.Transpose.ConjNoTrans, m, n, pa, lda, px, incx, py, incy);
+                Blas.MulMatVec(Transpose.ConjNoTrans, m, n, pa, lda, px, incx, py, incy);
             }
 
             Assert.That(actual.Select(x => x.Real), Is.EqualTo(expected.Select(x => x.Real)).Within(1.0E-12));
@@ -185,18 +195,7 @@ namespace MatFlatTest
             fixed (Complex* px = x)
             fixed (Complex* py = expected)
             {
-                var one = Complex.One;
-                var zero = Complex.Zero;
-
-                OpenBlasSharp.Blas.Zgemv(
-                    OpenBlasSharp.Order.ColMajor,
-                    OpenBlasSharp.Transpose.ConjTrans,
-                    m, n,
-                    &one,
-                    pa, lda,
-                    px, incx,
-                    &zero,
-                    py, incy);
+                FakeZgemv('C', m, n, pa, lda, px, incx, py, incy);
             }
 
             var actual = y.ToArray();
@@ -204,7 +203,7 @@ namespace MatFlatTest
             fixed (Complex* px = x)
             fixed (Complex* py = actual)
             {
-                MatFlat.Blas.MulMatVec(MatFlat.Transpose.ConjTrans, m, n, pa, lda, px, incx, py, incy);
+                Blas.MulMatVec(Transpose.ConjTrans, m, n, pa, lda, px, incx, py, incy);
             }
 
             Assert.That(actual.Select(x => x.Real), Is.EqualTo(expected.Select(x => x.Real)).Within(1.0E-12));
