@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Numerics;
 using NUnit.Framework;
-using OpenBlasSharp;
 using MatFlat;
 
 namespace MatFlatTest
@@ -62,36 +61,32 @@ namespace MatFlatTest
                     Matrix.Set(m, n, smat, m, i, i, s[i]);
                 }
 
-                OpenBlasSharp.Blas.Sgemm(
-                    Order.ColMajor,
-                    OpenBlasSharp.Transpose.NoTrans, OpenBlasSharp.Transpose.NoTrans,
+                LapackTest.Sgemm(
+                    Transpose.NoTrans, Transpose.NoTrans,
                     m, n, m,
                     1.0F,
                     pu, ldu,
                     psmat, m,
                     0.0F,
                     pus, m);
-                OpenBlasSharp.Blas.Sgemm(
-                    Order.ColMajor,
-                    OpenBlasSharp.Transpose.NoTrans, OpenBlasSharp.Transpose.NoTrans,
+                LapackTest.Sgemm(
+                    Transpose.NoTrans, Transpose.NoTrans,
                     m, n, n,
                     1.0F,
                     pus, m,
                     pvt, ldvt,
                     0.0F,
                     preconstructed, m);
-                OpenBlasSharp.Blas.Sgemm(
-                    Order.ColMajor,
-                    OpenBlasSharp.Transpose.Trans, OpenBlasSharp.Transpose.NoTrans,
+                LapackTest.Sgemm(
+                    Transpose.Trans, Transpose.NoTrans,
                     m, m, m,
                     1.0F,
                     pu, ldu,
                     pu, ldu,
                     0.0F,
                     pidentity1, m);
-                OpenBlasSharp.Blas.Sgemm(
-                    Order.ColMajor,
-                    OpenBlasSharp.Transpose.Trans, OpenBlasSharp.Transpose.NoTrans,
+                LapackTest.Sgemm(
+                    Transpose.Trans, Transpose.NoTrans,
                     n, n, n,
                     1.0F,
                     pvt, ldvt,
@@ -232,36 +227,32 @@ namespace MatFlatTest
                 original.CopyTo(a, 0);
                 Factorization.Svd(m, n, pa, lda, ps, null, 0, pvt, ldvt);
 
-                OpenBlasSharp.Blas.Sgemm(
-                    Order.ColMajor,
-                    OpenBlasSharp.Transpose.NoTrans, OpenBlasSharp.Transpose.NoTrans,
+                LapackTest.Sgemm(
+                    Transpose.NoTrans, Transpose.NoTrans,
                     m, n, m,
                     1.0F,
                     pu, ldu,
                     psmat, m,
                     0.0F,
                     pus, m);
-                OpenBlasSharp.Blas.Sgemm(
-                    Order.ColMajor,
-                    OpenBlasSharp.Transpose.NoTrans, OpenBlasSharp.Transpose.NoTrans,
+                LapackTest.Sgemm(
+                    Transpose.NoTrans, Transpose.NoTrans,
                     m, n, n,
                     1.0F,
                     pus, m,
                     pvt, ldvt,
                     0.0F,
                     preconstructed, m);
-                OpenBlasSharp.Blas.Sgemm(
-                    Order.ColMajor,
-                    OpenBlasSharp.Transpose.Trans, OpenBlasSharp.Transpose.NoTrans,
+                LapackTest.Sgemm(
+                    Transpose.Trans, Transpose.NoTrans,
                     m, m, m,
                     1.0F,
                     pu, ldu,
                     pu, ldu,
                     0.0F,
                     pidentity1, m);
-                OpenBlasSharp.Blas.Sgemm(
-                    Order.ColMajor,
-                    OpenBlasSharp.Transpose.Trans, OpenBlasSharp.Transpose.NoTrans,
+                LapackTest.Sgemm(
+                    Transpose.Trans, Transpose.NoTrans,
                     n, n, n,
                     1.0F,
                     pvt, ldvt,
@@ -406,36 +397,32 @@ namespace MatFlatTest
                     Matrix.Set(m, n, smat, m, i, i, s[i]);
                 }
 
-                OpenBlasSharp.Blas.Sgemm(
-                    Order.ColMajor,
-                    OpenBlasSharp.Transpose.NoTrans, OpenBlasSharp.Transpose.NoTrans,
+                LapackTest.Sgemm(
+                    Transpose.NoTrans, Transpose.NoTrans,
                     m, n, m,
                     1.0F,
                     pu, ldu,
                     psmat, m,
                     0.0F,
                     pus, m);
-                OpenBlasSharp.Blas.Sgemm(
-                    Order.ColMajor,
-                    OpenBlasSharp.Transpose.NoTrans, OpenBlasSharp.Transpose.NoTrans,
+                LapackTest.Sgemm(
+                    Transpose.NoTrans, Transpose.NoTrans,
                     m, n, n,
                     1.0F,
                     pus, m,
                     pvt, ldvt,
                     0.0F,
                     preconstructed, m);
-                OpenBlasSharp.Blas.Sgemm(
-                    Order.ColMajor,
-                    OpenBlasSharp.Transpose.Trans, OpenBlasSharp.Transpose.NoTrans,
+                LapackTest.Sgemm(
+                    Transpose.Trans, Transpose.NoTrans,
                     m, m, m,
                     1.0F,
                     pu, ldu,
                     pu, ldu,
                     0.0F,
                     pidentity1, m);
-                OpenBlasSharp.Blas.Sgemm(
-                    Order.ColMajor,
-                    OpenBlasSharp.Transpose.Trans, OpenBlasSharp.Transpose.NoTrans,
+                LapackTest.Sgemm(
+                    Transpose.Trans, Transpose.NoTrans,
                     n, n, n,
                     1.0F,
                     pvt, ldvt,
@@ -554,36 +541,32 @@ namespace MatFlatTest
                     Matrix.Set(m, n, smat, m, i, i, s[i]);
                 }
 
-                OpenBlasSharp.Blas.Sgemm(
-                    Order.ColMajor,
-                    OpenBlasSharp.Transpose.NoTrans, OpenBlasSharp.Transpose.NoTrans,
+                LapackTest.Sgemm(
+                    Transpose.NoTrans, Transpose.NoTrans,
                     m, n, m,
                     1.0F,
                     pu, ldu,
                     psmat, m,
                     0.0F,
                     pus, m);
-                OpenBlasSharp.Blas.Sgemm(
-                    Order.ColMajor,
-                    OpenBlasSharp.Transpose.NoTrans, OpenBlasSharp.Transpose.NoTrans,
+                LapackTest.Sgemm(
+                    Transpose.NoTrans, Transpose.NoTrans,
                     m, n, n,
                     1.0F,
                     pus, m,
                     pvt, ldvt,
                     0.0F,
                     preconstructed, m);
-                OpenBlasSharp.Blas.Sgemm(
-                    Order.ColMajor,
-                    OpenBlasSharp.Transpose.Trans, OpenBlasSharp.Transpose.NoTrans,
+                LapackTest.Sgemm(
+                    Transpose.Trans, Transpose.NoTrans,
                     m, m, m,
                     1.0F,
                     pu, ldu,
                     pu, ldu,
                     0.0F,
                     pidentity1, m);
-                OpenBlasSharp.Blas.Sgemm(
-                    Order.ColMajor,
-                    OpenBlasSharp.Transpose.Trans, OpenBlasSharp.Transpose.NoTrans,
+                LapackTest.Sgemm(
+                    Transpose.Trans, Transpose.NoTrans,
                     n, n, n,
                     1.0F,
                     pvt, ldvt,
@@ -682,9 +665,8 @@ namespace MatFlatTest
             fixed (float* psrc1 = src1)
             fixed (float* psrc2 = src2)
             {
-                OpenBlasSharp.Blas.Sgemm(
-                    Order.ColMajor,
-                    OpenBlasSharp.Transpose.NoTrans, OpenBlasSharp.Transpose.NoTrans,
+                LapackTest.Sgemm(
+                    Transpose.NoTrans, Transpose.NoTrans,
                     m, n, rank,
                     1.0F,
                     psrc1, m,
@@ -720,36 +702,32 @@ namespace MatFlatTest
                     Matrix.Set(m, n, smat, m, i, i, s[i]);
                 }
 
-                OpenBlasSharp.Blas.Sgemm(
-                    Order.ColMajor,
-                    OpenBlasSharp.Transpose.NoTrans, OpenBlasSharp.Transpose.NoTrans,
+                LapackTest.Sgemm(
+                    Transpose.NoTrans, Transpose.NoTrans,
                     m, n, m,
                     1.0F,
                     pu, ldu,
                     psmat, m,
                     0.0F,
                     pus, m);
-                OpenBlasSharp.Blas.Sgemm(
-                    Order.ColMajor,
-                    OpenBlasSharp.Transpose.NoTrans, OpenBlasSharp.Transpose.NoTrans,
+                LapackTest.Sgemm(
+                    Transpose.NoTrans, Transpose.NoTrans,
                     m, n, n,
                     1.0F,
                     pus, m,
                     pvt, ldvt,
                     0.0F,
                     preconstructed, m);
-                OpenBlasSharp.Blas.Sgemm(
-                    Order.ColMajor,
-                    OpenBlasSharp.Transpose.Trans, OpenBlasSharp.Transpose.NoTrans,
+                LapackTest.Sgemm(
+                    Transpose.Trans, Transpose.NoTrans,
                     m, m, m,
                     1.0F,
                     pu, ldu,
                     pu, ldu,
                     0.0F,
                     pidentity1, m);
-                OpenBlasSharp.Blas.Sgemm(
-                    Order.ColMajor,
-                    OpenBlasSharp.Transpose.Trans, OpenBlasSharp.Transpose.NoTrans,
+                LapackTest.Sgemm(
+                    Transpose.Trans, Transpose.NoTrans,
                     n, n, n,
                     1.0F,
                     pvt, ldvt,
@@ -884,36 +862,32 @@ namespace MatFlatTest
                     Matrix.Set(m, n, smat, m, i, i, s[i]);
                 }
 
-                OpenBlasSharp.Blas.Dgemm(
-                    Order.ColMajor,
-                    OpenBlasSharp.Transpose.NoTrans, OpenBlasSharp.Transpose.NoTrans,
+                LapackTest.Dgemm(
+                    Transpose.NoTrans, Transpose.NoTrans,
                     m, n, m,
                     1.0,
                     pu, ldu,
                     psmat, m,
                     0.0,
                     pus, m);
-                OpenBlasSharp.Blas.Dgemm(
-                    Order.ColMajor,
-                    OpenBlasSharp.Transpose.NoTrans, OpenBlasSharp.Transpose.NoTrans,
+                LapackTest.Dgemm(
+                    Transpose.NoTrans, Transpose.NoTrans,
                     m, n, n,
                     1.0,
                     pus, m,
                     pvt, ldvt,
                     0.0,
                     preconstructed, m);
-                OpenBlasSharp.Blas.Dgemm(
-                    Order.ColMajor,
-                    OpenBlasSharp.Transpose.Trans, OpenBlasSharp.Transpose.NoTrans,
+                LapackTest.Dgemm(
+                    Transpose.Trans, Transpose.NoTrans,
                     m, m, m,
                     1.0,
                     pu, ldu,
                     pu, ldu,
                     0.0,
                     pidentity1, m);
-                OpenBlasSharp.Blas.Dgemm(
-                    Order.ColMajor,
-                    OpenBlasSharp.Transpose.Trans, OpenBlasSharp.Transpose.NoTrans,
+                LapackTest.Dgemm(
+                    Transpose.Trans, Transpose.NoTrans,
                     n, n, n,
                     1.0,
                     pvt, ldvt,
@@ -1054,36 +1028,32 @@ namespace MatFlatTest
                 original.CopyTo(a, 0);
                 Factorization.Svd(m, n, pa, lda, ps, null, 0, pvt, ldvt);
 
-                OpenBlasSharp.Blas.Dgemm(
-                    Order.ColMajor,
-                    OpenBlasSharp.Transpose.NoTrans, OpenBlasSharp.Transpose.NoTrans,
+                LapackTest.Dgemm(
+                    Transpose.NoTrans, Transpose.NoTrans,
                     m, n, m,
                     1.0,
                     pu, ldu,
                     psmat, m,
                     0.0,
                     pus, m);
-                OpenBlasSharp.Blas.Dgemm(
-                    Order.ColMajor,
-                    OpenBlasSharp.Transpose.NoTrans, OpenBlasSharp.Transpose.NoTrans,
+                LapackTest.Dgemm(
+                    Transpose.NoTrans, Transpose.NoTrans,
                     m, n, n,
                     1.0,
                     pus, m,
                     pvt, ldvt,
                     0.0,
                     preconstructed, m);
-                OpenBlasSharp.Blas.Dgemm(
-                    Order.ColMajor,
-                    OpenBlasSharp.Transpose.Trans, OpenBlasSharp.Transpose.NoTrans,
+                LapackTest.Dgemm(
+                    Transpose.Trans, Transpose.NoTrans,
                     m, m, m,
                     1.0,
                     pu, ldu,
                     pu, ldu,
                     0.0,
                     pidentity1, m);
-                OpenBlasSharp.Blas.Dgemm(
-                    Order.ColMajor,
-                    OpenBlasSharp.Transpose.Trans, OpenBlasSharp.Transpose.NoTrans,
+                LapackTest.Dgemm(
+                    Transpose.Trans, Transpose.NoTrans,
                     n, n, n,
                     1.0,
                     pvt, ldvt,
@@ -1228,36 +1198,32 @@ namespace MatFlatTest
                     Matrix.Set(m, n, smat, m, i, i, s[i]);
                 }
 
-                OpenBlasSharp.Blas.Dgemm(
-                    Order.ColMajor,
-                    OpenBlasSharp.Transpose.NoTrans, OpenBlasSharp.Transpose.NoTrans,
+                LapackTest.Dgemm(
+                    Transpose.NoTrans, Transpose.NoTrans,
                     m, n, m,
                     1.0,
                     pu, ldu,
                     psmat, m,
                     0.0,
                     pus, m);
-                OpenBlasSharp.Blas.Dgemm(
-                    Order.ColMajor,
-                    OpenBlasSharp.Transpose.NoTrans, OpenBlasSharp.Transpose.NoTrans,
+                LapackTest.Dgemm(
+                    Transpose.NoTrans, Transpose.NoTrans,
                     m, n, n,
                     1.0,
                     pus, m,
                     pvt, ldvt,
                     0.0,
                     preconstructed, m);
-                OpenBlasSharp.Blas.Dgemm(
-                    Order.ColMajor,
-                    OpenBlasSharp.Transpose.Trans, OpenBlasSharp.Transpose.NoTrans,
+                LapackTest.Dgemm(
+                    Transpose.Trans, Transpose.NoTrans,
                     m, m, m,
                     1.0,
                     pu, ldu,
                     pu, ldu,
                     0.0,
                     pidentity1, m);
-                OpenBlasSharp.Blas.Dgemm(
-                    Order.ColMajor,
-                    OpenBlasSharp.Transpose.Trans, OpenBlasSharp.Transpose.NoTrans,
+                LapackTest.Dgemm(
+                    Transpose.Trans, Transpose.NoTrans,
                     n, n, n,
                     1.0,
                     pvt, ldvt,
@@ -1376,36 +1342,32 @@ namespace MatFlatTest
                     Matrix.Set(m, n, smat, m, i, i, s[i]);
                 }
 
-                OpenBlasSharp.Blas.Dgemm(
-                    Order.ColMajor,
-                    OpenBlasSharp.Transpose.NoTrans, OpenBlasSharp.Transpose.NoTrans,
+                LapackTest.Dgemm(
+                    Transpose.NoTrans, Transpose.NoTrans,
                     m, n, m,
                     1.0,
                     pu, ldu,
                     psmat, m,
                     0.0,
                     pus, m);
-                OpenBlasSharp.Blas.Dgemm(
-                    Order.ColMajor,
-                    OpenBlasSharp.Transpose.NoTrans, OpenBlasSharp.Transpose.NoTrans,
+                LapackTest.Dgemm(
+                    Transpose.NoTrans, Transpose.NoTrans,
                     m, n, n,
                     1.0,
                     pus, m,
                     pvt, ldvt,
                     0.0,
                     preconstructed, m);
-                OpenBlasSharp.Blas.Dgemm(
-                    Order.ColMajor,
-                    OpenBlasSharp.Transpose.Trans, OpenBlasSharp.Transpose.NoTrans,
+                LapackTest.Dgemm(
+                    Transpose.Trans, Transpose.NoTrans,
                     m, m, m,
                     1.0,
                     pu, ldu,
                     pu, ldu,
                     0.0,
                     pidentity1, m);
-                OpenBlasSharp.Blas.Dgemm(
-                    Order.ColMajor,
-                    OpenBlasSharp.Transpose.Trans, OpenBlasSharp.Transpose.NoTrans,
+                LapackTest.Dgemm(
+                    Transpose.Trans, Transpose.NoTrans,
                     n, n, n,
                     1.0,
                     pvt, ldvt,
@@ -1504,9 +1466,8 @@ namespace MatFlatTest
             fixed (double* psrc1 = src1)
             fixed (double* psrc2 = src2)
             {
-                OpenBlasSharp.Blas.Dgemm(
-                    Order.ColMajor,
-                    OpenBlasSharp.Transpose.NoTrans, OpenBlasSharp.Transpose.NoTrans,
+                LapackTest.Dgemm(
+                    Transpose.NoTrans, Transpose.NoTrans,
                     m, n, rank,
                     1.0,
                     psrc1, m,
@@ -1542,36 +1503,32 @@ namespace MatFlatTest
                     Matrix.Set(m, n, smat, m, i, i, s[i]);
                 }
 
-                OpenBlasSharp.Blas.Dgemm(
-                    Order.ColMajor,
-                    OpenBlasSharp.Transpose.NoTrans, OpenBlasSharp.Transpose.NoTrans,
+                LapackTest.Dgemm(
+                    Transpose.NoTrans, Transpose.NoTrans,
                     m, n, m,
                     1.0,
                     pu, ldu,
                     psmat, m,
                     0.0,
                     pus, m);
-                OpenBlasSharp.Blas.Dgemm(
-                    Order.ColMajor,
-                    OpenBlasSharp.Transpose.NoTrans, OpenBlasSharp.Transpose.NoTrans,
+                LapackTest.Dgemm(
+                    Transpose.NoTrans, Transpose.NoTrans,
                     m, n, n,
                     1.0,
                     pus, m,
                     pvt, ldvt,
                     0.0,
                     preconstructed, m);
-                OpenBlasSharp.Blas.Dgemm(
-                    Order.ColMajor,
-                    OpenBlasSharp.Transpose.Trans, OpenBlasSharp.Transpose.NoTrans,
+                LapackTest.Dgemm(
+                    Transpose.Trans, Transpose.NoTrans,
                     m, m, m,
                     1.0,
                     pu, ldu,
                     pu, ldu,
                     0.0,
                     pidentity1, m);
-                OpenBlasSharp.Blas.Dgemm(
-                    Order.ColMajor,
-                    OpenBlasSharp.Transpose.Trans, OpenBlasSharp.Transpose.NoTrans,
+                LapackTest.Dgemm(
+                    Transpose.Trans, Transpose.NoTrans,
                     n, n, n,
                     1.0,
                     pvt, ldvt,
@@ -1708,36 +1665,32 @@ namespace MatFlatTest
 
                 var one = Complex.One;
                 var zero = Complex.Zero;
-                OpenBlasSharp.Blas.Zgemm(
-                    Order.ColMajor,
-                    OpenBlasSharp.Transpose.NoTrans, OpenBlasSharp.Transpose.NoTrans,
+                LapackTest.Zgemm(
+                    Transpose.NoTrans, Transpose.NoTrans,
                     m, n, m,
                     &one,
                     pu, ldu,
                     psmat, m,
                     &zero,
                     pus, m);
-                OpenBlasSharp.Blas.Zgemm(
-                    Order.ColMajor,
-                    OpenBlasSharp.Transpose.NoTrans, OpenBlasSharp.Transpose.NoTrans,
+                LapackTest.Zgemm(
+                    Transpose.NoTrans, Transpose.NoTrans,
                     m, n, n,
                     &one,
                     pus, m,
                     pvt, ldvt,
                     &zero,
                     preconstructed, m);
-                OpenBlasSharp.Blas.Zgemm(
-                    Order.ColMajor,
-                    OpenBlasSharp.Transpose.ConjTrans, OpenBlasSharp.Transpose.NoTrans,
+                LapackTest.Zgemm(
+                    Transpose.ConjTrans, Transpose.NoTrans,
                     m, m, m,
                     &one,
                     pu, ldu,
                     pu, ldu,
                     &zero,
                     pidentity1, m);
-                OpenBlasSharp.Blas.Zgemm(
-                    Order.ColMajor,
-                    OpenBlasSharp.Transpose.ConjTrans, OpenBlasSharp.Transpose.NoTrans,
+                LapackTest.Zgemm(
+                    Transpose.ConjTrans, Transpose.NoTrans,
                     n, n, n,
                     &one,
                     pvt, ldvt,
@@ -1886,36 +1839,32 @@ namespace MatFlatTest
 
                 var one = Complex.One;
                 var zero = Complex.Zero;
-                OpenBlasSharp.Blas.Zgemm(
-                    Order.ColMajor,
-                    OpenBlasSharp.Transpose.NoTrans, OpenBlasSharp.Transpose.NoTrans,
+                LapackTest.Zgemm(
+                    Transpose.NoTrans, Transpose.NoTrans,
                     m, n, m,
                     &one,
                     pu, ldu,
                     psmat, m,
                     &zero,
                     pus, m);
-                OpenBlasSharp.Blas.Zgemm(
-                    Order.ColMajor,
-                    OpenBlasSharp.Transpose.NoTrans, OpenBlasSharp.Transpose.NoTrans,
+                LapackTest.Zgemm(
+                    Transpose.NoTrans, Transpose.NoTrans,
                     m, n, n,
                     &one,
                     pus, m,
                     pvt, ldvt,
                     &zero,
                     preconstructed, m);
-                OpenBlasSharp.Blas.Zgemm(
-                    Order.ColMajor,
-                    OpenBlasSharp.Transpose.ConjTrans, OpenBlasSharp.Transpose.NoTrans,
+                LapackTest.Zgemm(
+                    Transpose.ConjTrans, Transpose.NoTrans,
                     m, m, m,
                     &one,
                     pu, ldu,
                     pu, ldu,
                     &zero,
                     pidentity1, m);
-                OpenBlasSharp.Blas.Zgemm(
-                    Order.ColMajor,
-                    OpenBlasSharp.Transpose.ConjTrans, OpenBlasSharp.Transpose.NoTrans,
+                LapackTest.Zgemm(
+                    Transpose.ConjTrans, Transpose.NoTrans,
                     n, n, n,
                     &one,
                     pvt, ldvt,
@@ -2068,36 +2017,32 @@ namespace MatFlatTest
 
                 var one = Complex.One;
                 var zero = Complex.Zero;
-                OpenBlasSharp.Blas.Zgemm(
-                    Order.ColMajor,
-                    OpenBlasSharp.Transpose.NoTrans, OpenBlasSharp.Transpose.NoTrans,
+                LapackTest.Zgemm(
+                    Transpose.NoTrans, Transpose.NoTrans,
                     m, n, m,
                     &one,
                     pu, ldu,
                     psmat, m,
                     &zero,
                     pus, m);
-                OpenBlasSharp.Blas.Zgemm(
-                    Order.ColMajor,
-                    OpenBlasSharp.Transpose.NoTrans, OpenBlasSharp.Transpose.NoTrans,
+                LapackTest.Zgemm(
+                    Transpose.NoTrans, Transpose.NoTrans,
                     m, n, n,
                     &one,
                     pus, m,
                     pvt, ldvt,
                     &zero,
                     preconstructed, m);
-                OpenBlasSharp.Blas.Zgemm(
-                    Order.ColMajor,
-                    OpenBlasSharp.Transpose.ConjTrans, OpenBlasSharp.Transpose.NoTrans,
+                LapackTest.Zgemm(
+                    Transpose.ConjTrans, Transpose.NoTrans,
                     m, m, m,
                     &one,
                     pu, ldu,
                     pu, ldu,
                     &zero,
                     pidentity1, m);
-                OpenBlasSharp.Blas.Zgemm(
-                    Order.ColMajor,
-                    OpenBlasSharp.Transpose.ConjTrans, OpenBlasSharp.Transpose.NoTrans,
+                LapackTest.Zgemm(
+                    Transpose.ConjTrans, Transpose.NoTrans,
                     n, n, n,
                     &one,
                     pvt, ldvt,
@@ -2224,36 +2169,32 @@ namespace MatFlatTest
 
                 var one = Complex.One;
                 var zero = Complex.Zero;
-                OpenBlasSharp.Blas.Zgemm(
-                    Order.ColMajor,
-                    OpenBlasSharp.Transpose.NoTrans, OpenBlasSharp.Transpose.NoTrans,
+                LapackTest.Zgemm(
+                    Transpose.NoTrans, Transpose.NoTrans,
                     m, n, m,
                     &one,
                     pu, ldu,
                     psmat, m,
                     &zero,
                     pus, m);
-                OpenBlasSharp.Blas.Zgemm(
-                    Order.ColMajor,
-                    OpenBlasSharp.Transpose.NoTrans, OpenBlasSharp.Transpose.NoTrans,
+                LapackTest.Zgemm(
+                    Transpose.NoTrans, Transpose.NoTrans,
                     m, n, n,
                     &one,
                     pus, m,
                     pvt, ldvt,
                     &zero,
                     preconstructed, m);
-                OpenBlasSharp.Blas.Zgemm(
-                    Order.ColMajor,
-                    OpenBlasSharp.Transpose.ConjTrans, OpenBlasSharp.Transpose.NoTrans,
+                LapackTest.Zgemm(
+                    Transpose.ConjTrans, Transpose.NoTrans,
                     m, m, m,
                     &one,
                     pu, ldu,
                     pu, ldu,
                     &zero,
                     pidentity1, m);
-                OpenBlasSharp.Blas.Zgemm(
-                    Order.ColMajor,
-                    OpenBlasSharp.Transpose.ConjTrans, OpenBlasSharp.Transpose.NoTrans,
+                LapackTest.Zgemm(
+                    Transpose.ConjTrans, Transpose.NoTrans,
                     n, n, n,
                     &one,
                     pvt, ldvt,
@@ -2327,9 +2268,8 @@ namespace MatFlatTest
             {
                 var one = Complex.One;
                 var zero = Complex.Zero;
-                OpenBlasSharp.Blas.Zgemm(
-                    Order.ColMajor,
-                    OpenBlasSharp.Transpose.NoTrans, OpenBlasSharp.Transpose.NoTrans,
+                LapackTest.Zgemm(
+                    Transpose.NoTrans, Transpose.NoTrans,
                     m, n, rank,
                     &one,
                     psrc1, m,
@@ -2367,36 +2307,32 @@ namespace MatFlatTest
 
                 var one = Complex.One;
                 var zero = Complex.Zero;
-                OpenBlasSharp.Blas.Zgemm(
-                    Order.ColMajor,
-                    OpenBlasSharp.Transpose.NoTrans, OpenBlasSharp.Transpose.NoTrans,
+                LapackTest.Zgemm(
+                    Transpose.NoTrans, Transpose.NoTrans,
                     m, n, m,
                     &one,
                     pu, ldu,
                     psmat, m,
                     &zero,
                     pus, m);
-                OpenBlasSharp.Blas.Zgemm(
-                    Order.ColMajor,
-                    OpenBlasSharp.Transpose.NoTrans, OpenBlasSharp.Transpose.NoTrans,
+                LapackTest.Zgemm(
+                    Transpose.NoTrans, Transpose.NoTrans,
                     m, n, n,
                     &one,
                     pus, m,
                     pvt, ldvt,
                     &zero,
                     preconstructed, m);
-                OpenBlasSharp.Blas.Zgemm(
-                    Order.ColMajor,
-                    OpenBlasSharp.Transpose.ConjTrans, OpenBlasSharp.Transpose.NoTrans,
+                LapackTest.Zgemm(
+                    Transpose.ConjTrans, Transpose.NoTrans,
                     m, m, m,
                     &one,
                     pu, ldu,
                     pu, ldu,
                     &zero,
                     pidentity1, m);
-                OpenBlasSharp.Blas.Zgemm(
-                    Order.ColMajor,
-                    OpenBlasSharp.Transpose.ConjTrans, OpenBlasSharp.Transpose.NoTrans,
+                LapackTest.Zgemm(
+                    Transpose.ConjTrans, Transpose.NoTrans,
                     n, n, n,
                     &one,
                     pvt, ldvt,
