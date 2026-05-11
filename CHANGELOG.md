@@ -1,3 +1,7 @@
+# v0.8.3
+
+* Fixed complex QR decomposition so that it is performed mathematically correctly.
+
 # v0.8.2
 
 * Optimized SVD a bit.
