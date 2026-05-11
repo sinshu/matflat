@@ -195,7 +195,7 @@ namespace MatFlat
         /// <param name="rdiag">
         /// On exit, the diagonal elements of R are stored.
         /// </param>
-        public static unsafe void Qr(int m, int n, Complex* a, int lda, double* rdiag)
+        public static unsafe void Qr(int m, int n, Complex* a, int lda, Complex* rdiag)
         {
             if (m <= 0)
             {
@@ -232,10 +232,14 @@ namespace MatFlat
             for (var k = 0; k < n; k++)
             {
                 var norm = Internals.Norm(m - k, colk + k);
+                var alpha = Complex.Zero;
 
                 if (norm != 0.0)
                 {
-                    Internals.DivInplace(m - k, colk + k, norm);
+                    var phase = colk[k] == Complex.Zero ? Complex.One : colk[k] / colk[k].Magnitude;
+                    alpha = phase * norm;
+
+                    Internals.DivInplace(m - k, colk + k, alpha);
 
                     colk[k] += 1.0;
 
@@ -243,12 +247,12 @@ namespace MatFlat
                     for (var j = k + 1; j < n; j++)
                     {
                         var colj = a + lda * j;
-                        var s = -Internals.DotConj(m - k, colk + k, colj + k) / colk[k];
+                        var s = -Internals.DotConj(m - k, colk + k, colj + k) / colk[k].Real;
                         Internals.MulAdd(m - k, colk + k, s, colj + k);
                     }
                 }
 
-                rdiag[k] = -norm;
+                rdiag[k] = -alpha;
 
                 colk += lda;
             }
@@ -422,7 +426,7 @@ namespace MatFlat
         /// The number of columns of the source matrix.
         /// </param>
         /// <param name="a">
-        /// The result of the QR decomposition obtained from <see cref="Qr(int, int, Complex*, int, double*)"/>.
+        /// The result of the QR decomposition obtained from <see cref="Qr(int, int, Complex*, int, Complex*)"/>.
         /// </param>
         /// <param name="lda">
         /// The leading dimension of the source array.
@@ -484,8 +488,8 @@ namespace MatFlat
                     var qColj = q + ldq * j;
                     if (aColk[k] != 0)
                     {
-                        var s = -Internals.DotConj(m - k, qColj + k, aColk + k) / aColk[k];
-                        Internals.MulConjAdd(m - k, s, aColk + k, qColj + k);
+                        var s = -Internals.DotConj(m - k, aColk + k, qColj + k) / aColk[k].Real;
+                        Internals.MulAdd(m - k, aColk + k, s, qColj + k);
                     }
                 }
             }
@@ -660,7 +664,7 @@ namespace MatFlat
         /// The number of columns of the source matrix.
         /// </param>
         /// <param name="a">
-        /// The result of the QR decomposition obtained from <see cref="Qr(int, int, Complex*, int, double*)"/>.
+        /// The result of the QR decomposition obtained from <see cref="Qr(int, int, Complex*, int, Complex*)"/>.
         /// </param>
         /// <param name="lda">
         /// The leading dimension of the source array.
@@ -672,9 +676,9 @@ namespace MatFlat
         /// The leading dimension of the array R.
         /// </param>
         /// <param name="rdiag">
-        /// The diagonal elements of R obtained from <see cref="Qr(int, int, Complex*, int, double*)"/>.
+        /// The diagonal elements of R obtained from <see cref="Qr(int, int, Complex*, int, Complex*)"/>.
         /// </param>
-        public static unsafe void QrUpperTriangularFactor(int m, int n, Complex* a, int lda, Complex* r, int ldr, double* rdiag)
+        public static unsafe void QrUpperTriangularFactor(int m, int n, Complex* a, int lda, Complex* r, int ldr, Complex* rdiag)
         {
             if (m <= 0)
             {

@@ -395,7 +395,7 @@ namespace MatFlatTest
             var original = Matrix.RandomComplex(42, m, n, lda);
 
             var a = original.ToArray();
-            var rdiag = new double[n];
+            var rdiag = new Complex[n];
             var q = Matrix.RandomComplex(0, m, n, ldq);
             var qCopy = q.ToArray();
             var r = Matrix.RandomComplex(0, n, n, ldr);
@@ -403,7 +403,7 @@ namespace MatFlatTest
             var reconstructed = new Complex[m * n];
             var identity = new Complex[n * n];
             fixed (Complex* pa = a)
-            fixed (double* prdiag = rdiag)
+            fixed (Complex* prdiag = rdiag)
             fixed (Complex* pq = q)
             fixed (Complex* pr = r)
             fixed (Complex* preconstructed = reconstructed)
@@ -506,7 +506,7 @@ namespace MatFlatTest
             var original = new Complex[] { 1, 2, 3, 2 * j, 4 * j, 6 * j, 0, 0, 0 };
 
             var a = original.ToArray();
-            var rdiag = new double[n];
+            var rdiag = new Complex[n];
             var q = Matrix.RandomComplex(0, m, n, ldq);
             var qCopy = q.ToArray();
             var r = Matrix.RandomComplex(0, n, n, ldr);
@@ -514,7 +514,7 @@ namespace MatFlatTest
             var reconstructed = new Complex[m * n];
             var identity = new Complex[n * n];
             fixed (Complex* pa = a)
-            fixed (double* prdiag = rdiag)
+            fixed (Complex* prdiag = rdiag)
             fixed (Complex* pq = q)
             fixed (Complex* pr = r)
             fixed (Complex* preconstructed = reconstructed)
