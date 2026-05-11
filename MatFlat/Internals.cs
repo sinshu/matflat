@@ -72,32 +72,6 @@ namespace MatFlat
             }
         }
 
-        internal static unsafe void MulConjAdd(int n, Complex x, Complex* y, Complex* dst)
-        {
-            switch (n & 1)
-            {
-                case 0:
-                    break;
-                case 1:
-                    dst[0] += MulConj(x, y[0]);
-                    y++;
-                    dst++;
-                    n--;
-                    break;
-                default:
-                    throw new MatrixFactorizationException("An unexpected error occurred.");
-            }
-
-            while (n > 0)
-            {
-                dst[0] += MulConj(x, y[0]);
-                dst[1] += MulConj(x, y[1]);
-                y += 2;
-                dst += 2;
-                n -= 2;
-            }
-        }
-
         internal static unsafe void MulInplace<T>(int n, T* x, T y) where T : unmanaged, INumberBase<T>
         {
             switch (n & 1)
